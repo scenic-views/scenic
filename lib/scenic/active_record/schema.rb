@@ -4,14 +4,14 @@ module Scenic
   module ActiveRecord
     module Schema
       module Statements
-        def create_view(name)
-          execute "CREATE VIEW #{name} AS #{schema(name)};"
+        def create_view(name, version)
+          execute "CREATE VIEW #{name} AS #{schema(name, version)};"
         end
 
         private
 
-        def schema(name)
-          File.read(::Rails.root.join('db', 'views', "#{name}.sql"))
+        def schema(name, version)
+          File.read(::Rails.root.join('db', 'views', "#{name}_v#{version}.sql"))
         end
       end
     end
