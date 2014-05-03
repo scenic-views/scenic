@@ -21,7 +21,7 @@ describe 'Scenic::ActiveRecord::Schema' do
     @to_be_removed ||= []
     view_file = ::Rails.root.join('db', 'views', "#{name}_v#{version}.sql")
     @to_be_removed << view_file
-    File.open(view_definition, 'w') { |f| f.write(schema) }
+    File.open(view_file, 'w') { |f| f.write(schema) }
   end
 
   def remove_generated_files
