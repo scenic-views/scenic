@@ -1,0 +1,17 @@
+before_install:
+  - "echo '--colour' > ~/.rspec"
+  - "echo 'gem: --no-document' > ~/.gemrc"
+before_script:
+  - pushd spec/dummy && bundle exec rake db:create && popd
+branches:
+  only:
+    - master
+cache:
+  - bundler
+language:
+  - ruby
+notifications:
+  email:
+    - false
+rvm:
+  - 2.1.1
