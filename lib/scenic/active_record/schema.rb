@@ -8,6 +8,10 @@ module Scenic
           execute "CREATE VIEW #{name} AS #{schema(name, version)};"
         end
 
+        def drop_view(name)
+          execute "DROP VIEW #{name};"
+        end
+
         private
 
         def schema(name, version)
