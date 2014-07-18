@@ -13,7 +13,8 @@ module Scenic
         end
 
         def update_view(name, version)
-          execute "CREATE OR REPLACE VIEW #{name} AS #{schema(name, version)};"
+          drop_view(name)
+          create_view(name, version)
         end
 
         private

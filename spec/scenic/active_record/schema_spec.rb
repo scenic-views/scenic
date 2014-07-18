@@ -46,6 +46,13 @@ describe "Scenic::ActiveRecord::Schema", :db do
         end
       end
     end
+
+    it "raises an error if the view to be updated does not exist" do
+      with_view_definition :views, 2, "SELECT text 'Hi' as greeting" do
+        expect { View.connection.update_view :views, 2 }
+          .to raise_error(ActiveRecord::StatementInvalid, /does not exist/)
+      end
+    end
   end
 
   def views
