@@ -4,12 +4,16 @@ module Scenic
   module ActiveRecord
     module Schema
       module Statements
-        def create_view(name, version)
-          execute "CREATE VIEW #{name} AS #{schema(name, version)};"
+        def create_view(name)
+          execute "CREATE VIEW #{name} AS #{schema(name, 1)};"
         end
 
         def drop_view(name)
           execute "DROP VIEW #{name};"
+        end
+
+        def update_view(name, version)
+          execute "CREATE OR REPLACE VIEW #{name} AS #{schema(name, version)};"
         end
 
         private

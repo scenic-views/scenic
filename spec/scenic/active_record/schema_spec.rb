@@ -8,7 +8,7 @@ describe 'Scenic::ActiveRecord::Schema', :db do
   describe 'create_view' do
     it 'creates a view from a file' do
       with_view_definition :views, 1, "SELECT text 'Hello World' AS hello" do
-        View.connection.create_view :views, 1
+        View.connection.create_view :views
 
         expect(View.all.pluck(:hello)).to eq ['Hello World']
       end
@@ -18,11 +18,24 @@ describe 'Scenic::ActiveRecord::Schema', :db do
   describe 'drop_view' do
     it 'removes a view from the database' do
       with_view_definition :things, 1, "SELECT text 'Hi' AS greeting" do
-        View.connection.create_view :things, 1
+        View.connection.create_view :things
 
         View.connection.drop_view :things
 
         expect(views).not_to include 'things'
+      end
+    end
+  end
+
+  describe 'update_view' do
+    it 'updates an existing view in the database' do
+      with_view_definition :views, 1, "SELECT text 'Hi' AS greeting" do
+        View.connection.create_view :views
+        with_view_definition :views, 2, "SELECT text 'Hello' AS greeting" do
+          View.connection.update_view :views, 2
+
+          expect(View.all.pluck(:greeting)).to eq ['Hello']
+        end
       end
     end
   end
