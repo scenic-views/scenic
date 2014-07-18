@@ -13,6 +13,14 @@ describe 'Scenic::ActiveRecord::Schema', :db do
         expect(View.all.pluck(:hello)).to eq ['Hello World']
       end
     end
+
+    it 'creates a view from a specific version' do
+      with_view_definition :views, 15, "SELECT text 'Hello Earth East 15' AS hello" do
+        View.connection.create_view :views, 15
+
+        expect(View.all.pluck(:hello)).to eq ['Hello Earth East 15']
+      end
+    end
   end
 
   describe 'drop_view' do
