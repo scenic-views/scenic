@@ -1,5 +1,5 @@
-require 'scenic/version'
-require 'scenic/engine'
+require "scenic/version"
+require "scenic/engine"
 
 module Scenic
 end

@@ -1,4 +1,4 @@
-require 'rails'
+require "rails"
 
 module Scenic
   module ActiveRecord
@@ -19,7 +19,7 @@ module Scenic
         private
 
         def schema(name, version)
-          File.read(::Rails.root.join('db', 'views', "#{name}_v#{version}.sql"))
+          File.read(::Rails.root.join("db", "views", "#{name}_v#{version}.sql"))
         end
       end
     end
