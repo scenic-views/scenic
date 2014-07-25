@@ -3,8 +3,14 @@ require "rails"
 module Scenic
   module ActiveRecord
     module Statements
-      def create_view(name, version = 1)
-        execute "CREATE VIEW #{name} AS #{schema(name, version)};"
+      def create_view(name, version_or_definition = 1)
+        if version_or_definition.is_a? String
+          view_definition = version_or_definition
+        else
+          view_definition = definition(name, version_or_definition)
+        end
+
+        execute "CREATE VIEW #{name} AS #{view_definition};"
       end
 
       def drop_view(name, *_)
@@ -18,7 +24,7 @@ module Scenic
 
       private
 
-      def schema(name, version)
+      def definition(name, version)
         File.read(::Rails.root.join("db", "views", "#{name}_v#{version}.sql"))
       end
     end
