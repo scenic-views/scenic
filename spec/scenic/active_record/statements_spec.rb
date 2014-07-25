@@ -1,10 +1,10 @@
 require "spec_helper"
-require "scenic/active_record/schema"
+require "scenic/active_record/statements"
 
 class View < ActiveRecord::Base
 end
 
-describe "Scenic::ActiveRecord::Schema", :db do
+describe Scenic::ActiveRecord::Statements, :db do
   describe "create_view" do
     it "creates a view from a file" do
       with_view_definition :views, 1, "SELECT text 'Hello World' AS hello" do
@@ -12,6 +12,12 @@ describe "Scenic::ActiveRecord::Schema", :db do
 
         expect(View.all.pluck(:hello)).to eq ["Hello World"]
       end
+    end
+
+    it "creates a view from a text definition" do
+      View.connection.create_view :views, "SELECT text 'Goodbye' AS hello"
+
+        expect(View.all.pluck(:hello)).to eq ["Goodbye"]
     end
 
     it "creates a view from a specific version" do
