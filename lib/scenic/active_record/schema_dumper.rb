@@ -28,7 +28,7 @@ module Scenic
 
       def view(name, stream)
         stream.puts(<<-DEFINITION)
-  create_view :#{name}, <<-\SQL
+  create_view :#{name}, sql_definition:<<-\SQL
 #{views_with_definitions[name]}
   SQL
         DEFINITION

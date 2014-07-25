@@ -13,12 +13,27 @@ describe Scenic::ActiveRecord::Statements, :db do
       end
     end
 
+    it "creates a view from a text definition" do
+      View.connection.create_view :views,
+        sql_definition: "SELECT text 'Goodbye' AS hello"
+
+      expect(View.all.pluck(:hello)).to eq ["Goodbye"]
+    end
+
     it "creates a view from a specific version" do
       with_view_definition :views, 15, "SELECT text 'Hello Earth East 15' AS hello" do
         View.connection.create_view :views, version: 15
 
         expect(View.all.pluck(:hello)).to eq ["Hello Earth East 15"]
       end
+    end
+
+    it "raises an error if both arguments are nil" do
+      expect do
+        View.connection.create_view :whatever,
+          version: nil,
+          sql_definition: nil
+      end.to raise_error ArgumentError
     end
   end
 

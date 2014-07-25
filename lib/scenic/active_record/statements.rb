@@ -1,8 +1,17 @@
 module Scenic
   module ActiveRecord
     module Statements
-      def create_view(name, version: 1)
-        execute "CREATE VIEW #{name} AS #{schema(name, version)};"
+      def create_view(name, version: 1, sql_definition: nil)
+        if version.nil? && sql_definition.nil?
+          raise(
+            ArgumentError,
+            "view_definition or version_number must be specified"
+          )
+        end
+
+        sql_definition ||= definition(name, version)
+
+        execute "CREATE VIEW #{name} AS #{sql_definition};"
       end
 
       def drop_view(name, revert_to_version: nil)
@@ -20,7 +29,7 @@ module Scenic
 
       private
 
-      def schema(name, version)
+      def definition(name, version)
         File.read(::Rails.root.join("db", "views", "#{name}_v#{version}.sql"))
       end
     end
