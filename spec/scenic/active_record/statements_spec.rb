@@ -3,7 +3,7 @@ require "spec_helper"
 class View < ActiveRecord::Base
 end
 
-describe Scenic::ActiveRecord::Statements do
+describe Scenic::ActiveRecord::Statements, :db do
   describe "create_view" do
     it "creates a view from a file" do
       with_view_definition :views, 1, "SELECT text 'Hello World' AS hello" do

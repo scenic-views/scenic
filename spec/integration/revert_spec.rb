@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe "Reverting scenic schema statements" do
+describe "Reverting scenic schema statements", :db do
   around do |example|
     with_view_definition :greetings, 1, "SELECT text 'hola' AS greeting" do
       example.run

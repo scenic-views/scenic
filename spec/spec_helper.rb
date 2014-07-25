@@ -9,7 +9,7 @@ RSpec.configure do |config|
   config.include ViewDefinitionHelpers
   DatabaseCleaner.strategy = :transaction
 
-  config.around(:each) do |example|
+  config.around(:each, db: true) do |example|
     DatabaseCleaner.start
     example.run
     DatabaseCleaner.clean
