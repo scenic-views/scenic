@@ -1,5 +1,3 @@
-require "active_record"
-
 module Scenic
   module ActiveRecord
     module Statements
@@ -24,5 +22,3 @@ module Scenic
     end
   end
 end
-
-ActiveRecord::ConnectionAdapters::AbstractAdapter.send :include, Scenic::ActiveRecord::Statements
