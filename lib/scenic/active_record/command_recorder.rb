@@ -1,3 +1,5 @@
+require "scenic/active_record/command_recorder/statement_arguments"
+
 module Scenic
   module ActiveRecord
     module CommandRecorder
@@ -9,43 +11,33 @@ module Scenic
         record(:drop_view, args)
       end
 
+      def update_view(*args)
+        record(:update_view, args)
+      end
+
       def invert_create_view(args)
         [:drop_view, args]
       end
 
       def invert_drop_view(args)
-        scenic_args = ScenicArguments.new(args)
+        perform_scenic_inversion(:create_view, args)
+      end
 
-        if scenic_args.revert_to_version.nil?
-          raise_irriversible(:drop_view)
-        end
-
-        [:create_view, scenic_args.view]
+      def invert_update_view(args)
+        perform_scenic_inversion(:update_view, args)
       end
 
       private
 
-      def raise_irriversible(method)
-        message = "#{method} is reversible only if given a revert_to_version"
-        raise ::ActiveRecord::IrreversibleMigration, message
-      end
+      def perform_scenic_inversion(method, args)
+        scenic_args = StatementArguments.new(args)
 
-      class ScenicArguments
-        def initialize(args)
-          @args = args
+        if scenic_args.revert_to_version.nil?
+          message = "#{method} is reversible only if given a revert_to_version"
+          raise ::ActiveRecord::IrreversibleMigration, message
         end
 
-        def view
-          @args[0]
-        end
-
-        def options
-          @options ||= @args[1] || {}
-        end
-
-        def revert_to_version
-          options[:revert_to_version]
-        end
+        [method, scenic_args.invert_version.to_a]
       end
     end
   end

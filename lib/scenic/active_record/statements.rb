@@ -9,7 +9,7 @@ module Scenic
         execute "DROP VIEW #{name};"
       end
 
-      def update_view(name, version: nil)
+      def update_view(name, version: nil, revert_to_version: nil)
         if version.nil?
           raise ArgumentError, "version is required"
         end

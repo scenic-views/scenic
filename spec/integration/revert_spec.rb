@@ -16,6 +16,18 @@ describe "Reverting scenic schema statements" do
       .not_to raise_error
   end
 
+  it "reverts updated view to specified version" do
+    with_view_definition :greetings, 2, "SELECT text 'good day' AS greeting" do
+      run_migration(migration_for_create, :up)
+      run_migration(migration_for_update, :up)
+      run_migration(migration_for_update, :down)
+
+      greeting = execute("SELECT * from greetings")[0]["greeting"]
+
+      expect(greeting).to eq "hola"
+    end
+  end
+
   def migration_for_create
     Class.new(::ActiveRecord::Migration) do
       def change
@@ -28,6 +40,14 @@ describe "Reverting scenic schema statements" do
     Class.new(::ActiveRecord::Migration) do
       def change
         drop_view :greetings, revert_to_version: 1
+      end
+    end
+  end
+
+  def migration_for_update
+    Class.new(::ActiveRecord::Migration) do
+      def change
+        update_view :greetings, version: 2, revert_to_version: 1
       end
     end
   end

@@ -30,11 +30,12 @@ describe Scenic::ActiveRecord::CommandRecorder do
 
     it "reverts to create_view with specified revert_to_version" do
       recorder = ActiveRecord::Migration::CommandRecorder.new
-      args = [:users, { revert_to_version: 1 }]
+      args = [:users, { revert_to_version: 3 }]
+      revert_args = [:users, { version: 3 }]
 
       recorder.revert { recorder.drop_view(*args) }
 
-      expect(recorder.commands).to eq [[:create_view, args[0]]]
+      expect(recorder.commands).to eq [[:create_view, revert_args]]
     end
 
     it "raises when reverting without revert_to_version set" do
@@ -42,6 +43,35 @@ describe Scenic::ActiveRecord::CommandRecorder do
       args = [:users, { another_argument: 1 }]
 
       expect { recorder.revert { recorder.drop_view(*args) } }
+        .to raise_error(ActiveRecord::IrreversibleMigration)
+    end
+  end
+
+  describe "#update_view" do
+    it "records the updated view" do
+      recorder = ActiveRecord::Migration::CommandRecorder.new
+      args = [:users, { version: 2 }]
+
+      recorder.update_view(*args)
+
+      expect(recorder.commands).to eq [[:update_view, args, nil]]
+    end
+
+    it "reverts to update_view with the specified revert_to_version" do
+      recorder = ActiveRecord::Migration::CommandRecorder.new
+      args = [:users, { version: 2, revert_to_version: 1 }]
+      revert_args = [:users, { version: 1 }]
+
+      recorder.revert { recorder.update_view(*args) }
+
+      expect(recorder.commands).to eq [[:update_view, revert_args]]
+    end
+
+    it "raises when reverting without revert_to_version set" do
+      recorder = ActiveRecord::Migration::CommandRecorder.new
+      args = [:users, { version: 42, another_argument: 1 }]
+
+      expect { recorder.revert { recorder.update_view(*args) } }
         .to raise_error(ActiveRecord::IrreversibleMigration)
     end
   end
