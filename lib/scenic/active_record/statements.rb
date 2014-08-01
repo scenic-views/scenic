@@ -5,13 +5,13 @@ module Scenic
         execute "CREATE VIEW #{name} AS #{schema(name, version)};"
       end
 
-      def drop_view(name)
+      def drop_view(name, revert_to_version: nil)
         execute "DROP VIEW #{name};"
       end
 
       def update_view(name, version: nil)
         if version.nil?
-          raise ArgumentError, 'version is required'
+          raise ArgumentError, "version is required"
         end
 
         drop_view(name)
