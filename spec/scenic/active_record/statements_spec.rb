@@ -15,7 +15,7 @@ describe Scenic::ActiveRecord::Statements do
 
     it "creates a view from a specific version" do
       with_view_definition :views, 15, "SELECT text 'Hello Earth East 15' AS hello" do
-        View.connection.create_view :views, 15
+        View.connection.create_view :views, version: 15
 
         expect(View.all.pluck(:hello)).to eq ["Hello Earth East 15"]
       end
@@ -39,16 +39,21 @@ describe Scenic::ActiveRecord::Statements do
       with_view_definition :views, 1, "SELECT text 'Hi' AS greeting" do
         View.connection.create_view :views
         with_view_definition :views, 2, "SELECT text 'Hello' AS greeting" do
-          View.connection.update_view :views, 2
+          View.connection.update_view :views, version: 2
 
           expect(View.all.pluck(:greeting)).to eq ['Hello']
         end
       end
     end
 
+    it "raises an error if not supplied a version" do
+      expect { View.connection.update_view :views }
+        .to raise_error(ArgumentError, /version is required/)
+    end
+
     it "raises an error if the view to be updated does not exist" do
       with_view_definition :views, 2, "SELECT text 'Hi' as greeting" do
-        expect { View.connection.update_view :views, 2 }
+        expect { View.connection.update_view :views, version: 2 }
           .to raise_error(ActiveRecord::StatementInvalid, /does not exist/)
       end
     end
