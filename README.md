@@ -13,23 +13,84 @@ versioning your views in a way that eliminates duplication across migrations. As
 an added bonus, you define the structure of your view in a SQL file, meaning you
 get full SQL syntax highlighting support in the editor of your choice.
 
-## To generate a new view:
+## Great, how do I create a view?
 
+You've got this great idea for a view you'd like to call `searches`. Create a
+definition file at `db/views/searches_v1.sql` which contains the query you'd
+like to build your view with. Perhaps that looks something like this:
+
+```sql
+SELECT
+  statuses.id AS searchable_id,
+  'Status' AS searchable_type,
+  comments.body AS term
+FROM statuses
+JOIN comments ON statuses.id = comments.status_id
+
+UNION
+
+SELECT
+  statuses.id AS searchable_id,
+  'Status' AS searchable_type,
+  statuses.body AS term
+FROM statuses
 ```
-$ rails generate scenic_view searches
+
+Generate a new migration with the following `change` method:
+
+```ruby
+def change
+  create_view :searches
+end
 ```
 
-This will generate a migration file and a view definition at
-`db/views/searches_v1.sql`. Open that file, write the SQL query you would like
-to populate your view -- omitting the `CREATE VIEW` boilerplate -- and then run
-`rake db:migrate`.
+Run that migration and congrats, you've got yourself a view. The migration is
+reversible and it will be dumped into your `schema.rb` file.
 
-## Want to update an existing view?
+## Cool, but what if I need to change that view?
 
+Add the new query to `db/views/searches_v2.sql` and generate a new migration with
+the following `change` method:
+
+```ruby
+def change
+  update_view :searches, version: 2, revert_to_version: 1
+end
 ```
-$ rails generate scenic_view searches
+
+When you run that migration, your view will be updated. The `revert_to_version`
+option makes that migration reversible.
+
+## Can I use this view to back a model?
+
+You bet!
+
+```ruby
+class Search < ActiveRecord::Base
+  private
+
+  # this isn't strictly necessary, but it will prevent
+  # rails from calling save, which would fail anyway.
+  def readonly?
+    true
+  end
+end
 ```
 
-This will generate a migration and a view definition at
-`db/views/searches_v2.sql`. The file will be populated with the previous view
-definition for you to edit as desired. When you're done, run `rake db:migrate`.
+## I don't need this view anymore. Make it go away.
+
+We give you `drop_view` too:
+
+```ruby
+def change
+  drop_view :searches, revert_to_version: 2
+end
+```
+
+## Can you make this easier?
+
+Yeah, we're working on it. We're going to provide some generators that will take
+some of the busy work of file creation away. We'll create the SQL file, the
+migration, and optionally the model for you.
+
+Check out the issue tracker for our other plans.
