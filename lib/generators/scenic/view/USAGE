@@ -1,0 +1,9 @@
+Description:
+  Create a new database view for your application. This will create a new
+  view definition file and the accompanying migration.
+
+Examples:
+    rails generate scenic:view searches
+
+      create: db/views/searches_v1.sql
+      create: db/migrate/20140803191158_create_searches.rb
