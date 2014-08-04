@@ -3,19 +3,18 @@ require "rails/generators/active_record"
 
 module Scenic
   module Generators
-    class ViewGenerator < Rails::Generators::Base
+    class ViewGenerator < Rails::Generators::NamedBase
       include Rails::Generators::Migration
       source_root File.expand_path("../templates", __FILE__)
-      argument :view_name, type: :string
 
       def create_view_definition
-        create_file "db/views/#{view_name}_v1.sql"
+        create_file "db/views/#{plural_name}_v1.sql"
       end
 
       def create_migration_file
         migration_template(
           "db/migrate/create_view.erb",
-          "db/migrate/create_#{view_name}.rb"
+          "db/migrate/create_#{plural_name}.rb"
         )
       end
 

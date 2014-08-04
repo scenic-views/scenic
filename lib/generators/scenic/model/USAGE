@@ -1,0 +1,10 @@
+Description:
+  Create a new database view and ActiveRecord::Base subclass for your
+  application.
+
+Examples:
+    rails generate scenic:model search
+
+      create: app/models/search.rb
+      create: db/views/searches_v1.sql
+      create: db/migrate/20140803191158_create_searches.rb

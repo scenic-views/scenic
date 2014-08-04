@@ -1,3 +1,5 @@
+require "rails/railtie"
+
 module Scenic
   class Railtie < Rails::Railtie
     initializer "scenic.load" do
