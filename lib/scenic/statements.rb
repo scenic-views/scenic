@@ -1,7 +1,7 @@
 module Scenic
   module Statements
     def create_view(name, version: 1, sql_definition: nil)
-      if version.nil? && sql_definition.nil?
+      if version.blank? && sql_definition.nil?
         raise(
           ArgumentError,
           "view_definition or version_number must be specified"
@@ -18,7 +18,7 @@ module Scenic
     end
 
     def update_view(name, version: nil, revert_to_version: nil)
-      if version.nil?
+      if version.blank?
         raise ArgumentError, "version is required"
       end
 
@@ -29,7 +29,7 @@ module Scenic
     private
 
     def definition(name, version)
-      File.read(::Rails.root.join("db", "views", "#{name}_v#{version}.sql"))
+      Scenic::Definition.new(name, version).to_sql
     end
   end
 end

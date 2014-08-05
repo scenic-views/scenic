@@ -1,0 +1,5 @@
+class <%= migration_class_name %> < ActiveRecord::Migration
+  def change
+    update_view :<%= plural_name %>, version: <%= version %>, revert_to_version: <%= previous_version %>
+  end
+end

@@ -2,6 +2,7 @@ require "scenic/version"
 require "scenic/railtie"
 require "scenic/adapters/postgres"
 require "scenic/command_recorder"
+require "scenic/definition"
 require "scenic/schema_dumper"
 require "scenic/statements"
 
