@@ -40,12 +40,10 @@ module Scenic
       end
 
       def views_with_definitions
-        @views_with_definitions ||=
-          Hash[@connection.execute(<<-SQL, 'SCHEMA').values]
-            SELECT viewname, definition
-            FROM pg_views
-            WHERE schemaname = ANY (current_schemas(false))
-          SQL
+        @views_with_definitions ||= begin
+          query = Scenic.database.views_with_definitions_query
+          Hash[@connection.execute(query, "SCHEMA").values]
+        end
       end
     end
   end

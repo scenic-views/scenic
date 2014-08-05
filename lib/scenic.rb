@@ -1,5 +1,6 @@
 require "scenic/version"
 require "scenic/railtie"
+require "scenic/adapters/postgres"
 require "scenic/active_record/command_recorder"
 require "scenic/active_record/schema_dumper"
 require "scenic/active_record/statements"
@@ -17,5 +18,9 @@ module Scenic
     ::ActiveRecord::SchemaDumper.class_eval do
       include Scenic::ActiveRecord::SchemaDumper
     end
+  end
+
+  def self.database
+    Scenic::Adapters::Postgres
   end
 end
