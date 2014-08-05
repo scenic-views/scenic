@@ -2,7 +2,7 @@ require "spec_helper"
 
 class Search < ActiveRecord::Base; end
 
-describe Scenic::ActiveRecord::SchemaDumper, :db do
+describe Scenic::SchemaDumper, :db do
   it "dumps a create_view for a view in the database" do
     view_definition = "SELECT 'needle'::text AS haystack"
     Search.connection.create_view :searches, sql_definition: view_definition
