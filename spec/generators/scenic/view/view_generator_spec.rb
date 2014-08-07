@@ -13,7 +13,7 @@ describe Scenic::Generators::ViewGenerator, :generator do
   end
 
   it "updates an existing view" do
-    migration = file("db/migrate/update_searches_v02.rb")
+    migration = file("db/migrate/update_searches_to_version_2.rb")
     view_definition = file("db/views/searches_v02.sql")
     allow(Dir).to receive(:entries)
       .and_return(["searches_v01.sql"])

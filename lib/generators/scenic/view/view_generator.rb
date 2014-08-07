@@ -12,15 +12,15 @@ module Scenic
       end
 
       def create_migration_file
-        if updating_existing_view?
-          migration_template(
-            "db/migrate/update_view.erb",
-            "db/migrate/update_#{plural_file_name}_v#{definition.version}.rb"
-          )
-        else
+        if creating_new_view? || destroying_initial_view?
           migration_template(
             "db/migrate/create_view.erb",
             "db/migrate/create_#{plural_file_name}.rb"
+          )
+        else
+          migration_template(
+            "db/migrate/update_view.erb",
+            "db/migrate/update_#{plural_file_name}_to_version_#{version}.rb"
           )
         end
       end
@@ -38,14 +38,14 @@ module Scenic
         end
 
         def version
-          @version ||= previous_version.next
+          @version ||= destroying? ? previous_version : previous_version.next
         end
 
         def migration_class_name
-          if updating_existing_view?
-            "Update#{class_name.pluralize}ToVersion#{version}"
-          else
+          if creating_new_view?
             super
+          else
+            "Update#{class_name.pluralize}ToVersion#{version}"
           end
         end
       end
@@ -56,12 +56,20 @@ module Scenic
         /\A#{plural_file_name}_v(?<version>\d+)\.sql\z/
       end
 
-      def updating_existing_view?
-        previous_version > 0
+      def creating_new_view?
+        previous_version == 0
       end
 
       def definition
         Scenic::Definition.new(plural_file_name, version)
+      end
+
+      def destroying?
+        behavior == :revoke
+      end
+
+      def destroying_initial_view?
+        destroying? && version == 1
       end
     end
   end

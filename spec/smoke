@@ -1,0 +1,86 @@
+#!/bin/bash
+
+set -euo pipefail
+
+setup() {
+	cd spec/dummy
+	git init
+	git add -A
+	git commit --no-gpg-sign --message "initial"
+}
+
+teardown() {
+	git add -A
+	git reset --hard HEAD
+	rm -rf .git/
+	rake db:drop db:create
+}
+
+trap teardown EXIT
+
+verifySearchResults() {
+	echo "verify search results"
+	local expectedResult=$1
+	local actualResult=$(rails runner "puts Search.first.results")
+	[[ "$actualResult" == "$expectedResult" ]] || exit 1
+	echo "[success]"
+}
+
+writeToFileAndMigrateAndVerifySearchResults() {
+	echo "write search definition and migrate"
+	local version=$1
+	local expectedResult=$2
+	echo "SELECT '$expectedResult'::text AS results" >> db/views/searches_v$version\.sql
+	rake db:migrate
+	echo "[success]"
+	verifySearchResults $expectedResult
+}
+
+main() {
+	setup
+	echo "rails generate scenic:model search"
+	rails generate scenic:model search
+	[[ -f db/views/searches_v01.sql ]] || exit 1
+	[[ -f app/models/search.rb ]] || exit 1
+	[[ -n "$(find db/migrate -maxdepth 1 -name "*create_searches.rb" -print -quit)" ]] || exit 1
+	echo "[success]"
+
+	writeToFileAndMigrateAndVerifySearchResults "01" "search-results"
+
+	echo "rails generate scenic:view search (to get updates search view)"
+	rails generate scenic:view search
+	[[ -f db/views/searches_v02.sql ]] || exit 1
+	[[ -n "$(find db/migrate -maxdepth 1 -name "*update_searches_to_version_2.rb" -print -quit)" ]] || exit 1
+	echo "[success]"
+
+	writeToFileAndMigrateAndVerifySearchResults "02" "different-results"
+
+	echo "rake db:rollback"
+	rake db:rollback
+	echo "[success]"
+
+	verifySearchResults "search-results"
+
+	echo "rails destroy scenic:view search"
+	rails destroy scenic:view search
+	[[ ! -f db/views/searches_v02.sql ]] || exit 1
+	[[ -z "$(find db/migrate -maxdepth 1 -name "*update_searches_to_version_2.rb" -print -quit)" ]] || exit 1
+	[[ -f db/views/searches_v01.sql ]] || exit 1
+	[[ -f app/models/search.rb ]] || exit 1
+	[[ -n "$(find db/migrate -maxdepth 1 -name "*create_searches.rb" -print -quit)" ]] || exit 1
+	echo "[success]"
+
+	echo "rake db:rollback"
+	rake db:rollback
+	echo "[success]"
+
+	echo "rails destroy scenic:view search"
+	rails destroy scenic:model search
+	[[ ! -f db/views/searches_v01.sql ]] || exit 1
+	[[ ! -f app/models/search.rb ]] || exit 1
+	[[ -z "$(find db/migrate -maxdepth 1 -name "*create_searches.rb" -print -quit)" ]] || exit 1
+	echo "[success]"
+	echo "[done]"
+}
+
+main $*
