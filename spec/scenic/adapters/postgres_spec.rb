@@ -26,8 +26,8 @@ module Scenic::Adapters
 
         expect(Postgres.views).to eq([
           Scenic::View.new(
-            "viewname" => "farewells",
-            "definition" => " SELECT 'bye'::text AS farewell;",
+            "viewname" => "greetings",
+            "definition" => " SELECT 'hi'::text AS greeting;",
           ),
         ])
       end
