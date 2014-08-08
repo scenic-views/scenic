@@ -4,8 +4,8 @@ module Scenic
     delegate :<=>, to: :name
 
     def initialize(view_row)
-      @name = view_row['viewname']
-      @definition = view_row['definition']
+      @name = view_row["viewname"]
+      @definition = view_row["definition"]
     end
 
     def ==(other)
