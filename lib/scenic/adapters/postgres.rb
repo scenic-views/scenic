@@ -1,8 +1,8 @@
 module Scenic
   module Adapters
     module Postgres
-      def self.views_with_definitions
-        Hash[execute(<<-SQL).values]
+      def self.views
+        execute(<<-SQL).map { |result| Scenic::View.new(result) }
           SELECT viewname, definition
           FROM pg_views
           WHERE schemaname = ANY (current_schemas(false))

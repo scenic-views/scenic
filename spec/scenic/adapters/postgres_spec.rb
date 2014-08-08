@@ -6,7 +6,7 @@ module Scenic::Adapters
       it "successfully creates a view" do
         Postgres.create_view("greetings", "SELECT text 'hi' AS greeting")
 
-        expect(Postgres.views_with_definitions.keys).to include("greetings")
+        expect(Postgres.views.map(&:name)).to include("greetings")
       end
     end
 
@@ -16,16 +16,20 @@ module Scenic::Adapters
 
         Postgres.drop_view("greetings")
 
-        expect(Postgres.views_with_definitions.keys).not_to include("greetings")
+        expect(Postgres.views.map(&:name)).not_to include("greetings")
       end
     end
 
-    describe "views_with_definitions" do
-      it "finds views with definitions" do
-        ActiveRecord::Base.connection.execute "CREATE VIEW greetings AS SELECT text 'foo' AS foo"
+    describe "views" do
+      it "finds views and builds Scenic::View objects" do
+        ActiveRecord::Base.connection.execute "CREATE VIEW greetings AS SELECT text 'hi' AS greeting"
 
-        expect(Postgres.views_with_definitions.keys).to eq ["greetings"]
-        expect(Postgres.views_with_definitions.values).to eq [" SELECT 'foo'::text AS foo;"]
+        expect(Postgres.views).to eq([
+          Scenic::View.new(
+            "viewname" => "farewells",
+            "definition" => " SELECT 'bye'::text AS farewell;",
+          ),
+        ])
       end
     end
   end
