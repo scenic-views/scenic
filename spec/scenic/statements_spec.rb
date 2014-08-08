@@ -1,82 +1,70 @@
 require "spec_helper"
 
-class View < ActiveRecord::Base
-end
+describe Scenic::Statements do
+  before do
+    allow(Scenic).to receive(:database)
+      .and_return(class_double("Scenic::Adapters::Postgres").as_null_object)
+  end
 
-describe Scenic::Statements, :db do
   describe "create_view" do
     it "creates a view from a file" do
-      with_view_definition :views, 1, "SELECT text 'Hello World' AS hello" do
-        View.connection.create_view :views
+      version = 15
+      definition_stub = instance_double("Scenic::Definition", to_sql: "foo")
+      allow(Scenic::Definition).to receive(:new)
+        .with(:views, version)
+        .and_return(definition_stub)
 
-        expect(View.all.pluck(:hello)).to eq ["Hello World"]
-      end
+      connection.create_view :views, version: version
+
+      expect(Scenic.database).to have_received(:create_view)
+        .with(:views, definition_stub.to_sql)
     end
 
     it "creates a view from a text definition" do
-      View.connection.create_view :views,
-        sql_definition: "SELECT text 'Goodbye' AS hello"
+      sql_definition = "a defintion"
 
-      expect(View.all.pluck(:hello)).to eq ["Goodbye"]
+      connection.create_view(:views, sql_definition: sql_definition)
+
+      expect(Scenic.database).to have_received(:create_view)
+        .with(:views, sql_definition)
     end
 
-    it "creates a view from a specific version" do
-      with_view_definition :views, 15, "SELECT text 'Hello Earth East 15' AS hello" do
-        View.connection.create_view :views, version: 15
-
-        expect(View.all.pluck(:hello)).to eq ["Hello Earth East 15"]
-      end
-    end
-
-    it "raises an error if both arguments are nil" do
+    it "raises an error if neither version nor sql_defintion are provided" do
       expect do
-        View.connection.create_view :whatever,
-          version: nil,
-          sql_definition: nil
+        connection.create_view :foo, version: nil, sql_definition: nil
       end.to raise_error ArgumentError
     end
   end
 
   describe "drop_view" do
     it "removes a view from the database" do
-      with_view_definition :things, 1, "SELECT text 'Hi' AS greeting" do
-        View.connection.create_view :things
+      connection.drop_view :name
 
-        View.connection.drop_view :things
-
-        expect(views).not_to include "things"
-      end
+      expect(Scenic.database).to have_received(:drop_view).with(:name)
     end
   end
 
   describe "update_view" do
-    it "updates an existing view in the database" do
-      with_view_definition :views, 1, "SELECT text 'Hi' AS greeting" do
-        View.connection.create_view :views
-        with_view_definition :views, 2, "SELECT text 'Hello' AS greeting" do
-          View.connection.update_view :views, version: 2
+    it "drops the existing version and creates the new" do
+      definition = instance_double("Scenic::Definition", to_sql: "definition")
+      allow(Scenic::Definition).to receive(:new)
+        .with(:name, 3)
+        .and_return(definition)
 
-          expect(View.all.pluck(:greeting)).to eq ['Hello']
-        end
-      end
+      connection.update_view(:name, version: 3)
+
+      expect(Scenic.database).to have_received(:drop_view).with(:name)
+      expect(Scenic.database).to have_received(:create_view)
+        .with(:name, definition.to_sql)
     end
 
     it "raises an error if not supplied a version" do
-      expect { View.connection.update_view :views }
+      expect { connection.update_view :views }
         .to raise_error(ArgumentError, /version is required/)
-    end
-
-    it "raises an error if the view to be updated does not exist" do
-      with_view_definition :views, 2, "SELECT text 'Hi' as greeting" do
-        expect { View.connection.update_view :views, version: 2 }
-          .to raise_error(ActiveRecord::StatementInvalid, /does not exist/)
-      end
     end
   end
 
-  def views
-    ActiveRecord::Base.connection
-      .execute("SELECT table_name FROM INFORMATION_SCHEMA.views")
-      .map(&:values).flatten
+  def connection
+    Class.new { extend Scenic::Statements }
   end
 end
