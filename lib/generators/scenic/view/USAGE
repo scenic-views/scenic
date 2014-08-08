@@ -5,6 +5,8 @@ Description:
   If a view of the given name already exists, create a new version of the view
   and a migration to replace the old version with the new.
 
+  To create a materialized view, pass the '--materialized' option.
+
 Examples:
     rails generate scenic:view searches
 

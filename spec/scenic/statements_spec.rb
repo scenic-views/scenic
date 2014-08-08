@@ -37,11 +37,30 @@ module Scenic
       end
     end
 
+    describe "create_view :materialized" do
+      it "sends the create_materialized_view message" do
+        allow(Definition).to receive(:new)
+          .and_return(instance_double("Scenic::Definition").as_null_object)
+
+        connection.create_view(:views, version: 1, materialized: true)
+
+        expect(Scenic.database).to have_received(:create_materialized_view)
+      end
+    end
+
     describe "drop_view" do
       it "removes a view from the database" do
         connection.drop_view :name
 
         expect(Scenic.database).to have_received(:drop_view).with(:name)
+      end
+    end
+
+    describe "drop_view :materialized" do
+      it "removes a materialized view from the database" do
+        connection.drop_view :name, materialized: true
+
+        expect(Scenic.database).to have_received(:drop_materialized_view)
       end
     end
 
@@ -62,6 +81,18 @@ module Scenic
       it "raises an error if not supplied a version" do
         expect { connection.update_view :views }
           .to raise_error(ArgumentError, /version is required/)
+      end
+    end
+
+    describe "update_view :materialized" do
+      it "sends the materialized messages" do
+        definition = instance_double("Definition").as_null_object
+        allow(Definition).to receive(:new).and_return(definition)
+
+        connection.update_view(:name, version: 3, materialized: true)
+
+        expect(Scenic.database).to have_received(:drop_materialized_view)
+        expect(Scenic.database).to have_received(:create_materialized_view)
       end
     end
 

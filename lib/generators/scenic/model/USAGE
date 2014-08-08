@@ -2,6 +2,8 @@ Description:
   Create a new database view and ActiveRecord::Base subclass for your
   application.
 
+  To create a materialized view, pass the '--materialized' option.
+
 Examples:
     rails generate scenic:model search
 

@@ -1,3 +1,5 @@
+addons:
+  postgresql: "9.3"
 before_install:
   - "echo '--colour' > ~/.rspec"
   - "echo 'gem: --no-document' > ~/.gemrc"

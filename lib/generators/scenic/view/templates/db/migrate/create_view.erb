@@ -1,5 +1,5 @@
 class <%= migration_class_name %> < ActiveRecord::Migration
   def change
-    create_view :<%= plural_name %>
+    create_view :<%= plural_name %><%= ", materialized: true" if materialized? %>
   end
 end

@@ -1,7 +1,9 @@
 # News
 
-The noteworthy changes for each Clearance version are included here. For a
-complete changelog, see the git history for each version via the version links.
+The noteworthy changes for each Scenic version are included here. For a complete
+changelog, see the [CHANGELOG] for each version via the version links.
+
+[CHANGELOG]: https://github.com/thoughtbot/scenic/commits/master
 
 ## [0.3.0] - January 23, 2015
 

@@ -1,10 +1,12 @@
 require "rails/generators"
 require "rails/generators/active_record"
+require "generators/scenic/materializable"
 
 module Scenic
   module Generators
     class ViewGenerator < Rails::Generators::NamedBase
       include Rails::Generators::Migration
+      include Scenic::Generators::Materializable
       source_root File.expand_path("../templates", __FILE__)
 
       def create_views_directory
@@ -25,12 +27,12 @@ module Scenic
         if creating_new_view? || destroying_initial_view?
           migration_template(
             "db/migrate/create_view.erb",
-            "db/migrate/create_#{plural_file_name}.rb"
+            "db/migrate/create_#{plural_file_name}.rb",
           )
         else
           migration_template(
             "db/migrate/update_view.erb",
-            "db/migrate/update_#{plural_file_name}_to_version_#{version}.rb"
+            "db/migrate/update_#{plural_file_name}_to_version_#{version}.rb",
           )
         end
       end
