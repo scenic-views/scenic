@@ -3,8 +3,8 @@ require 'rspec/core/rake_task'
 
 RSpec::Core::RakeTask.new(:spec)
 
-task :smoke do
-  exec "spec/smoke"
+task :bats do
+  exec "bats spec/bats"
 end
 
-task default: [:spec, :smoke]
+task default: [:spec, :bats]
