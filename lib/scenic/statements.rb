@@ -10,11 +10,11 @@ module Scenic
 
       sql_definition ||= definition(name, version)
 
-      execute Scenic.database.create_view(name, sql_definition)
+      Scenic.database.create_view(name, sql_definition)
     end
 
     def drop_view(name, revert_to_version: nil)
-      execute Scenic.database.drop_view(name)
+      Scenic.database.drop_view(name)
     end
 
     def update_view(name, version: nil, revert_to_version: nil)

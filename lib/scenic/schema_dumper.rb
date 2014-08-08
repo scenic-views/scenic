@@ -12,36 +12,28 @@ module Scenic
     end
 
     def views(stream)
-      defined_views.sort.each do |view_name|
-        next if ["schema_migrations", ignore_tables].flatten.any? do |ignored|
+      views_in_database.select { |view| !ignored?(view.name) }.each do |view|
+        stream.puts(view.to_schema)
+      end
+    end
+
+    def views_in_database
+      @views_in_database ||= Scenic.database.views.sort
+    end
+
+    private
+
+    unless ActiveRecord::SchemaDumper.instance_methods(false).include?(:ignored?)
+      # This method will be present in Rails 4.2.0 and can be removed then.
+      def ignored?(table_name)
+        ["schema_migrations", ignore_tables].flatten.any? do |ignored|
           case ignored
-          when String; remove_prefix_and_suffix(view_name) == ignored
-          when Regexp; remove_prefix_and_suffix(view_name) =~ ignored
+          when String; remove_prefix_and_suffix(table_name) == ignored
+          when Regexp; remove_prefix_and_suffix(table_name) =~ ignored
           else
             raise StandardError, "ActiveRecord::SchemaDumper.ignore_tables accepts an array of String and / or Regexp values."
           end
         end
-        view(view_name, stream)
-      end
-    end
-
-    def view(name, stream)
-      stream.puts(<<-DEFINITION.strip_heredoc)
-        create_view :#{name}, sql_definition:<<-\SQL
-         #{views_with_definitions[name]}
-        SQL
-      DEFINITION
-      stream
-    end
-
-    def defined_views
-      views_with_definitions.keys
-    end
-
-    def views_with_definitions
-      @views_with_definitions ||= begin
-        query = Scenic.database.views_with_definitions_query
-        Hash[@connection.execute(query, "SCHEMA").values]
       end
     end
   end
