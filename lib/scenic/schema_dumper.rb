@@ -26,12 +26,12 @@ module Scenic
     # This method will be present in Rails 4.1.5 or 5.0.0 and can be removed
     # then.
     def ignored?(table_name)
-      ['schema_migrations', ignore_tables].flatten.any? do |ignored|
+      ["schema_migrations", ignore_tables].flatten.any? do |ignored|
         case ignored
         when String; remove_prefix_and_suffix(table_name) == ignored
         when Regexp; remove_prefix_and_suffix(table_name) =~ ignored
         else
-          raise StandardError, 'ActiveRecord::SchemaDumper.ignore_tables accepts an array of String and / or Regexp values.'
+          raise StandardError, "ActiveRecord::SchemaDumper.ignore_tables accepts an array of String and / or Regexp values."
         end
       end
     end
