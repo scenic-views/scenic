@@ -39,10 +39,7 @@ module Scenic
     end
 
     def views_with_definitions
-      @views_with_definitions ||= begin
-        query = Scenic.database.views_with_definitions_query
-        Hash[@connection.execute(query, "SCHEMA").values]
-      end
+      @views_with_definitions ||= Scenic.database.views_with_definitions
     end
   end
 end
