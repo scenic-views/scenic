@@ -11,7 +11,7 @@ Examples:
       create: db/views/searches_v01.sql
       create: db/migrate/20140803191158_create_searches.rb
 
-    rails generate scenic:vew searches
+    rails generate scenic:view searches
 
       create: db/views/searches_v02.sql
       create: db/migrate/20140804191158_update_searches_to_version_2.rb
