@@ -5,7 +5,7 @@ module Scenic
 
     def initialize(view_row)
       @name = view_row["viewname"]
-      @definition = view_row["definition"]
+      @definition = view_row["definition"].strip
     end
 
     def ==(other)

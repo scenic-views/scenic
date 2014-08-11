@@ -28,7 +28,7 @@ module Scenic
           expect(Postgres.views).to eq([
             View.new(
               "viewname" => "greetings",
-              "definition" => " SELECT 'hi'::text AS greeting;",
+              "definition" => "SELECT 'hi'::text AS greeting;",
             ),
           ])
         end
