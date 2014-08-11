@@ -11,6 +11,14 @@ module Scenic
 
         expect(definition.to_sql).to eq sql_definition
       end
+
+      it "raises an error if the file is empty" do
+        allow(File).to receive(:read).and_return("")
+
+        expect do
+          Definition.new("searches", 1).to_sql
+        end.to raise_error RuntimeError
+      end
     end
 
     describe "path" do

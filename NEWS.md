@@ -2,3 +2,7 @@
 
 
   *Caleb Thompson*
+
+* Raise an error if view definition is empty. [PR #38](https://github.com/thoughtbot/scenic/issues/38)
+
+  *Caleb Thompson*
