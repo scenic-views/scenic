@@ -6,9 +6,15 @@ module Scenic
     class ViewGenerator < Rails::Generators::NamedBase
       include Rails::Generators::Migration
       source_root File.expand_path("../templates", __FILE__)
+      class_option(
+        :sql,
+        type: :string,
+        required: false,
+        desc: "SQL Statment that defines the view"
+      )
 
       def create_view_definition
-        create_file definition.path
+        create_file definition.path, sql_definition
       end
 
       def create_migration_file
@@ -70,6 +76,12 @@ module Scenic
 
       def destroying_initial_view?
         destroying? && version == 1
+      end
+
+      def sql_definition
+        if options[:sql]
+          options[:sql] + "\n"
+        end
       end
     end
   end
