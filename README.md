@@ -77,6 +77,44 @@ class Search < ActiveRecord::Base
 end
 ```
 
+## Can you make this easier?
+
+Sure thing. How about some generators?
+
+### Model generator
+
+The `scenic:model` generator builds you a model, view, and migration from
+scratch. `db/views/[model]_v01.sql` wil be an empty file that you fill in only
+the [query] portion of the view with.
+
+[query]: http://www.postgresql.org/docs/current/static/sql-createview.html
+
+```
+$ rails generate scenic:model search
+      create  app/models/search.rb
+      create  db/views/searches_v01.sql
+      create  db/migrate/[TIMESTAMP]_create_searches.rb
+```
+
+### View generator
+
+The `scenic:view` generator is functionally equivalent to `scenic:model` except
+that it doesn't create the model. Convenient.
+
+```
+$ rails generate scenic:view search
+      create  db/views/searches_v01.sql
+      create  db/migrate/[TIMESTAMP]_create_searches.rb
+```
+
+Subsequent invocations will create updated view versions and update migrations:
+
+```
+rails generate scenic:view search
+      create  db/views/searches_v02.sql
+      create  db/migrate/[TIMESTAMP]_update_searches_to_version_2.rb
+```
+
 ## I don't need this view anymore. Make it go away.
 
 We give you `drop_view` too:
@@ -86,11 +124,3 @@ def change
   drop_view :searches, revert_to_version: 2
 end
 ```
-
-## Can you make this easier?
-
-Yeah, we're working on it. We're going to provide some generators that will take
-some of the busy work of file creation away. We'll create the SQL file, the
-migration, and optionally the model for you.
-
-Check out the issue tracker for our other plans.
