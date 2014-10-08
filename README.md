@@ -16,7 +16,7 @@ get full SQL syntax highlighting support in the editor of your choice.
 ## Great, how do I create a view?
 
 You've got this great idea for a view you'd like to call `searches`. Create a
-definition file at `db/views/searches_v1.sql` which contains the query you'd
+definition file at `db/views/searches_v01.sql` which contains the query you'd
 like to build your view with. Perhaps that looks something like this:
 
 ```sql
@@ -49,7 +49,7 @@ reversible and it will be dumped into your `schema.rb` file.
 
 ## Cool, but what if I need to change that view?
 
-Add the new query to `db/views/searches_v2.sql` and generate a new migration with
+Add the new query to `db/views/searches_v02.sql` and generate a new migration with
 the following `change` method:
 
 ```ruby
