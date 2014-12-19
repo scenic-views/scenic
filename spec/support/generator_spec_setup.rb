@@ -1,5 +1,6 @@
 require "ammeter/rspec/generator/example.rb"
 require "ammeter/rspec/generator/matchers.rb"
+require "ammeter/init"
 
 RSpec.configure do |config|
   config.before(:example, :generator) do
