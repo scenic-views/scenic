@@ -7,6 +7,12 @@ module Scenic
       include Rails::Generators::Migration
       source_root File.expand_path("../templates", __FILE__)
 
+      def create_views_directory
+        unless views_directory_path.exist?
+          empty_directory(views_directory_path)
+        end
+      end
+
       def create_view_definition
         create_file definition.path
       end
@@ -32,7 +38,7 @@ module Scenic
       no_tasks do
         def previous_version
           @previous_version ||=
-            Dir.entries(Rails.root.join(*%w(db views)))
+            Dir.entries(views_directory_path)
               .map { |name| version_regex.match(name).try(:[], "version").to_i }
               .max
         end
@@ -51,6 +57,10 @@ module Scenic
       end
 
       private
+
+      def views_directory_path
+        @views_directory_path ||= Rails.root.join(*%w(db views))
+      end
 
       def version_regex
         /\A#{plural_file_name}_v(?<version>\d+)\.sql\z/
