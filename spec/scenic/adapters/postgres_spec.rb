@@ -9,6 +9,19 @@ module Scenic
 
           expect(Postgres.views.map(&:name)).to include("greetings")
         end
+
+        it "replaces a view with a new view if a view with that name already "\
+          "exists" do
+          Postgres.create_view("greetings", "SELECT text 'hi' AS greeting")
+          Postgres.create_view("greetings", "SELECT text 'bye' AS greeting")
+
+          expect(Postgres.views).to eq([
+            View.new(
+              "viewname" => "greetings",
+              "definition" => "SELECT 'bye'::text AS greeting;",
+            ),
+          ])
+        end
       end
 
       describe "drop_view" do

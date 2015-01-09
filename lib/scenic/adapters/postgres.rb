@@ -10,7 +10,7 @@ module Scenic
       end
 
       def self.create_view(name, sql_definition)
-        execute "CREATE VIEW #{name} AS #{sql_definition};"
+        execute "CREATE OR REPLACE VIEW #{name} AS #{sql_definition};"
       end
 
       def self.drop_view(name)
