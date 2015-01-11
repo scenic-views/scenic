@@ -14,7 +14,11 @@ module Scenic
       end
 
       def create_view_definition
-        create_file definition.path
+        if creating_new_view?
+          create_file definition.path
+        else
+          copy_file previous_definition.full_path, definition.full_path
+        end
       end
 
       def create_migration_file
@@ -72,6 +76,10 @@ module Scenic
 
       def definition
         Scenic::Definition.new(plural_file_name, version)
+      end
+
+      def previous_definition
+        Scenic::Definition.new(plural_file_name, previous_version)
       end
 
       def destroying?

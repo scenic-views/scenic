@@ -30,7 +30,9 @@ writeToFileAndMigrateAndVerifySearchResults() {
 	echo "write search definition and migrate"
 	local version=$1
 	local expectedResult=$2
-	echo "SELECT '$expectedResult'::text AS results" >> db/views/searches_v$version\.sql
+	local filePath=db/views/searches_v$version\.sql
+	cp /dev/null $filePath
+	echo "SELECT '$expectedResult'::text AS results" >> $filePath
 	rake db:migrate
 	echo "[success]"
 	verifySearchResults $expectedResult
@@ -50,6 +52,7 @@ main() {
 	echo "rails generate scenic:view search (to get updates search view)"
 	rails generate scenic:view search
 	[[ -f db/views/searches_v02.sql ]] || exit 1
+	cmp db/views/searches_v01.sql db/views/searches_v02.sql || exit 1
 	[[ -n "$(find db/migrate -maxdepth 1 -name "*update_searches_to_version_2.rb" -print -quit)" ]] || exit 1
 	echo "[success]"
 
