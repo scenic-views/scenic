@@ -4,16 +4,16 @@ before_install:
   - git config --global user.name 'Travis CI'
   - git config --global user.email 'travis-ci@example.com'
 before_script:
-  - pushd spec/dummy && bundle exec rake db:create && popd
+  - pushd spec/dummy && bundle exec rake db:create && mkdir db/views && popd
 branches:
   only:
     - master
-cache:
-  - bundler
 language:
   - ruby
 notifications:
   email:
     - false
 rvm:
-  - 2.1.1
+  - 2.1.5
+  - 2.2.0
+sudo: false

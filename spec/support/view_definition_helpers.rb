@@ -4,6 +4,6 @@ module ViewDefinitionHelpers
     File.open(definition.full_path, "w") { |f| f.write(schema) }
     yield
   ensure
-    File.delete definition.full_path
+    FileUtils.rm_f(definition.full_path)
   end
 end
