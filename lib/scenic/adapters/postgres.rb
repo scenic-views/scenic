@@ -6,6 +6,7 @@ module Scenic
           SELECT viewname, definition
           FROM pg_views
           WHERE schemaname = ANY (current_schemas(false))
+          AND viewname NOT IN (SELECT extname FROM pg_extension)
         SQL
       end
 
