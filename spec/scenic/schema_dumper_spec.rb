@@ -20,4 +20,15 @@ describe Scenic::SchemaDumper, :db do
 
     expect(Search.first.haystack).to eq "needle"
   end
+
+  it "does not dump views belonging to Posgresql extensions" do
+    Search.connection.enable_extension("pg_stat_statements")
+    Search.connection.reconnect!
+    stream = StringIO.new
+
+    ActiveRecord::SchemaDumper.dump(Search.connection, stream)
+
+    output = stream.string
+    expect(output).not_to include "create_view :pg_stat_statements"
+  end
 end

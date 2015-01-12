@@ -17,6 +17,10 @@ module Scenic
         execute "DROP VIEW #{name};"
       end
 
+      def self.extensions(base = ActiveRecord::Base)
+        base.connection.extensions
+      end
+
       private
 
       def self.execute(sql, base = ActiveRecord::Base)
