@@ -18,6 +18,7 @@ module Scenic
         create_view :#{name}, sql_definition:<<-\SQL
           #{definition}
         SQL
+        
       DEFINITION
     end
   end
