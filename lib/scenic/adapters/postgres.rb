@@ -13,8 +13,11 @@ module Scenic
         execute "CREATE VIEW #{name} AS #{sql_definition};"
       end
 
-      def self.drop_view(name)
-        execute "DROP VIEW #{name};"
+      def self.drop_view(name, if_exists = false)
+        sql = "DROP VIEW"
+        sql += " IF EXISTS" if if_exists
+        sql += " #{name};"
+        execute sql
       end
 
       private
