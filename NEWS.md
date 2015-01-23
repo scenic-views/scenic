@@ -1,3 +1,9 @@
+New in 0.3.0 (January 23, 2015)
+* Previous view definition is copied into new view definition file when updating
+  an existing view.
+* We avoid dumping views that belong to Postgres extensions
+* `db/schema.rb` is prettier thanks to a blank line after each view definition.
+
 New in 0.2.1
 * View generator will now create `db/views` directory if necessary
 
