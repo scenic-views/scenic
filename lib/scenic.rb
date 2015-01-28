@@ -9,9 +9,9 @@ require "scenic/view"
 
 module Scenic
   def self.load
-    ActiveRecord::ConnectionAdapters::AbstractAdapter.include Scenic::Statements
-    ActiveRecord::Migration::CommandRecorder.include Scenic::CommandRecorder
-    ActiveRecord::SchemaDumper.include Scenic::SchemaDumper
+    ActiveRecord::ConnectionAdapters::AbstractAdapter.send(:include, Scenic::Statements)
+    ActiveRecord::Migration::CommandRecorder.send(:include, Scenic::CommandRecorder)
+    ActiveRecord::SchemaDumper.send(:include, Scenic::SchemaDumper)
   end
 
   def self.database
