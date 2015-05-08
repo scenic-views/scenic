@@ -2,9 +2,7 @@
 
 ![Boston cityscape - it's scenic](http://www.california-tour.com/blog/wp-content/uploads/2011/11/skyline-boats-shutterstock-superreduced.jpg)
 
-**Scenic is in an early stage of development. While it hasn't been
-tested in an actual application, we are relatively confident in its readiness
-and value, and stand ready to help resolve any issues it may have**
+**Scenic is in an early stage of development.**
 
 ## Description
 
