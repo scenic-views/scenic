@@ -14,11 +14,11 @@ module Scenic
     end
 
     def to_schema
-      <<-DEFINITION.strip_heredoc
-        create_view :#{name}, sql_definition:<<-\SQL
-          #{definition}
-        SQL
+      <<-DEFINITION
 
+  create_view :#{name}, sql_definition: <<-\SQL
+    #{definition.indent(2)}
+  SQL
       DEFINITION
     end
   end
