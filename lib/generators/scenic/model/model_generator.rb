@@ -13,7 +13,7 @@ module Scenic
       end
 
       def invoke_view_generator
-        invoke "scenic:view", [singular_name]
+        invoke "scenic:view", [table_name]
       end
     end
   end
