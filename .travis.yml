@@ -14,6 +14,6 @@ notifications:
   email:
     - false
 rvm:
-  - 2.1.5
-  - 2.2.0
+  - 2.1.7
+  - 2.2.3
 sudo: false
