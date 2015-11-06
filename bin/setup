@@ -1,0 +1,7 @@
+#!/bin/sh
+
+set -e
+
+gem install bundler --conservative
+bundle check || bundle install
+bundle exec rake dummy:db:create
