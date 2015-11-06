@@ -48,8 +48,8 @@ module Scenic
     #   drop_view(:users_who_recently_logged_in, 3)
     #
     # Returns the database response from executing the DROP VIEW statement.
-    def drop_view(name, revert_to_version: nil)
-      Scenic.database.drop_view(name)
+    def drop_view(name, revert_to_version: nil, if_exists: false)
+      Scenic.database.drop_view(name, if_exists)
     end
 
     # Public: Update a database view to a new version by first dropping the
