@@ -1,3 +1,4 @@
+require "scenic/configuration"
 require "scenic/adapters/postgres"
 require "scenic/command_recorder"
 require "scenic/definition"
@@ -14,7 +15,10 @@ module Scenic
     ActiveRecord::SchemaDumper.include Scenic::SchemaDumper
   end
 
+  # The current database adapter used by Scenic.
+  # This defaults to [Adapters::Postgres] but can be overridden
+  # via [Configuration].
   def self.database
-    Scenic::Adapters::Postgres
+    configuration.database
   end
 end
