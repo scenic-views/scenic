@@ -126,3 +126,20 @@ def change
   drop_view :searches, revert_to_version: 2
 end
 ```
+
+## About
+
+Scenic is maintained by [Derek Prior] and [Caleb Thompson], funded by
+thoughtbot, inc. The names and logos for thoughtbot are trademarks of
+thoughtbot, inc.
+
+[Derek Prior]: http://prioritized.net
+[Caleb Thompson]: http://calebthompson.io
+
+![thoughtbot](https://thoughtbot.com/logo.png)
+
+We love open source software!  See [our other projects][community] or [hire
+us][hire] to help build your product.
+
+[community]: https://thoughtbot.com/community?utm_source=github
+[hire]: https://thoughtbot.com/hire-us?utm_source=github
