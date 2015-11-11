@@ -90,6 +90,13 @@ module Scenic
         raise ArgumentError, "version is required"
       end
 
+      if materialized
+        raise ArgumentError, "Updating materialized views is not supported "\
+          "because it would cause any indexes to be dropped. Please use "\
+          "'drop_view' followed by 'create_view', being sure to also recreate "\
+          "any previously-existing indexes."
+      end
+
       drop_view name,
         revert_to_version: revert_to_version,
         materialized: materialized

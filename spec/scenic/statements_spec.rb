@@ -85,14 +85,14 @@ module Scenic
     end
 
     describe "update_view :materialized" do
-      it "sends the materialized messages" do
+      it "raises an error because this is not supported" do
         definition = instance_double("Definition").as_null_object
         allow(Definition).to receive(:new).and_return(definition)
 
-        connection.update_view(:name, version: 3, materialized: true)
-
-        expect(Scenic.database).to have_received(:drop_materialized_view)
-        expect(Scenic.database).to have_received(:create_materialized_view)
+        expect { connection.update_view(:name, version: 3, materialized: true) }.
+          to raise_error(/not supported/)
+        expect(Scenic.database).not_to have_received(:drop_materialized_view)
+        expect(Scenic.database).not_to have_received(:create_materialized_view)
       end
     end
 
