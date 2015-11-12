@@ -72,8 +72,11 @@ module Scenic
     # version - The version number of the view. See create_view for details.
     # revert_to_version - The version to revert to for db:rollback. Usually the
     #                     previous version. See drop_view for details.
-    # materialized - Boolean whether the view should be materialized. See
-    #                create_view for details.
+    # materialized - Should default to false. Updating a materialized view would
+    #                cause indexes to be dropped. For this reason you should
+    #                explicitly use `drop_view` followed by `create_view` and
+    #                recreate applicable indexes. Setting this to `true` will
+    #                raise an error.
     #
     # Example
     #
@@ -81,8 +84,7 @@ module Scenic
     #
     #   update_view :users_with_disabilities,
     #     version: 12,
-    #     revert_to_version: 11,
-    #     materialized: true
+    #     revert_to_version: 11
     #
     # Returns the database response from executing the CREATE VIEW statement.
     def update_view(name, version: nil, revert_to_version: nil, materialized: false)

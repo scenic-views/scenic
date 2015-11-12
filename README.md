@@ -1,25 +1,30 @@
 # Scenic
 
-![Boston cityscape - it's scenic](http://www.california-tour.com/blog/wp-content/uploads/2011/11/skyline-boats-shutterstock-superreduced.jpg)
-
-**Scenic is in an early stage of development.**
-
-## Description
-
-Scenic adds methods to ActiveRecord::Migration to create and manage database
+Scenic adds methods to `ActiveRecord::Migration` to create and manage database
 views in Rails.
 
-Using Scenic, you can use the power of SQL views in your Rails application
-without having to switch your schema format to SQL. Scenic also handles
-versioning your views in a way that eliminates duplication across migrations. As
-an added bonus, you define the structure of your view in a SQL file, meaning you
-get full SQL syntax highlighting support in the editor of your choice.
+Using Scenic, you can bring the power of SQL views to your Rails application
+without having to switch your schema format to SQL. Scenic provides a convention
+for versioning views that keeps your migration history consistent and reversible
+and avoids having to duplicate SQL strings across migrations. As an added bonus,
+you define the structure of your view in a SQL file, meaning you get full SQL
+syntax highlighting in the editor of your choice and can easily test your SQL in
+the database console during development.
 
 ## Great, how do I create a view?
 
-You've got this great idea for a view you'd like to call `searches`. Create a
-definition file at `db/views/searches_v01.sql` which contains the query you'd
-like to build your view with. Perhaps that looks something like this:
+You've got this great idea for a view you'd like to call `searches`. You can
+create the migration and your corresponding view definition file with the
+following command:
+
+```sh
+$ rails generate scenic:view searches
+      create  db/views/searches_v01.sql
+      create  db/migrate/[TIMESTAMP]_create_searches.rb
+```
+
+Edit the `db/views/searches_v01.sql` file with the SQL statement that defines
+your view. In our example, this might look something like this:
 
 ```sql
 SELECT
@@ -38,34 +43,37 @@ SELECT
 FROM statuses
 ```
 
-Generate a new migration with the following `change` method:
+The generated migration will contain a `create_view` statements. Run the
+migration, and [baby, you got a view going][carl]. The migration is reversible
+and the schema will be dumped into your `schema.rb` file.
 
-```ruby
-def change
-  create_view :searches
-end
+[carl]: https://www.youtube.com/watch?v=Sr2PlqXw03Y
+
+```sh
+$ rake db:migrate
 ```
-
-Run that migration and congrats, you've got yourself a view. The migration is
-reversible and it will be dumped into your `schema.rb` file.
 
 ## Cool, but what if I need to change that view?
 
-Add the new query to `db/views/searches_v02.sql` and generate a new migration with
-the following `change` method:
+Here's where Scenic really shines. Run that same view generator once more:
 
-```ruby
-def change
-  update_view :searches, version: 2, revert_to_version: 1
-end
+```sh
+$ rails generate scenic:view searches
+      create  db/views/searches_v02.sql
+      create  db/migrate/[TIMESTAMP]_update_searches_to_version_2.rb
 ```
 
-When you run that migration, your view will be updated. The `revert_to_version`
-option makes that migration reversible.
+Scenic detected that we already had an existing `searches` view at version 1,
+created a copy of that definition as version 2, and created a migration to
+update to the version 2 schema. All that's left for you to do is tweak the
+schema in the new definition and run the `update_view` migration.
 
 ## Can I use this view to back a model?
 
-You bet!
+You bet! Using view-backed models can help promote concepts hidden in your
+relational data to first-class domain objects and can clean up complex
+ActiveRecord or ARel queries. As far as ActiveRecord is concerned, you a view is
+no different than a table.
 
 ```ruby
 class Search < ActiveRecord::Base
@@ -79,7 +87,25 @@ class Search < ActiveRecord::Base
 end
 ```
 
-## When I query that model with `find` I get an error. What gives?
+Scenic even provides a `scenic:model` generator that is a superset of
+`scenic:view`.  It will act identically to the Rails `model` generator except
+that it will create a Scenic view migration rather than a table migration.
+
+There is no special base class or mixin needed. If desired, any code the model
+generator adds can be removed without worry.
+
+```sh
+$ rails generate scenic:model recent_status
+      invoke  active_record
+      create    app/models/recent_status.rb
+      invoke    test_unit
+      create      test/models/recent_status_test.rb
+      create      test/fixtures/recent_statuses.yml
+      create  db/views/recent_statuses_v01.sql
+      create  db/migrate/20151112015036_create_recent_statuses.rb
+```
+
+### When I query that model with `find` I get an error. What gives?
 
 Your view cannot have a primary key, but ActiveRecord's `find` method expects to
 query based on one. You can use `find_by!` or you can explicitly set the primary
@@ -91,47 +117,26 @@ class People < ActiveRecord::Base
 end
 ```
 
-## Can you make this easier?
+## What about materialized views?
 
-Sure thing. How about some generators?
+Materialized views are essentially SQL queries whose results can be cached to a
+table, indexed, and periodically refreshed when desired. Does Scenic support
+those? Of course!
 
-### Model generator
+The `scenic:view` and `scenic:model` generators accept a `--materialized`
+option for this purpose. When used with the model generator, your model will
+have the following method defined as a convenience to aid in scheduling
+refreshes:
 
-The `scenic:model` generator builds you a model, view, and migration from
-scratch. `db/views/[model]_v01.sql` wil be an empty file that you fill in only
-the [query] portion of the view with.
-
-[query]: http://www.postgresql.org/docs/current/static/sql-createview.html
-
-```
-$ rails generate scenic:model search
-      create  app/models/search.rb
-      create  db/views/searches_v01.sql
-      create  db/migrate/[TIMESTAMP]_create_searches.rb
-```
-
-### View generator
-
-The `scenic:view` generator is functionally equivalent to `scenic:model` except
-that it doesn't create the model. Convenient.
-
-```
-$ rails generate scenic:view search
-      create  db/views/searches_v01.sql
-      create  db/migrate/[TIMESTAMP]_create_searches.rb
-```
-
-Subsequent invocations will create updated view versions and update migrations:
-
-```
-rails generate scenic:view search
-      create  db/views/searches_v02.sql
-      create  db/migrate/[TIMESTAMP]_update_searches_to_version_2.rb
+```ruby
+def self.refresh
+  Scenic.database.refresh_materialized_view(table_name)
+end
 ```
 
 ## I don't need this view anymore. Make it go away.
 
-We give you `drop_view` too:
+Scenic gives you `drop_view` too:
 
 ```ruby
 def change
