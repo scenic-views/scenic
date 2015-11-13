@@ -83,6 +83,31 @@ main() {
   [[ ! -f app/models/search.rb ]] || exit 1
   [[ -z "$(find db/migrate -maxdepth 1 -name "*create_searches.rb" -print -quit)" ]] || exit 1
   echo "[success]"
+
+  echo "rails generate scenic:model search (materialized)"
+  rails generate scenic:model search --materialized
+  [[ -f db/views/searches_v01.sql ]] || exit 1
+  [[ -f app/models/search.rb ]] || exit 1
+  [[ -n "$(find db/migrate -maxdepth 1 -name "*create_searches.rb" -print -quit)" ]] || exit 1
+  echo "[success]"
+
+  writeToFileAndMigrateAndVerifySearchResults "01" "search-results"
+
+  echo "refresh materialized view"
+  rails runner "Search.refresh" || exit 1
+  echo "[success]"
+
+  echo "rake db:rollback"
+  rake db:rollback
+  echo "[success]"
+
+  echo "rails destroy scenic:view search --materialized"
+  rails destroy scenic:model search --materialized
+  [[ ! -f app/models/search.rb ]] || exit 1
+  [[ ! -f db/views/searches_v01.sql ]] || exit 1
+  [[ -z "$(find db/migrate -maxdepth 1 -name "*create_searches.rb" -print -quit)" ]] || exit 1
+  echo "[success]"
+
   echo "[done]"
 }
 

@@ -31,6 +31,10 @@ module Scenic
         execute "DROP MATERIALIZED VIEW #{name};"
       end
 
+      def self.refresh_materialized_view(name)
+        execute "REFRESH MATERIALIZED VIEW #{name};"
+      end
+
       private
 
       def self.execute(sql, base = ActiveRecord::Base)

@@ -14,7 +14,7 @@ module Scenic
       end
 
       def inject_model_methods
-        if materialized?
+        if materialized? && generating?
           inject_into_class "app/models/#{file_path}.rb", class_name do
             evaluate_template("model.erb")
           end
@@ -36,6 +36,10 @@ module Scenic
           "-",
           "@output_buffer",
         ).result(context)
+      end
+
+      def generating?
+        behavior != :revoke
       end
     end
   end
