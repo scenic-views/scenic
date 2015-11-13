@@ -11,6 +11,10 @@ you define the structure of your view in a SQL file, meaning you get full SQL
 syntax highlighting in the editor of your choice and can easily test your SQL in
 the database console during development.
 
+Scenic ships with support for PostgreSQL. The adapter is configurable (see
+`Scenic::Configuration`) and has a minimal interface (see
+`Scenic::Adapters::Postgres`) that other gems can provide.
+
 ## Great, how do I create a view?
 
 You've got this great idea for a view you'd like to call `searches`. You can
