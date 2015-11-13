@@ -14,7 +14,7 @@ the database console during development.
 ## Great, how do I create a view?
 
 You've got this great idea for a view you'd like to call `searches`. You can
-create the migration and your corresponding view definition file with the
+create the migration and the corresponding view definition file with the
 following command:
 
 ```sh
@@ -43,7 +43,7 @@ SELECT
 FROM statuses
 ```
 
-The generated migration will contain a `create_view` statements. Run the
+The generated migration will contain a `create_view` statement. Run the
 migration, and [baby, you got a view going][carl]. The migration is reversible
 and the schema will be dumped into your `schema.rb` file.
 
