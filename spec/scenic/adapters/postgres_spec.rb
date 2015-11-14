@@ -5,20 +5,24 @@ module Scenic
     describe Postgres, :db do
       describe "create_view" do
         it "successfully creates a view" do
-          Postgres.create_view("greetings", "SELECT text 'hi' AS greeting")
+          adapter = Postgres.new
 
-          expect(Postgres.views.map(&:name)).to include("greetings")
+          adapter.create_view("greetings", "SELECT text 'hi' AS greeting")
+
+          expect(adapter.views.map(&:name)).to include("greetings")
         end
       end
 
       describe "create_materialized_view" do
         it "successfully creates a materialized view" do
-          Postgres.create_materialized_view(
+          adapter = Postgres.new
+
+          adapter.create_materialized_view(
             "greetings",
             "SELECT text 'hi' AS greeting",
           )
 
-          view = Postgres.views.first
+          view = adapter.views.first
           expect(view.name).to eq("greetings")
           expect(view.materialized).to eq true
         end
@@ -26,28 +30,32 @@ module Scenic
 
       describe "drop_view" do
         it "successfully drops a view" do
-          Postgres.create_view("greetings", "SELECT text 'hi' AS greeting")
+          adapter = Postgres.new
 
-          Postgres.drop_view("greetings")
+          adapter.create_view("greetings", "SELECT text 'hi' AS greeting")
+          adapter.drop_view("greetings")
 
-          expect(Postgres.views.map(&:name)).not_to include("greetings")
+          expect(adapter.views.map(&:name)).not_to include("greetings")
         end
       end
 
       describe "drop_materialized_view" do
         it "successfully drops a materialized view" do
-          Postgres.create_materialized_view(
+          adapter = Postgres.new
+
+          adapter.create_materialized_view(
             "greetings",
             "SELECT text 'hi' AS greeting",
           )
+          adapter.drop_materialized_view("greetings")
 
-          Postgres.drop_materialized_view("greetings")
-
-          expect(Postgres.views.map(&:name)).not_to include("greetings")
+          expect(adapter.views.map(&:name)).not_to include("greetings")
         end
       end
 
       it "finds views and builds Scenic::View objects" do
+        adapter = Postgres.new
+
         ActiveRecord::Base.connection.execute(
           "CREATE VIEW greetings AS SELECT text 'hi' AS greeting"
         )
@@ -55,7 +63,7 @@ module Scenic
           "CREATE MATERIALIZED VIEW farewells AS SELECT text 'bye' AS farewell"
         )
 
-        expect(Postgres.views).to eq([
+        expect(adapter.views).to eq([
           Scenic::View.new(
             "viewname" => "farewells",
             "definition" => " SELECT 'bye'::text AS farewell;",
