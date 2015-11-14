@@ -1,12 +1,12 @@
 module Scenic
   class Configuration
-    # The Scenic database adapter class to use when executing SQL.
-    # Defualts to [Scenic::Adapters::Postgres]
+    # The Scenic database adapter instance to use when executing SQL.
+    # Defualts to [Scenic::Adapters::Postgres.new]
     # @return Scenic adapter
     attr_accessor :database
 
     def initialize
-      @database = Scenic::Adapters::Postgres
+      @database = Scenic::Adapters::Postgres.new
     end
   end
 

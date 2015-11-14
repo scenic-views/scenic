@@ -5,8 +5,8 @@ module Scenic
     after { restore_default_config }
 
     it "defaults the database adapter to postgres" do
-      expect(Scenic.configuration.database).to eq Adapters::Postgres
-      expect(Scenic.database).to eq Adapters::Postgres
+      expect(Scenic.configuration.database).to be_a Adapters::Postgres
+      expect(Scenic.database).to be_a Adapters::Postgres
     end
 
     it "allows the database adapter to be set" do
