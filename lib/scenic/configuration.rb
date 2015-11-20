@@ -1,6 +1,7 @@
 module Scenic
   class Configuration
     # The Scenic database adapter instance to use when executing SQL.
+    #
     # Defualts to an instance of [Scenic::Adapters::Postgres]
     # @return Scenic adapter
     attr_accessor :database
@@ -16,12 +17,14 @@ module Scenic
   end
 
   # Set Scenic's configuration
+  #
   # @param config [Scenic::Configuration]
   def self.configuration=(config)
     @configuration = config
   end
 
   # Modify Scenic's current configuration
+  #
   # @yieldparam [Scenic::Configuration] config current Scenic config
   # ```
   # Scenic.configure do |config|

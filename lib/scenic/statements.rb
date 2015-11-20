@@ -1,28 +1,26 @@
 module Scenic
+  # Methods that are made available in migrations for managing Scenic views.
   module Statements
-    # Public: Create a new database view.
+    # Create a new database view.
     #
-    # name - A string or symbol containing the singular name of the database
-    #        view. Cannot conflict with any other view or table names.
-    # version - The version number of the view. If present, will be used to find
-    #           the definition file in db/views in the form
-    #           db/views/[pluralized name]_v[2 digit zero padded version].sql.
-    #           Example: db/views/searches_v02.sql.
-    # sql_definition - A string containing the SQL definition of the view. If
-    #                  both sql_definition and version are provided,
-    #                  sql_definition takes prescedence.
-    # materialized - Boolean whether the view should be materialized.
-    #                http://www.postgresql.org/docs/9.3/static/sql-creatematerializedview.html
+    # @param name [String, Symbol] The name of the database view.
+    # @param version [Fixnum] The version number of the view, used to find the
+    #   definition file in `db/views`. This defaults to `1` if not provided.
+    # @param sql_definition [String] The SQL query for the view schema. If both
+    #   `sql_defintiion` and `version` are provided, `sql_definition` takes
+    #   prescedence.
+    # @param materialized [Boolean] Set to true to create a materialized view.
+    #   Defaults to false.
+    # @return The database response from executing the create statement.
     #
-    # Examples
-    #
+    # @example Create from `db/views/searches_v02.sql`
     #   create_view(:searches, version: 2)
     #
+    # @example Create from provided SQL string
     #   create_view(:active_users, sql_definition: <<-SQL)
     #     SELECT * FROM users WHERE users.active = 't'
     #   SQL
     #
-    # Returns the database response from executing the CREATE VIEW statement.
     def create_view(name, version: 1, sql_definition: nil, materialized: false)
       if version.blank? && sql_definition.nil?
         raise(
@@ -40,22 +38,19 @@ module Scenic
       end
     end
 
-    # Public: Drop a database view by name.
+    # Drop a database view by name.
     #
-    # name - A string or symbol containing the singular name of the database
-    #        view. Must be an existing view.
-    # revert_to_version - Used to revert the drop_view command in the
-    #                     db:rollback rake task, which would pass the version
-    #                     number to create_view. Usually the most recent
-    #                     version.
-    # materialized - Boolean whether the view should be materialized. See
-    #                create_view for details.
+    # @param name [String, Symbol] The name of the database view.
+    # @param revert_to_version [Fixnum] Used to reverse the `drop_view` command
+    #   on `rake db:rollback`. The provided version will be passed as the
+    #   `version` argument to {#create_view}.
+    # @param materialized [Boolean] Set to true if dropping a meterialized view.
+    #   defaults to false.
+    # @return The database response from executing the drop statement.
     #
-    # Example
+    # @example Drop a view, rolling back to version 3 on rollback
+    #   drop_view(:users_who_recently_logged_in, revert_to_version: 3)
     #
-    #   drop_view(:users_who_recently_logged_in, 3)
-    #
-    # Returns the database response from executing the DROP VIEW statement.
     def drop_view(name, revert_to_version: nil, materialized: false)
       if materialized
         Scenic.database.drop_materialized_view(name)
@@ -64,29 +59,24 @@ module Scenic
       end
     end
 
-    # Public: Update a database view to a new version by first dropping the
-    # previous version then creating the new version.
+    # Update a database view to a new version.
     #
-    # name - A string or symbol containing the singular name of the database
-    #        view. Must be an existing view.
-    # version - The version number of the view. See create_view for details.
-    # revert_to_version - The version to revert to for db:rollback. Usually the
-    #                     previous version. See drop_view for details.
-    # materialized - Should default to false. Updating a materialized view would
-    #                cause indexes to be dropped. For this reason you should
-    #                explicitly use `drop_view` followed by `create_view` and
-    #                recreate applicable indexes. Setting this to `true` will
-    #                raise an error.
+    # The existing view is dropped and recreated using the supplied `version`
+    # parameter.
     #
-    # Example
+    # @param name [String, Symbol] The name of the database view.
+    # @param version [Fixnum] The version number of the view.
+    # @param revert_to_version [Fixnum] The version number to rollback to on
+    #   `rake db rollback`
+    # @param materialized [Boolean] Must be false. Updating a meterialized view
+    #   causes indexes on it to be dropped. For this reason you should
+    #   explicitly use {#drop_view} followed by {#create_view} and recreate
+    #   applicable indexes. Setting this to `true` will raise an error.
+    # @return The database response from executing the create statement.
     #
-    #   update_view(:engagement_reports, version: 3, revert_to_version: 2)
+    # @example
+    #   update_view :engagement_reports, version: 3, revert_to_version: 2
     #
-    #   update_view :users_with_disabilities,
-    #     version: 12,
-    #     revert_to_version: 11
-    #
-    # Returns the database response from executing the CREATE VIEW statement.
     def update_view(name, version: nil, revert_to_version: nil, materialized: false)
       if version.blank?
         raise ArgumentError, "version is required"

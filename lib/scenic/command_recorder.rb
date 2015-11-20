@@ -1,6 +1,7 @@
 require "scenic/command_recorder/statement_arguments"
 
 module Scenic
+  # @api private
   module CommandRecorder
     def create_view(*args)
       record(:create_view, args)

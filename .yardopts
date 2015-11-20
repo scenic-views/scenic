@@ -1,0 +1,5 @@
+--hide-api private
+--hide-api extension
+--exclude templates
+--markup markdown
+--markup-provider redcarpet

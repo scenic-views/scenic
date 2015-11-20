@@ -1,5 +1,19 @@
 module Scenic
+  # Scenic database adapters.
+  #
+  # Scenic ships with a Postgres adapter only but can be extended with
+  # additional adapters. The {Adapters::Postgres} adapter provides the
+  # interface.
   module Adapters
+    # An adapter for managing Postgres views.
+    #
+    # **This object is used internally by adapters and the schema dumper and is
+    # not intended to be used by application code. It is documented here for
+    # use by adapter gems.**
+    #
+    # For methods usable in migrations see {Statements}.
+    #
+    # @api extension
     class Postgres
       # Returns an array of views in the database.
       #

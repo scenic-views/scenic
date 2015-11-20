@@ -1,4 +1,5 @@
 module Scenic
+  # @api private
   class Definition
     def initialize(name, version)
       @name = name

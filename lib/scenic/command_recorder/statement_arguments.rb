@@ -1,5 +1,6 @@
 module Scenic
   module CommandRecorder
+    # @api private
     class StatementArguments
       def initialize(args)
         @args = args.freeze

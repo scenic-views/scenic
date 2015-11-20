@@ -1,5 +1,6 @@
 module Scenic
   module Generators
+    # @api private
     module Materializable
       extend ActiveSupport::Concern
 

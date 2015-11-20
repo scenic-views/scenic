@@ -4,6 +4,7 @@ require "generators/scenic/materializable"
 
 module Scenic
   module Generators
+    # @api private
     class ViewGenerator < Rails::Generators::NamedBase
       include Rails::Generators::Migration
       include Scenic::Generators::Materializable

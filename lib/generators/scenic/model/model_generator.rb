@@ -5,6 +5,7 @@ require "generators/scenic/materializable"
 
 module Scenic
   module Generators
+    # @api private
     class ModelGenerator < Rails::Generators::NamedBase
       include Scenic::Generators::Materializable
       source_root File.expand_path("../templates", __FILE__)

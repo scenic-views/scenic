@@ -8,7 +8,13 @@ require "scenic/statements"
 require "scenic/version"
 require "scenic/view"
 
+# Scenic adds methods `ActiveRecord::Migration` to create and manage database
+# views in Rails applications.
 module Scenic
+  # Hooks Scenic into Rails.
+  #
+  # Enables scenic migration methods, migration reversability, and `schema.rb`
+  # dumping.
   def self.load
     ActiveRecord::ConnectionAdapters::AbstractAdapter.include Scenic::Statements
     ActiveRecord::Migration::CommandRecorder.include Scenic::CommandRecorder
@@ -16,8 +22,9 @@ module Scenic
   end
 
   # The current database adapter used by Scenic.
-  # This defaults to [Adapters::Postgres] but can be overridden
-  # via [Configuration].
+  #
+  # This defaults to {Adapters::Postgres} but can be overridden
+  # via {Configuration}.
   def self.database
     configuration.database
   end
