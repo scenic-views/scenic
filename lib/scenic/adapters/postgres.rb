@@ -8,7 +8,7 @@ module Scenic
       #
       # @return [Array<Scenic::View>]
       def views
-        execute(<<-SQL).map { |result| Scenic::View.new(result) }
+        execute(<<-SQL).map { |result| view_from_database(result) }
           SELECT viewname, definition, FALSE AS materialized
           FROM pg_views
           WHERE schemaname = ANY (current_schemas(false))
@@ -67,6 +67,14 @@ module Scenic
 
       def execute(sql, base = ActiveRecord::Base)
         base.connection.execute sql
+      end
+
+      def view_from_database(result)
+        Scenic::View.new(
+          name: result["viewname"],
+          definition: result["definition"].strip,
+          materialized: result["materialized"] == "t",
+        )
       end
     end
   end

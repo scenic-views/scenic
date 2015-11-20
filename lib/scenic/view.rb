@@ -3,10 +3,10 @@ module Scenic
     attr_reader :name, :definition, :materialized
     delegate :<=>, to: :name
 
-    def initialize(view_row)
-      @name = view_row["viewname"]
-      @definition = view_row["definition"].strip
-      @materialized = view_row["materialized"] == "t"
+    def initialize(name:, definition:, materialized:)
+      @name = name
+      @definition = definition
+      @materialized = materialized
     end
 
     def ==(other)
