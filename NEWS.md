@@ -5,6 +5,22 @@ changelog, see the [CHANGELOG] for each version via the version links.
 
 [CHANGELOG]: https://github.com/thoughtbot/scenic/commits/master
 
+## [1.0.0] - November 23, 2015
+
+### Added
+- Added support for [materialized views].
+- Allow changing the database adapter via `Scenic::Configuration`.
+
+### Fixed
+- Improved formatting of the view when dumped to `schema.rb`.
+- Fixed generation of namespaced models by using ActiveRecord's own model
+  generator.
+- Eliminated `alias_method_chain` deprecation when running with Rails master
+  (5.0).
+
+[materialized views]:https://github.com/thoughtbot/scenic/blob/v1.0.0/README.md
+[1.0.0]: https://github.com/thoughtbot/scenic/compare/v0.3.0...v1.0.0
+
 ## [0.3.0] - January 23, 2015
 
 ### Added
