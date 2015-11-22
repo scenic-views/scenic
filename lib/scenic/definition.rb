@@ -8,7 +8,7 @@ module Scenic
     def to_sql
       File.read(full_path).tap do |content|
         if content.empty?
-          raise "Define view query in #{@path} before migrating."
+          raise "Define view query in #{path} before migrating."
         end
       end
     end
