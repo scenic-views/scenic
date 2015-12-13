@@ -129,14 +129,23 @@ those? Of course!
 
 The `scenic:view` and `scenic:model` generators accept a `--materialized`
 option for this purpose. When used with the model generator, your model will
-have the following method defined as a convenience to aid in scheduling
+have the following methods defined as conveniences to aid in scheduling
 refreshes:
 
 ```ruby
 def self.refresh
   Scenic.database.refresh_materialized_view(table_name)
 end
+
+def self.refresh_concurrently
+  Scenic.database.refresh_materialized_view_concurrently(table_name)
+end
 ```
+
+As a reminder, any materialized view that you want to refresh concurrently must
+have a unique index. If you attempt to refresh a materialized view concurrently
+without a unique index, that will raise an `ActiveRecord::StatementInvalid`
+exception.
 
 ## I don't need this view anymore. Make it go away.
 

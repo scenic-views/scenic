@@ -77,6 +77,14 @@ module Scenic
         execute "REFRESH MATERIALIZED VIEW #{name};"
       end
 
+      # Refreshes a materialized view concurrently from its SQL schema.
+      #
+      # @param name The name of the materialized view to refresh..
+      # @return [void]
+      def refresh_materialized_view_concurrently(name)
+        execute "REFRESH MATERIALIZED VIEW CONCURRENTLY #{name};"
+      end
+
       private
 
       def execute(sql, base = ActiveRecord::Base)

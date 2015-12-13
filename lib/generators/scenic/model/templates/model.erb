@@ -1,3 +1,7 @@
   def self.refresh
     Scenic.database.refresh_materialized_view(table_name)
   end
+
+  def self.refresh_concurrently
+    Scenic.database.refresh_materialized_view_concurrently(table_name)
+  end
