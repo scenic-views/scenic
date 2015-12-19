@@ -22,9 +22,6 @@ module Scenic
     # @return [Boolean]
     attr_reader :materialized
 
-    # @api private
-    delegate :<=>, to: :name
-
     # Returns a new instance of View.
     #
     # @param name [String] The name of the view.

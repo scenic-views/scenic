@@ -31,7 +31,6 @@ module Scenic
           SELECT matviewname AS viewname, definition, TRUE AS materialized
           FROM pg_matviews
           WHERE schemaname = ANY (current_schemas(false))
-          ORDER BY viewname
         SQL
       end
 

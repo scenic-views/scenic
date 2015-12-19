@@ -15,7 +15,7 @@ module Scenic
     end
 
     def views_in_database
-      @views_in_database ||= Scenic.database.views.sort
+      @views_in_database ||= Scenic.database.views
     end
 
     private

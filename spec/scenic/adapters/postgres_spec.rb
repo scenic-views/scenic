@@ -65,14 +65,14 @@ module Scenic
 
         expect(adapter.views).to eq([
           Scenic::View.new(
-            name: "farewells",
-            definition: "SELECT 'bye'::text AS farewell;",
-            materialized: true,
-          ),
-          Scenic::View.new(
             name: "greetings",
             definition: "SELECT 'hi'::text AS greeting;",
             materialized: false,
+          ),
+          Scenic::View.new(
+            name: "farewells",
+            definition: "SELECT 'bye'::text AS farewell;",
+            materialized: true,
           ),
         ])
       end
