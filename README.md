@@ -76,7 +76,7 @@ schema in the new definition and run the `update_view` migration.
 
 You bet! Using view-backed models can help promote concepts hidden in your
 relational data to first-class domain objects and can clean up complex
-ActiveRecord or ARel queries. As far as ActiveRecord is concerned, you a view is
+ActiveRecord or ARel queries. As far as ActiveRecord is concerned, a view is
 no different than a table.
 
 ```ruby
