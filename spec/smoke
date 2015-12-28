@@ -32,7 +32,7 @@ writeToFileAndMigrateAndVerifySearchResults() {
   local expectedResult=$2
   local filePath=db/views/searches_v$version\.sql
   cp /dev/null $filePath
-  echo "SELECT '$expectedResult'::text AS results" >> $filePath
+  echo "SELECT '$expectedResult'::text AS results, 1 AS user_id" >> $filePath
   rake db:migrate
   echo "[success]"
   verifySearchResults $expectedResult
@@ -97,11 +97,24 @@ main() {
   rails runner "Search.refresh" || exit 1
   echo "[success]"
 
+  echo "add indexes to materialized view"
+  rails runner "ActiveRecord::Base.connection.execute 'CREATE INDEX searches_test_1 ON searches USING btree (results);'" || exit 1
+  rails runner "ActiveRecord::Base.connection.execute 'CREATE INDEX searches_test_2 ON searches USING btree (user_id);'" || exit 1
+  echo "[success]"
+
+  echo "update materialized view"
+  rails generate scenic:view search --materialized
+  echo "SELECT 'test'::text AS results" > db/views/searches_v02.sql
+  rake db:migrate
+  verifySearchResults 'test'
+
   echo "rake db:rollback"
+  rake db:rollback
   rake db:rollback
   echo "[success]"
 
-  echo "rails destroy scenic:view search --materialized"
+  echo "rails destroy scenic:model search --materialized"
+  rails destroy scenic:view search --materialized
   rails destroy scenic:model search --materialized
   [[ ! -f app/models/search.rb ]] || exit 1
   [[ ! -f db/views/searches_v01.sql ]] || exit 1

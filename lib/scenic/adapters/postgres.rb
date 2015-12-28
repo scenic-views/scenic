@@ -70,16 +70,61 @@ module Scenic
 
       # Refreshes a materialized view from its SQL schema.
       #
-      # @param name The name of the materialized view to refresh..
+      # @param name The name of the materialized view to refresh.
       # @return [void]
       def refresh_materialized_view(name)
         execute "REFRESH MATERIALIZED VIEW #{name};"
       end
 
+      # Caches indexes on the provided object before executing the block and
+      # then reapplying the indexes. Errors in applying the indexes are caught
+      # and logged to output.
+      #
+      # This is used when updating a materialized view in order to maintain all
+      # applicable indexes after the update.
+      #
+      # @param on The name of the object we are reapplying indexes on.
+      # @yield Operations to perform before reapplying indexes.
+      # @return [void]
+      def reapplying_indexes(on: name, &_block)
+        indexes = indexes_on(on)
+
+        yield
+
+        indexes.each { |index| say(try_index_create(index)) }
+      end
+
       private
 
-      def execute(sql, base = ActiveRecord::Base)
-        base.connection.execute sql
+      def connection
+        ActiveRecord::Base.connection
+      end
+
+      def execute(sql)
+        connection.execute sql
+      end
+
+      def say(message)
+        subitem = true
+        ActiveRecord::Migration.say(message, subitem)
+      end
+
+      def indexes_on(name)
+        execute(<<-SQL).map { |result| index_from_database(result) }
+          SELECT
+            t.relname as object_name,
+            i.relname as index_name,
+            pg_get_indexdef(d.indexrelid) AS definition
+          FROM pg_class t
+          INNER JOIN pg_index d ON t.oid = d.indrelid
+          INNER JOIN pg_class i ON d.indexrelid = i.oid
+          LEFT JOIN pg_namespace n ON n.oid = i.relnamespace
+          WHERE i.relkind = 'i'
+            AND d.indisprimary = 'f'
+            AND t.relname = '#{name}'
+            AND n.nspname = ANY (current_schemas(false))
+          ORDER BY i.relname
+        SQL
       end
 
       def view_from_database(result)
@@ -88,6 +133,24 @@ module Scenic
           definition: result["definition"].strip,
           materialized: result["materialized"] == "t",
         )
+      end
+
+      def index_from_database(result)
+        Scenic::Index.new(
+          object_name: result["object_name"],
+          index_name: result["index_name"],
+          definition: result["definition"],
+        )
+      end
+
+      def try_index_create(index)
+        connection.execute("SAVEPOINT #{index.index_name}")
+        connection.execute(index.definition)
+        connection.execute("RELEASE SAVEPOINT #{index.index_name}")
+        "index '#{index.index_name}' on '#{index.object_name}' has been recreated"
+      rescue ActiveRecord::StatementInvalid
+        connection.execute("ROLLBACK TO SAVEPOINT #{index.index_name}")
+        "index '#{index.index_name}' on '#{index.object_name}' is no longer valid and has been dropped."
       end
     end
   end

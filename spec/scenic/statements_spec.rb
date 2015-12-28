@@ -65,11 +65,14 @@ module Scenic
     end
 
     describe "update_view" do
-      it "drops the existing version and creates the new" do
+      it "updates the view version, reapplying indexes as needed" do
         definition = instance_double("Definition", to_sql: "definition")
         allow(Definition).to receive(:new)
           .with(:name, 3)
           .and_return(definition)
+        allow(Scenic.database).to receive(:reapplying_indexes)
+          .with(on: :name)
+          .and_yield
 
         connection.update_view(:name, version: 3)
 
@@ -81,18 +84,6 @@ module Scenic
       it "raises an error if not supplied a version" do
         expect { connection.update_view :views }
           .to raise_error(ArgumentError, /version is required/)
-      end
-    end
-
-    describe "update_view :materialized" do
-      it "raises an error because this is not supported" do
-        definition = instance_double("Definition").as_null_object
-        allow(Definition).to receive(:new).and_return(definition)
-
-        expect { connection.update_view(:name, version: 3, materialized: true) }.
-          to raise_error(/not supported/)
-        expect(Scenic.database).not_to have_received(:drop_materialized_view)
-        expect(Scenic.database).not_to have_received(:create_materialized_view)
       end
     end
 

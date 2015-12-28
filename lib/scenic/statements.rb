@@ -68,10 +68,8 @@ module Scenic
     # @param version [Fixnum] The version number of the view.
     # @param revert_to_version [Fixnum] The version number to rollback to on
     #   `rake db rollback`
-    # @param materialized [Boolean] Must be false. Updating a meterialized view
-    #   causes indexes on it to be dropped. For this reason you should
-    #   explicitly use {#drop_view} followed by {#create_view} and recreate
-    #   applicable indexes. Setting this to `true` will raise an error.
+    # @param materialized [Boolean] True if updating a materialized view.
+    #   Defaults to false.
     # @return The database response from executing the create statement.
     #
     # @example
@@ -82,17 +80,10 @@ module Scenic
         raise ArgumentError, "version is required"
       end
 
-      if materialized
-        raise ArgumentError, "Updating materialized views is not supported "\
-          "because it would cause any indexes to be dropped. Please use "\
-          "'drop_view' followed by 'create_view', being sure to also recreate "\
-          "any previously-existing indexes."
+      Scenic.database.reapplying_indexes(on: name) do
+        drop_view(name, revert_to_version: revert_to_version, materialized: materialized)
+        create_view(name, version: version, materialized: materialized)
       end
-
-      drop_view name,
-        revert_to_version: revert_to_version,
-        materialized: materialized
-      create_view(name, version: version, materialized: materialized)
     end
 
     private
