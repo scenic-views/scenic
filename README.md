@@ -17,18 +17,18 @@ Scenic ships with support for PostgreSQL. The adapter is configurable (see
 
 ## Great, how do I create a view?
 
-You've got this great idea for a view you'd like to call `searches`. You can
-create the migration and the corresponding view definition file with the
+You've got this great idea for a view you'd like to call `search_results`. You
+can create the migration and the corresponding view definition file with the
 following command:
 
 ```sh
-$ rails generate scenic:view searches
-      create  db/views/searches_v01.sql
-      create  db/migrate/[TIMESTAMP]_create_searches.rb
+$ rails generate scenic:view search_results
+      create  db/views/search_results_v01.sql
+      create  db/migrate/[TIMESTAMP]_create_search_results.rb
 ```
 
-Edit the `db/views/searches_v01.sql` file with the SQL statement that defines
-your view. In our example, this might look something like this:
+Edit the `db/views/search_results_v01.sql` file with the SQL statement that
+defines your view. In our example, this might look something like this:
 
 ```sql
 SELECT
@@ -62,13 +62,13 @@ $ rake db:migrate
 Here's where Scenic really shines. Run that same view generator once more:
 
 ```sh
-$ rails generate scenic:view searches
-      create  db/views/searches_v02.sql
-      create  db/migrate/[TIMESTAMP]_update_searches_to_version_2.rb
+$ rails generate scenic:view search_results
+      create  db/views/search_results_v02.sql
+      create  db/migrate/[TIMESTAMP]_update_search_results_to_version_2.rb
 ```
 
-Scenic detected that we already had an existing `searches` view at version 1,
-created a copy of that definition as version 2, and created a migration to
+Scenic detected that we already had an existing `search_results` view at version
+1, created a copy of that definition as version 2, and created a migration to
 update to the version 2 schema. All that's left for you to do is tweak the
 schema in the new definition and run the `update_view` migration.
 
@@ -80,7 +80,9 @@ ActiveRecord or ARel queries. As far as ActiveRecord is concerned, a view is
 no different than a table.
 
 ```ruby
-class Search < ActiveRecord::Base
+class SearchResult < ActiveRecord::Base
+  belongs_to :searchable, polymorphic: true
+
   private
 
   # this isn't strictly necessary, but it will prevent
@@ -144,7 +146,7 @@ Scenic gives you `drop_view` too:
 
 ```ruby
 def change
-  drop_view :searches, revert_to_version: 2
+  drop_view :search_results, revert_to_version: 2
 end
 ```
 
