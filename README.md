@@ -150,6 +150,33 @@ def change
 end
 ```
 
+## FAQs
+
+**Why is my view missing columns from the underlying table?**
+
+Did you create the view with `SELECT [table_name].*`? Most (possibly all)
+relational databases freeze the view definition at the time of creation. New
+columns will not be available in the view until the definition is updated once
+again. This can be accomplished by "updating" the view to its current definition
+to bake in the new meaning of `*`.
+
+```ruby
+add_column :posts, :title, :string
+update_view :posts_with_aggregate_data, version: 2, revert_to_version: 2
+```
+
+**When will you support MySQL?**
+
+We have no plans to add first-party support for MySQL at this time because we
+(the maintainers) do not currently have a use for it. It's our experience that
+maintaining a library effectively requires regular use of its features. We're
+not in a good position to support MySQL users.
+
+Scenic *does* support configuring different database adapters and should be
+extendable with adapter libraries. If you implement such an adapter, we're happy
+to review and link to it. We're also happy to make changes that would better
+accommodate adapter gems.
+
 ## About
 
 Scenic is maintained by [Derek Prior] and [Caleb Thompson], funded by
