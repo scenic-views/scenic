@@ -53,6 +53,17 @@ module Scenic
         end
       end
 
+      describe "#refresh_materialized_view" do
+        it "raises descriptive error if concurrent refresh is not possible" do
+          adapter = Postgres.new
+          adapter.create_materialized_view(:tests, "SELECT text 'hi' as text")
+
+          expect {
+            adapter.refresh_materialized_view(:tests, concurrently: true)
+          }.to raise_error(/Create a unique index with no WHERE clause/)
+        end
+      end
+
       it "finds views and builds Scenic::View objects" do
         adapter = Postgres.new
 

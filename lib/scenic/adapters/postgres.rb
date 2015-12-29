@@ -71,9 +71,19 @@ module Scenic
       # Refreshes a materialized view from its SQL schema.
       #
       # @param name The name of the materialized view to refresh.
+      # @param concurrently [Boolean] Whether the refreshs hould happen
+      #   concurrently or not. A concurrent refresh allows the view to be
+      #   refreshed without locking the view for select but requires that the
+      #   table have at least one unique index that covers all rows. Attempts to
+      #   refresh concurrently without a unique index will raise a descriptive
+      #   error.
       # @return [void]
-      def refresh_materialized_view(name)
-        execute "REFRESH MATERIALIZED VIEW #{name};"
+      def refresh_materialized_view(name, concurrently: false)
+        if concurrently
+          execute "REFRESH MATERIALIZED VIEW CONCURRENTLY #{name};"
+        else
+          execute "REFRESH MATERIALIZED VIEW #{name};"
+        end
       end
 
       # Caches indexes on the provided object before executing the block and

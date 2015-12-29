@@ -140,9 +140,14 @@ refreshes:
 
 ```ruby
 def self.refresh
-  Scenic.database.refresh_materialized_view(table_name)
+  Scenic.database.refresh_materialized_view(table_name, concurrently: false)
 end
 ```
+
+This will perform a non-concurrent refresh, locking the view for selects until
+the refresh is complete. You can avoid locking the view by passing
+`concurrently: true` but this requires your view to have at least one unique
+index that covers all rows.
 
 ## I don't need this view anymore. Make it go away.
 

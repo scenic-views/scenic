@@ -10,7 +10,7 @@ project codebases, issue trackers, chatrooms, and mailing lists.
 
 ## Setting Up for Development
 
-1. For the repository.
+1. Fork the repository.
 2. Run `bin/setup`, which will install dependencies and create the dummy
    application database.
 3. Run `rake` to verify that the tests pass.
