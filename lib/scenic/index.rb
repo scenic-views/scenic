@@ -18,7 +18,7 @@ module Scenic
     # The SQL statement that defines the index
     # @return [String]
     #
-    # @exmaple
+    # @example
     #   "CREATE INDEX index_users_on_email ON users USING btree (email)"
     attr_reader :definition
 
