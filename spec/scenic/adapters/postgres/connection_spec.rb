@@ -64,6 +64,16 @@ module Scenic
           expect(connection.postgresql_version).to eq 123
         end
       end
+
+      describe "#supports_concurrent_refresh" do
+        it "is true if postgres version is at least 9.4.0" do
+          base_connection = double("Connection", postgresql_version: 90400)
+
+          connection = Postgres::Connection.new(base_connection)
+
+          expect(connection.supports_concurrent_refreshes?).to be true
+        end
+      end
     end
   end
 end

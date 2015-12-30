@@ -1,5 +1,6 @@
 require_relative "postgres/connection"
 require_relative "postgres/views"
+require_relative "postgres/errors"
 
 module Scenic
   # Scenic database adapters.
@@ -61,6 +62,7 @@ module Scenic
       # @param sql_definition The SQL schema that defines the materialized view.
       # @return [void]
       def create_materialized_view(name, sql_definition)
+        raise_unless_materialized_views_supported
         execute "CREATE MATERIALIZED VIEW #{name} AS #{sql_definition};"
       end
 
@@ -71,6 +73,7 @@ module Scenic
       # @param name The name of the materialized view to drop.
       # @return [void]
       def drop_materialized_view(name)
+        raise_unless_materialized_views_supported
         execute "DROP MATERIALIZED VIEW #{name};"
       end
 
@@ -85,7 +88,9 @@ module Scenic
       #   error. Concurrent refreshes require PostgreSQL 9.4 or newer.
       # @return [void]
       def refresh_materialized_view(name, concurrently: false)
+        raise_unless_materialized_views_supported
         if concurrently
+          raise_unless_concurrent_refresh_supported
           execute "REFRESH MATERIALIZED VIEW CONCURRENTLY #{name};"
         else
           execute "REFRESH MATERIALIZED VIEW #{name};"
@@ -154,6 +159,18 @@ module Scenic
       rescue ActiveRecord::StatementInvalid
         connection.execute("ROLLBACK TO SAVEPOINT #{index.index_name}")
         "index '#{index.index_name}' on '#{index.object_name}' is no longer valid and has been dropped."
+      end
+
+      def raise_unless_materialized_views_supported
+        unless connection.supports_materialized_views?
+          raise MaterializedViewsNotSupportedError
+        end
+      end
+
+      def raise_unless_concurrent_refresh_supported
+        unless connection.supports_concurrent_refreshes?
+          raise ConcurrentRefreshesNotSupportedError
+        end
       end
     end
   end
