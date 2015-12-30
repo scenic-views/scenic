@@ -24,6 +24,14 @@ module Scenic
           end
         end
 
+        # True if the connection supports concurrent refreshes of materialized
+        # views.
+        #
+        # @return [Boolean]
+        def supports_concurrent_refreshes?
+          postgresql_version >= 90400
+        end
+
         # An integer representing the version of Postgres we're connected to.
         #
         # postgresql_version is public in Rails 5, but protected in earlier
