@@ -15,41 +15,34 @@ module Scenic
         #
         # @return [Array<Scenic::View>]
         def all
-          (views.to_a + materialized_views.to_a).map do |result|
-            to_scenic_view(result)
-          end
+          views_from_postgres.map(&method(:to_scenic_view))
         end
 
         private
 
         attr_reader :connection
 
-        def views
+        def views_from_postgres
           connection.execute(<<-SQL)
-            SELECT viewname, definition, FALSE AS materialized
-            FROM pg_views
-            WHERE schemaname = ANY (current_schemas(false))
-            AND viewname NOT IN (SELECT extname FROM pg_extension)
+            SELECT
+              c.relname as viewname,
+              pg_get_viewdef(c.oid) AS definition,
+              c.relkind AS kind
+            FROM pg_class c
+              LEFT JOIN pg_namespace n ON n.oid = c.relnamespace
+            WHERE
+              c.relkind IN ('m', 'v')
+              AND c.relname NOT IN (SELECT extname FROM pg_extension)
+              AND n.nspname = ANY (current_schemas(false))
+            ORDER BY c.oid
           SQL
-        end
-
-        def materialized_views
-          if connection.supports_materialized_views?
-            connection.execute(<<-SQL)
-              SELECT matviewname AS viewname, definition, TRUE AS materialized
-              FROM pg_matviews
-              WHERE schemaname = ANY (current_schemas(false))
-            SQL
-          else
-            []
-          end
         end
 
         def to_scenic_view(result)
           Scenic::View.new(
             name: result["viewname"],
             definition: result["definition"].strip,
-            materialized: result["materialized"].in?(["t", true]),
+            materialized: result["kind"] == "m",
           )
         end
       end

@@ -68,25 +68,31 @@ module Scenic
         it "returns the views defined on this connection" do
           adapter = Postgres.new
 
-          ActiveRecord::Base.connection.execute(
-            "CREATE VIEW greetings AS SELECT text 'hi' AS greeting",
-          )
-          ActiveRecord::Base.connection.execute(
-            "CREATE MATERIALIZED VIEW farewells AS SELECT text 'bye' AS text",
-          )
+          ActiveRecord::Base.connection.execute <<-SQL
+            CREATE VIEW parents AS SELECT text 'Joe' AS name
+          SQL
 
-          expect(adapter.views).to eq([
-            Scenic::View.new(
-              name: "greetings",
-              definition: "SELECT 'hi'::text AS greeting;",
-              materialized: false,
-            ),
-            Scenic::View.new(
-              name: "farewells",
-              definition: "SELECT 'bye'::text AS text;",
-              materialized: true,
-            ),
-          ])
+          ActiveRecord::Base.connection.execute <<-SQL
+            CREATE VIEW children AS SELECT text 'Owen' AS name
+          SQL
+
+          ActiveRecord::Base.connection.execute <<-SQL
+            CREATE MATERIALIZED VIEW people AS
+            SELECT name FROM parents UNION SELECT name FROM children
+          SQL
+
+          ActiveRecord::Base.connection.execute <<-SQL
+            CREATE VIEW people_with_names AS
+            SELECT name FROM people
+            WHERE name IS NOT NULL
+          SQL
+
+          expect(adapter.views.map(&:name)).to eq [
+            "parents",
+            "children",
+            "people",
+            "people_with_names",
+          ]
         end
       end
     end
