@@ -1,6 +1,6 @@
 # Contributing
 
-We love pull requests from everyone.  By participating in this project, you
+We love contributions from everyone.  By participating in this project, you
 agree to abide by the thoughtbot [code of conduct].
 
 [code of conduct]: https://thoughtbot.com/open-source-code-of-conduct
@@ -8,12 +8,13 @@ agree to abide by the thoughtbot [code of conduct].
 We expect everyone to follow the code of conduct anywhere in thoughtbot's
 project codebases, issue trackers, chatrooms, and mailing lists.
 
-## Setting Up for Development
+## Contributing Code
 
 1. Fork the repository.
 2. Run `bin/setup`, which will install dependencies and create the dummy
    application database.
-3. Run `rake` to verify that the tests pass.
+3. Run `bin/appraisal rake` to verify that the tests pass against all
+   supported versions of Rails.
 4. Make your change with new passing tests, following the [style guide].
 5. Write a [good commit message], push your fork, and submit a pull request.
 

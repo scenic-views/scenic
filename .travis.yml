@@ -8,6 +8,11 @@ before_install:
 branches:
   only:
     - master
+gemfiles:
+  - gemfiles/rails40.gemfile
+  - gemfiles/rails41.gemfile
+  - gemfiles/rails42.gemfile
+  - gemfiles/rails50.gemfile
 install:
   - travis_retry bin/setup
 language:
