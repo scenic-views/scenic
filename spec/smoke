@@ -21,7 +21,7 @@ trap teardown EXIT
 verifySearchResults() {
   echo "verify search results"
   local expectedResult=$1
-  local actualResult=$(rails runner "puts Search.first.results")
+  local actualResult=$(rails runner "puts Search.take.results")
   [[ "$actualResult" == "$expectedResult" ]] || exit 1
   echo "[success]"
 }
