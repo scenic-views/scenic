@@ -8,11 +8,6 @@ before_install:
 branches:
   only:
     - master
-gemfiles:
-  - gemfiles/rails40.gemfile
-  - gemfiles/rails41.gemfile
-  - gemfiles/rails42.gemfile
-  - gemfiles/rails50.gemfile
 install:
   - travis_retry bin/setup
 language:
@@ -20,7 +15,17 @@ language:
 notifications:
   email:
     - false
-rvm:
-  - 2.1.7
-  - 2.2.3
 sudo: false
+rvm:
+  - 2.3.0
+  - 2.2.4
+  - 2.1.8
+gemfile:
+  - gemfiles/rails40.gemfile
+  - gemfiles/rails41.gemfile
+  - gemfiles/rails42.gemfile
+  - gemfiles/rails50.gemfile
+matrix:
+  exclude:
+    - rvm: 2.1.8
+      gemfile: gemfiles/rails50.gemfile
