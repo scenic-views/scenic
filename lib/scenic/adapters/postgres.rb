@@ -1,3 +1,6 @@
+require_relative "postgres/connection"
+require_relative "postgres/views"
+
 module Scenic
   # Scenic database adapters.
   #
@@ -15,6 +18,14 @@ module Scenic
     #
     # @api extension
     class Postgres
+      # Creates an instance of the Scenic Postgres adapter
+      #
+      # @param connection The database connection the adapter should use. This
+      #   defaults to `ActiveRecord::Base.connection`
+      def initialize(connection = ActiveRecord::Base.connection)
+        @connection = Connection.new(connection)
+      end
+
       # Returns an array of views in the database.
       #
       # This collection of views is used by the [Scenic::SchemaDumper] to
@@ -22,16 +33,7 @@ module Scenic
       #
       # @return [Array<Scenic::View>]
       def views
-        execute(<<-SQL).map { |result| view_from_database(result) }
-          SELECT viewname, definition, FALSE AS materialized
-          FROM pg_views
-          WHERE schemaname = ANY (current_schemas(false))
-          AND viewname NOT IN (SELECT extname FROM pg_extension)
-          UNION
-          SELECT matviewname AS viewname, definition, TRUE AS materialized
-          FROM pg_matviews
-          WHERE schemaname = ANY (current_schemas(false))
-        SQL
+        Views.new(connection).all
       end
 
       # Creates a view in the database.
@@ -110,13 +112,8 @@ module Scenic
 
       private
 
-      def connection
-        ActiveRecord::Base.connection
-      end
-
-      def execute(sql)
-        connection.execute sql
-      end
+      attr_reader :connection
+      delegate :execute, to: :connection
 
       def say(message)
         subitem = true
@@ -139,14 +136,6 @@ module Scenic
             AND n.nspname = ANY (current_schemas(false))
           ORDER BY i.relname
         SQL
-      end
-
-      def view_from_database(result)
-        Scenic::View.new(
-          name: result["viewname"],
-          definition: result["definition"].strip,
-          materialized: result["materialized"].in?(["t", true]),
-        )
       end
 
       def index_from_database(result)

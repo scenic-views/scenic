@@ -3,7 +3,7 @@ require "spec_helper"
 module Scenic
   module Adapters
     describe Postgres, :db do
-      describe "create_view" do
+      describe "#create_view" do
         it "successfully creates a view" do
           adapter = Postgres.new
 
@@ -13,7 +13,7 @@ module Scenic
         end
       end
 
-      describe "create_materialized_view" do
+      describe "#create_materialized_view" do
         it "successfully creates a materialized view" do
           adapter = Postgres.new
 
@@ -28,7 +28,7 @@ module Scenic
         end
       end
 
-      describe "drop_view" do
+      describe "#drop_view" do
         it "successfully drops a view" do
           adapter = Postgres.new
 
@@ -39,7 +39,7 @@ module Scenic
         end
       end
 
-      describe "drop_materialized_view" do
+      describe "#drop_materialized_view" do
         it "successfully drops a materialized view" do
           adapter = Postgres.new
 
@@ -64,28 +64,30 @@ module Scenic
         end
       end
 
-      it "finds views and builds Scenic::View objects" do
-        adapter = Postgres.new
+      describe "#views" do
+        it "returns the views defined on this connection" do
+          adapter = Postgres.new
 
-        ActiveRecord::Base.connection.execute(
-          "CREATE VIEW greetings AS SELECT text 'hi' AS greeting"
-        )
-        ActiveRecord::Base.connection.execute(
-          "CREATE MATERIALIZED VIEW farewells AS SELECT text 'bye' AS farewell"
-        )
+          ActiveRecord::Base.connection.execute(
+            "CREATE VIEW greetings AS SELECT text 'hi' AS greeting",
+          )
+          ActiveRecord::Base.connection.execute(
+            "CREATE MATERIALIZED VIEW farewells AS SELECT text 'bye' AS text",
+          )
 
-        expect(adapter.views).to eq([
-          Scenic::View.new(
-            name: "greetings",
-            definition: "SELECT 'hi'::text AS greeting;",
-            materialized: false,
-          ),
-          Scenic::View.new(
-            name: "farewells",
-            definition: "SELECT 'bye'::text AS farewell;",
-            materialized: true,
-          ),
-        ])
+          expect(adapter.views).to eq([
+            Scenic::View.new(
+              name: "greetings",
+              definition: "SELECT 'hi'::text AS greeting;",
+              materialized: false,
+            ),
+            Scenic::View.new(
+              name: "farewells",
+              definition: "SELECT 'bye'::text AS text;",
+              materialized: true,
+            ),
+          ])
+        end
       end
     end
   end
