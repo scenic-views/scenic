@@ -145,7 +145,7 @@ module Scenic
         Scenic::View.new(
           name: result["viewname"],
           definition: result["definition"].strip,
-          materialized: result["materialized"] == "t",
+          materialized: result["materialized"].in?(["t", true]),
         )
       end
 
