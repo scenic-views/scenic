@@ -15,4 +15,8 @@ RSpec.configure do |config|
     example.run
     DatabaseCleaner.clean
   end
+
+  if defined? ActiveSupport::Testing::Stream
+    config.include ActiveSupport::Testing::Stream
+  end
 end
