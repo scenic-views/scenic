@@ -26,6 +26,15 @@ module Scenic
           expect(view.name).to eq("greetings")
           expect(view.materialized).to eq true
         end
+
+        it "raises an exception if the version of PostgreSQL is too old" do
+          connection = double("Connection", supports_materialized_views?: false)
+          adapter = Postgres.new(connection)
+          err = Scenic::Adapters::Postgres::MaterializedViewsNotSupportedError
+
+          expect { adapter.create_materialized_view("greetings", "select 1") }
+            .to raise_error err
+        end
       end
 
       describe "#drop_view" do
@@ -51,16 +60,46 @@ module Scenic
 
           expect(adapter.views.map(&:name)).not_to include("greetings")
         end
+
+        it "raises an exception if the version of PostgreSQL is too old" do
+          connection = double("Connection", supports_materialized_views?: false)
+          adapter = Postgres.new(connection)
+          err = Scenic::Adapters::Postgres::MaterializedViewsNotSupportedError
+
+          expect { adapter.drop_materialized_view("greetings") }
+            .to raise_error err
+        end
       end
 
       describe "#refresh_materialized_view" do
-        it "raises descriptive error if concurrent refresh is not possible" do
-          adapter = Postgres.new
-          adapter.create_materialized_view(:tests, "SELECT text 'hi' as text")
+        it "raises an exception if the version of PostgreSQL is too old" do
+          connection = double("Connection", supports_materialized_views?: false)
+          adapter = Postgres.new(connection)
+          err = Scenic::Adapters::Postgres::MaterializedViewsNotSupportedError
 
-          expect {
-            adapter.refresh_materialized_view(:tests, concurrently: true)
-          }.to raise_error(/Create a unique index with no WHERE clause/)
+          expect { adapter.refresh_materialized_view(:tests) }
+            .to raise_error err
+        end
+
+        context "refreshing concurrently" do
+          it "raises descriptive error if concurrent refresh is not possible" do
+            adapter = Postgres.new
+            adapter.create_materialized_view(:tests, "SELECT text 'hi' as text")
+
+            expect {
+              adapter.refresh_materialized_view(:tests, concurrently: true)
+            }.to raise_error(/Create a unique index with no WHERE clause/)
+          end
+
+          it "raises an exception if the version of PostgreSQL is too old" do
+            connection = double("Connection", postgresql_version: 90300)
+            adapter = Postgres.new(connection)
+            e = Scenic::Adapters::Postgres::ConcurrentRefreshesNotSupportedError
+
+            expect {
+              adapter.refresh_materialized_view(:tests, concurrently: true)
+            }.to raise_error e
+          end
         end
       end
 
