@@ -1,6 +1,8 @@
 require_relative "postgres/connection"
-require_relative "postgres/views"
 require_relative "postgres/errors"
+require_relative "postgres/index_reapplication"
+require_relative "postgres/indexes"
+require_relative "postgres/views"
 
 module Scenic
   # Scenic database adapters.
@@ -40,15 +42,36 @@ module Scenic
       # Creates a view in the database.
       #
       # @param name The name of the view to create
-      # @param sql_definition the SQL schema for the view.
+      # @param sql_definition The SQL schema for the view.
+      #
       # @return [void]
       def create_view(name, sql_definition)
         execute "CREATE VIEW #{name} AS #{sql_definition};"
       end
 
+      # Updates a view in the database.
+      #
+      # This results in a {#drop_view} followed by a {#create_view}. The
+      # explicitness of that two step process is preferred to `CREATE OR
+      # REPLACE VIEW` because the former ensures that the view you are trying to
+      # update did, in fact, already exist. Additionally, `CREATE OR REPLACE
+      # VIEW` is allowed only to add new columns to the end of an existing
+      # view schema. Existing columns cannot be re-ordered, removed, or have
+      # their types changed. Drop and create overcomes this limitation as well.
+      #
+      # @param name The name of the view to update
+      # @param sql_definition The SQL schema for the updated view.
+      #
+      # @return [void]
+      def update_view(name, sql_definition)
+        drop_view(name)
+        create_view(name, sql_definition)
+      end
+
       # Drops the named view from the database
       #
       # @param name The name of the view to drop
+      #
       # @return [void]
       def drop_view(name)
         execute "DROP VIEW #{name};"
@@ -58,8 +81,9 @@ module Scenic
       #
       # @param name The name of the materialized view to create
       # @param sql_definition The SQL schema that defines the materialized view.
-      # @raise [MaterializedViewsNotSupportedError] if the version of Postgres in
-      #   use does not support materialized views.
+      #
+      # @raise [MaterializedViewsNotSupportedError] if the version of Postgres
+      #   in use does not support materialized views.
       #
       # @return [void]
       def create_materialized_view(name, sql_definition)
@@ -67,13 +91,35 @@ module Scenic
         execute "CREATE MATERIALIZED VIEW #{name} AS #{sql_definition};"
       end
 
+      # Updates a materialized view in the database.
+      #
+      # Drops and recreates the materialized view. Attempts to maintain all
+      # previously existing and still applicable indexes on the materialized
+      # view after the view is recreated.
+      #
+      # @param name The name of the view to update
+      # @param sql_definition The SQL schema for the updated view.
+      #
+      # @raise [MaterializedViewsNotSupportedError] if the version of Postgres
+      #   in use does not support materialized views.
+      #
+      # @return [void]
+      def update_materialized_view(name, sql_definition)
+        raise_unless_materialized_views_supported
+
+        IndexReapplication.new(connection: connection).on(name) do
+          drop_materialized_view(name)
+          create_materialized_view(name, sql_definition)
+        end
+      end
+
       # Drops a materialized view in the database
       #
       # Materialized views require PostgreSQL 9.3 or newer.
       #
       # @param name The name of the materialized view to drop.
-      # @raise [MaterializedViewsNotSupportedError] if the version of Postgres in
-      #   use does not support materialized views.
+      # @raise [MaterializedViewsNotSupportedError] if the version of Postgres
+      #   in use does not support materialized views.
       #
       # @return [void]
       def drop_materialized_view(name)
@@ -91,8 +137,8 @@ module Scenic
       #   refresh concurrently without a unique index will raise a descriptive
       #   error.
       #
-      # @raise [MaterializedViewsNotSupportedError] if the version of Postgres in
-      #   use does not support materialized views.
+      # @raise [MaterializedViewsNotSupportedError] if the version of Postgres
+      #   in use does not support materialized views.
       # @raise [ConcurrentRefreshesNotSupportedError] when attempting a
       #   concurrent refresh on version of Postgres that does not support
       #   concurrent materialized view refreshes.
@@ -109,69 +155,10 @@ module Scenic
         end
       end
 
-      # Caches indexes on the provided object before executing the block and
-      # then reapplying the indexes. Errors in applying the indexes are caught
-      # and logged to output.
-      #
-      # This is used when updating a materialized view in order to maintain all
-      # applicable indexes after the update.
-      #
-      # @param on The name of the object we are reapplying indexes on.
-      # @yield Operations to perform before reapplying indexes.
-      # @return [void]
-      def reapplying_indexes(on: name, &_block)
-        indexes = indexes_on(on)
-
-        yield
-
-        indexes.each { |index| say(try_index_create(index)) }
-      end
-
       private
 
       attr_reader :connection
       delegate :execute, to: :connection
-
-      def say(message)
-        subitem = true
-        ActiveRecord::Migration.say(message, subitem)
-      end
-
-      def indexes_on(name)
-        execute(<<-SQL).map { |result| index_from_database(result) }
-          SELECT
-            t.relname as object_name,
-            i.relname as index_name,
-            pg_get_indexdef(d.indexrelid) AS definition
-          FROM pg_class t
-          INNER JOIN pg_index d ON t.oid = d.indrelid
-          INNER JOIN pg_class i ON d.indexrelid = i.oid
-          LEFT JOIN pg_namespace n ON n.oid = i.relnamespace
-          WHERE i.relkind = 'i'
-            AND d.indisprimary = 'f'
-            AND t.relname = '#{name}'
-            AND n.nspname = ANY (current_schemas(false))
-          ORDER BY i.relname
-        SQL
-      end
-
-      def index_from_database(result)
-        Scenic::Index.new(
-          object_name: result["object_name"],
-          index_name: result["index_name"],
-          definition: result["definition"],
-        )
-      end
-
-      def try_index_create(index)
-        connection.execute("SAVEPOINT #{index.index_name}")
-        connection.execute(index.definition)
-        connection.execute("RELEASE SAVEPOINT #{index.index_name}")
-        "index '#{index.index_name}' on '#{index.object_name}' has been recreated"
-      rescue ActiveRecord::StatementInvalid
-        connection.execute("ROLLBACK TO SAVEPOINT #{index.index_name}")
-        "index '#{index.index_name}' on '#{index.object_name}' is no longer valid and has been dropped."
-      end
 
       def raise_unless_materialized_views_supported
         unless connection.supports_materialized_views?

@@ -65,19 +65,27 @@ module Scenic
     end
 
     describe "update_view" do
-      it "updates the view version, reapplying indexes as needed" do
+      it "updates the view in the database" do
         definition = instance_double("Definition", to_sql: "definition")
         allow(Definition).to receive(:new)
           .with(:name, 3)
           .and_return(definition)
-        allow(Scenic.database).to receive(:reapplying_indexes)
-          .with(on: :name)
-          .and_yield
 
         connection.update_view(:name, version: 3)
 
-        expect(Scenic.database).to have_received(:drop_view).with(:name)
-        expect(Scenic.database).to have_received(:create_view)
+        expect(Scenic.database).to have_received(:update_view)
+          .with(:name, definition.to_sql)
+      end
+
+      it "updates the materialized view in the database" do
+        definition = instance_double("Definition", to_sql: "definition")
+        allow(Definition).to receive(:new)
+          .with(:name, 3)
+          .and_return(definition)
+
+        connection.update_view(:name, version: 3, materialized: true)
+
+        expect(Scenic.database).to have_received(:update_materialized_view)
           .with(:name, definition.to_sql)
       end
 

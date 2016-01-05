@@ -80,9 +80,12 @@ module Scenic
         raise ArgumentError, "version is required"
       end
 
-      Scenic.database.reapplying_indexes(on: name) do
-        drop_view(name, revert_to_version: revert_to_version, materialized: materialized)
-        create_view(name, version: version, materialized: materialized)
+      sql_definition = definition(name, version)
+
+      if materialized
+        Scenic.database.update_materialized_view(name, sql_definition)
+      else
+        Scenic.database.update_view(name, sql_definition)
       end
     end
 
