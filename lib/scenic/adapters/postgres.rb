@@ -56,10 +56,11 @@ module Scenic
 
       # Creates a materialized view in the database
       #
-      # Materialized views require PostgreSQL 9.3 or newer.
-      #
       # @param name The name of the materialized view to create
       # @param sql_definition The SQL schema that defines the materialized view.
+      # @raise [MaterializedViewsNotSupportedError] if the version of Postgres in
+      #   use does not support materialized views.
+      #
       # @return [void]
       def create_materialized_view(name, sql_definition)
         raise_unless_materialized_views_supported
@@ -71,6 +72,9 @@ module Scenic
       # Materialized views require PostgreSQL 9.3 or newer.
       #
       # @param name The name of the materialized view to drop.
+      # @raise [MaterializedViewsNotSupportedError] if the version of Postgres in
+      #   use does not support materialized views.
+      #
       # @return [void]
       def drop_materialized_view(name)
         raise_unless_materialized_views_supported
@@ -85,10 +89,18 @@ module Scenic
       #   refreshed without locking the view for select but requires that the
       #   table have at least one unique index that covers all rows. Attempts to
       #   refresh concurrently without a unique index will raise a descriptive
-      #   error. Concurrent refreshes require PostgreSQL 9.4 or newer.
+      #   error.
+      #
+      # @raise [MaterializedViewsNotSupportedError] if the version of Postgres in
+      #   use does not support materialized views.
+      # @raise [ConcurrentRefreshesNotSupportedError] when attempting a
+      #   concurrent refresh on version of Postgres that does not support
+      #   concurrent materialized view refreshes.
+      #
       # @return [void]
       def refresh_materialized_view(name, concurrently: false)
         raise_unless_materialized_views_supported
+
         if concurrently
           raise_unless_concurrent_refresh_supported
           execute "REFRESH MATERIALIZED VIEW CONCURRENTLY #{name};"
