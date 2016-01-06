@@ -117,18 +117,6 @@ $ rails generate scenic:model recent_status
       create  db/migrate/20151112015036_create_recent_statuses.rb
 ```
 
-### When I query that model with `find` I get an error. What gives?
-
-Your view cannot have a primary key, but ActiveRecord's `find` method expects to
-query based on one. You can use `find_by!` or you can explicitly set the primary
-key column on your model like so:
-
-```ruby
-class People < ActiveRecord::Base
-  self.primary_key = :id
-end
-```
-
 ## What about materialized views?
 
 Materialized views are essentially SQL queries whose results can be cached to a
@@ -162,6 +150,18 @@ end
 ```
 
 ## FAQs
+
+**When I query a view-backed model with `find` I get an error. What gives?**
+
+Your view cannot have a primary key, but ActiveRecord's `find` method expects to
+query based on one. You can use `find_by!` or you can explicitly set the primary
+key column on your model like so:
+
+```ruby
+class People < ActiveRecord::Base
+  self.primary_key = :id
+end
+```
 
 **Why is my view missing columns from the underlying table?**
 
