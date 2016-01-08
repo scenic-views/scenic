@@ -46,7 +46,7 @@ module Scenic
       #
       # @return [void]
       def create_view(name, sql_definition)
-        execute "CREATE VIEW #{name} AS #{sql_definition};"
+        execute "CREATE VIEW #{quote_table_name(name)} AS #{sql_definition};"
       end
 
       # Updates a view in the database.
@@ -74,7 +74,7 @@ module Scenic
       #
       # @return [void]
       def drop_view(name)
-        execute "DROP VIEW #{name};"
+        execute "DROP VIEW #{quote_table_name(name)};"
       end
 
       # Creates a materialized view in the database
@@ -88,7 +88,7 @@ module Scenic
       # @return [void]
       def create_materialized_view(name, sql_definition)
         raise_unless_materialized_views_supported
-        execute "CREATE MATERIALIZED VIEW #{name} AS #{sql_definition};"
+        execute "CREATE MATERIALIZED VIEW #{quote_table_name(name)} AS #{sql_definition};"
       end
 
       # Updates a materialized view in the database.
@@ -124,7 +124,7 @@ module Scenic
       # @return [void]
       def drop_materialized_view(name)
         raise_unless_materialized_views_supported
-        execute "DROP MATERIALIZED VIEW #{name};"
+        execute "DROP MATERIALIZED VIEW #{quote_table_name(name)};"
       end
 
       # Refreshes a materialized view from its SQL schema.
@@ -149,16 +149,16 @@ module Scenic
 
         if concurrently
           raise_unless_concurrent_refresh_supported
-          execute "REFRESH MATERIALIZED VIEW CONCURRENTLY #{name};"
+          execute "REFRESH MATERIALIZED VIEW CONCURRENTLY #{quote_table_name(name)};"
         else
-          execute "REFRESH MATERIALIZED VIEW #{name};"
+          execute "REFRESH MATERIALIZED VIEW #{quote_table_name(name)};"
         end
       end
 
       private
 
       attr_reader :connection
-      delegate :execute, to: :connection
+      delegate :execute, :quote_table_name, to: :connection
 
       def raise_unless_materialized_views_supported
         unless connection.supports_materialized_views?
