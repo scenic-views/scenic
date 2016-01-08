@@ -3,6 +3,7 @@ module Scenic
   # models that are backed by views.
   #
   # See:
+  #
   # * {file:lib/generators/scenic/model/USAGE Model Generator}
   # * {file:lib/generators/scenic/view/USAGE View Generator}
   # * {file:README.md README}
