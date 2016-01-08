@@ -5,6 +5,26 @@ changelog, see the [CHANGELOG] for each version via the version links.
 
 [CHANGELOG]: https://github.com/thoughtbot/scenic/commits/master
 
+## [1.1.0] - January 8, 2016
+
+### Added
+- Added support for updating materialized view definitions while maintaining
+  existing indexes that are still applicable after the update.
+- Added support for refreshing materialized views concurrently (requires
+  Postgres 9.4 or newer).
+
+### Fixed
+- The schema dumper will now dump views and materialized views together in the
+  order they are returned by Postgres. This fixes issues when loading views that
+  depend on other views via `rake db:schema:load`.
+- Scenic now works on [supported versions of Postgres] older than 9.3.0.
+  Attempts to use database features not supported by your specific version of
+  Postgres will raise descriptive errors.
+- Fixed inability to dump materialized views in Rails 5.0.0.beta1.
+
+[supported versions of Postgres]: http://www.postgresql.org/support/versioning/
+[1.1.0]: https://github.com/thoughtbot/scenic/compare/v1.0.0...v1.1.0
+
 ## [1.0.0] - November 23, 2015
 
 ### Added
