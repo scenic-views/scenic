@@ -13,18 +13,27 @@ module Scenic
   module Adapters
     # An adapter for managing Postgres views.
     #
-    # **This object is used internally by adapters and the schema dumper and is
-    # not intended to be used by application code. It is documented here for
-    # use by adapter gems.**
+    # These methods are used interally by Scenic and are not intended for direct
+    # use. Methods that alter database schema are intended to be called via
+    # {Statements}, while {#refresh_materialized_view} is called via
+    # {Scenic.database}.
     #
-    # For methods usable in migrations see {Statements}.
-    #
-    # @api extension
+    # The methods are documented here for insight into specifics of how Scenic
+    # integrates with Postgres and the responsibilities of {Adapters}.
     class Postgres
-      # Creates an instance of the Scenic Postgres adapter
+      # Creates an instance of the Scenic Postgres adapter.
+      #
+      # This is the default adapter for Scenic. Configuring it via
+      # {Scenic.configure} is not required, but the example below shows how one
+      # would explicitly set it.
       #
       # @param connection The database connection the adapter should use. This
       #   defaults to `ActiveRecord::Base.connection`
+      #
+      # @example
+      #  Scenic.configure do |config|
+      #    config.adapter = Scenic::Adapters::Postgres.new
+      #  end
       def initialize(connection = ActiveRecord::Base.connection)
         @connection = Connection.new(connection)
       end
@@ -40,6 +49,8 @@ module Scenic
       end
 
       # Creates a view in the database.
+      #
+      # This is typically called in a migration via {Statements#create_view}.
       #
       # @param name The name of the view to create
       # @param sql_definition The SQL schema for the view.
@@ -59,6 +70,8 @@ module Scenic
       # view schema. Existing columns cannot be re-ordered, removed, or have
       # their types changed. Drop and create overcomes this limitation as well.
       #
+      # This is typically called in a migration via {Statements#update_view}.
+      #
       # @param name The name of the view to update
       # @param sql_definition The SQL schema for the updated view.
       #
@@ -69,6 +82,8 @@ module Scenic
       end
 
       # Drops the named view from the database
+      #
+      # This is typically called in a migration via {Statements#drop_view}.
       #
       # @param name The name of the view to drop
       #
@@ -81,6 +96,8 @@ module Scenic
       #
       # @param name The name of the materialized view to create
       # @param sql_definition The SQL schema that defines the materialized view.
+      #
+      # This is typically called in a migration via {Statements#create_view}.
       #
       # @raise [MaterializedViewsNotSupportedError] if the version of Postgres
       #   in use does not support materialized views.
@@ -96,6 +113,8 @@ module Scenic
       # Drops and recreates the materialized view. Attempts to maintain all
       # previously existing and still applicable indexes on the materialized
       # view after the view is recreated.
+      #
+      # This is typically called in a migration via {Statements#update_view}.
       #
       # @param name The name of the view to update
       # @param sql_definition The SQL schema for the updated view.
@@ -115,7 +134,7 @@ module Scenic
 
       # Drops a materialized view in the database
       #
-      # Materialized views require PostgreSQL 9.3 or newer.
+      # This is typically called in a migration via {Statements#update_view}.
       #
       # @param name The name of the materialized view to drop.
       # @raise [MaterializedViewsNotSupportedError] if the version of Postgres
@@ -128,6 +147,8 @@ module Scenic
       end
 
       # Refreshes a materialized view from its SQL schema.
+      #
+      # This is typically called from application code via {Scenic.database}.
       #
       # @param name The name of the materialized view to refresh.
       # @param concurrently [Boolean] Whether the refreshs hould happen
@@ -142,6 +163,11 @@ module Scenic
       # @raise [ConcurrentRefreshesNotSupportedError] when attempting a
       #   concurrent refresh on version of Postgres that does not support
       #   concurrent materialized view refreshes.
+      #
+      # @example Non-concurrent refresh
+      #   Scenic.database.refresh_materialized_view(:search_results)
+      # @example Concurrent refresh
+      #   Scenic.database.refresh_materialized_view(:posts, concurrent: true)
       #
       # @return [void]
       def refresh_materialized_view(name, concurrently: false)

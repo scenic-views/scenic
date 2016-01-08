@@ -28,7 +28,7 @@ module Scenic
   # @yieldparam [Scenic::Configuration] config current Scenic config
   # ```
   # Scenic.configure do |config|
-  #   config.database = Scenic::Adapters::Postgres
+  #   config.database = Scenic::Adapters::Postgres.new
   # end
   # ```
   def self.configure
