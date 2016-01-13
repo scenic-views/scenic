@@ -162,6 +162,17 @@ class People < ActiveRecord::Base
   self.primary_key = :id
 end
 ```
+**When I query a view-backed model with `last` method I get an error. What gives?**
+
+Your view cannot have a primary key, but ActiveRecored's `last` method uses ordering by primary key to get the last record. 
+To get this working you must explicitly set the primary key column on your model like so:
+
+```ruby
+class People < ActiveRecord::Base
+  self.primary_key = :id
+end
+```
+
 
 **Why is my view missing columns from the underlying table?**
 
