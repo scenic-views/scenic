@@ -151,15 +151,18 @@ end
 
 ## FAQs
 
-**When I query a view-backed model with `find` I get an error. What gives?**
+**Why do I get an error when querying a view-backed model with `find`, `last`, or `first`?**
 
-Your view cannot have a primary key, but ActiveRecord's `find` method expects to
-query based on one. You can use `find_by!` or you can explicitly set the primary
-key column on your model like so:
+ActiveRecord's `find` method expects to query based on your model's primary key,
+but views do not have primary keys. Additionally, the `first` and `last` methods
+will produce queries that attempt to sort based on the primary key.
+
+You can get around these issues by setting the primary key column on your Rails
+model like so:
 
 ```ruby
 class People < ActiveRecord::Base
-  self.primary_key = :id
+  self.primary_key = :my_unique_identifier_field
 end
 ```
 
