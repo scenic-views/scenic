@@ -5,6 +5,15 @@ changelog, see the [CHANGELOG] for each version via the version links.
 
 [CHANGELOG]: https://github.com/thoughtbot/scenic/commits/master
 
+## [1.1.1] - January 29, 2016
+
+### Fixed
+- Some schema operations were failing with a `PG::ConnectionBad: connection is
+  closed` error. This has been fixed by ensuring we grab a fresh connection for
+  all operations.
+
+[1.1.1]: https://github.com/thoughtbot/scenic/compare/v1.1.0...v1.1.1
+
 ## [1.1.0] - January 8, 2016
 
 ### Added
