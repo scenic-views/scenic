@@ -29,7 +29,8 @@ module Scenic
 
         it "raises an exception if the version of PostgreSQL is too old" do
           connection = double("Connection", supports_materialized_views?: false)
-          adapter = Postgres.new(connection)
+          connectable = double("Connectable", connection: connection)
+          adapter = Postgres.new(connectable)
           err = Scenic::Adapters::Postgres::MaterializedViewsNotSupportedError
 
           expect { adapter.create_materialized_view("greetings", "select 1") }
@@ -63,7 +64,8 @@ module Scenic
 
         it "raises an exception if the version of PostgreSQL is too old" do
           connection = double("Connection", supports_materialized_views?: false)
-          adapter = Postgres.new(connection)
+          connectable = double("Connectable", connection: connection)
+          adapter = Postgres.new(connectable)
           err = Scenic::Adapters::Postgres::MaterializedViewsNotSupportedError
 
           expect { adapter.drop_materialized_view("greetings") }
@@ -74,7 +76,8 @@ module Scenic
       describe "#refresh_materialized_view" do
         it "raises an exception if the version of PostgreSQL is too old" do
           connection = double("Connection", supports_materialized_views?: false)
-          adapter = Postgres.new(connection)
+          connectable = double("Connectable", connection: connection)
+          adapter = Postgres.new(connectable)
           err = Scenic::Adapters::Postgres::MaterializedViewsNotSupportedError
 
           expect { adapter.refresh_materialized_view(:tests) }
@@ -93,7 +96,8 @@ module Scenic
 
           it "raises an exception if the version of PostgreSQL is too old" do
             connection = double("Connection", postgresql_version: 90300)
-            adapter = Postgres.new(connection)
+            connectable = double("Connectable", connection: connection)
+            adapter = Postgres.new(connectable)
             e = Scenic::Adapters::Postgres::ConcurrentRefreshesNotSupportedError
 
             expect {

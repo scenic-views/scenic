@@ -27,15 +27,15 @@ module Scenic
       # {Scenic.configure} is not required, but the example below shows how one
       # would explicitly set it.
       #
-      # @param connection The database connection the adapter should use. This
-      #   defaults to `ActiveRecord::Base.connection`
+      # @param [#connection] connectable An object that returns the connection
+      #   for Scenic to use. Defaults to `ActiveRecord::Base`.
       #
       # @example
       #  Scenic.configure do |config|
       #    config.adapter = Scenic::Adapters::Postgres.new
       #  end
-      def initialize(connection = ActiveRecord::Base.connection)
-        @connection = Connection.new(connection)
+      def initialize(connectable = ActiveRecord::Base)
+        @connectable = connectable
       end
 
       # Returns an array of views in the database.
@@ -183,8 +183,12 @@ module Scenic
 
       private
 
-      attr_reader :connection
+      attr_reader :connectable
       delegate :execute, :quote_table_name, to: :connection
+
+      def connection
+        Connection.new(connectable.connection)
+      end
 
       def raise_unless_materialized_views_supported
         unless connection.supports_materialized_views?
