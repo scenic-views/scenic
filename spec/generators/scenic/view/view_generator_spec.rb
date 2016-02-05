@@ -36,4 +36,16 @@ describe Scenic::Generators::ViewGenerator, :generator do
       expect(migration).to contain "materialized: true"
     end
   end
+
+  context "for views created in a schema other than 'public'" do
+    it "creates view definition and migration files" do
+      migration = file("db/migrate/create_non_public_searches.rb")
+      view_definition = file("db/views/non_public_searches_v01.sql")
+
+      run_generator ["non_public.search"]
+
+      expect(migration).to be_a_migration
+      expect(view_definition).to exist
+    end
+  end
 end

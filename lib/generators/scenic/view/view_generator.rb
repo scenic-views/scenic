@@ -56,7 +56,7 @@ module Scenic
 
         def migration_class_name
           if creating_new_view?
-            super
+            "Create#{class_name.gsub('.', '').pluralize}"
           else
             "Update#{class_name.pluralize}ToVersion#{version}"
           end
@@ -85,8 +85,20 @@ module Scenic
         Scenic::Definition.new(plural_file_name, previous_version)
       end
 
+      def plural_file_name
+        @plural_file_name ||= file_name.pluralize.gsub(".", "_")
+      end
+
       def destroying?
         behavior == :revoke
+      end
+
+      def formatted_plural_name
+        if plural_name.include?(".")
+          "\"#{plural_name}\""
+        else
+          ":#{plural_name}"
+        end
       end
 
       def destroying_initial_view?
