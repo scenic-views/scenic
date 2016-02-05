@@ -26,6 +26,13 @@ verifySearchResults() {
   echo "[success]"
 }
 
+verifySchemaContains() {
+  local expectedString=$1
+  echo "verify schema contains '$expectedString'"
+  grep -q "$expectedString" db/schema.rb || exit 1
+  echo "[success]"
+}
+
 writeToFileAndMigrateAndVerifySearchResults() {
   echo "write search definition and migrate"
   local version=$1
@@ -98,8 +105,8 @@ main() {
   echo "[success]"
 
   echo "add indexes to materialized view"
-  rails runner "ActiveRecord::Base.connection.execute 'CREATE INDEX searches_test_1 ON searches USING btree (results);'" || exit 1
-  rails runner "ActiveRecord::Base.connection.execute 'CREATE INDEX searches_test_2 ON searches USING btree (user_id);'" || exit 1
+  rails runner 'ActiveRecord::Migration.add_index :searches, :results' || exit 1
+  rails runner 'ActiveRecord::Migration.add_index :searches, :user_id' || exit 1
   echo "[success]"
 
   echo "update materialized view"
@@ -107,6 +114,7 @@ main() {
   echo "SELECT 'test'::text AS results" > db/views/searches_v02.sql
   rake db:migrate
   verifySearchResults 'test'
+  verifySchemaContains 'add_index "searches"'
 
   echo "rake db:rollback"
   rake db:rollback

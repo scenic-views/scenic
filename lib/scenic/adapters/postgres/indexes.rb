@@ -34,7 +34,7 @@ module Scenic
             LEFT JOIN pg_namespace n ON n.oid = i.relnamespace
             WHERE i.relkind = 'i'
               AND d.indisprimary = 'f'
-              AND t.relname = '#{quote_table_name(name)}'
+              AND t.relname = '#{name}'
               AND n.nspname = ANY (current_schemas(false))
             ORDER BY i.relname
           SQL
