@@ -9,16 +9,23 @@ module Scenic
     end
 
     def views(stream)
-      views_in_database.select { |view| !ignored?(view.name) }.each do |view|
+      if dumpable_views_in_database.any?
+        stream.puts
+      end
+
+      dumpable_views_in_database.each do |view|
         stream.puts(view.to_schema)
+        indexes(view.name, stream)
       end
     end
 
-    def views_in_database
-      @views_in_database ||= Scenic.database.views
-    end
-
     private
+
+    def dumpable_views_in_database
+      @dumpable_views_in_database ||= Scenic.database.views.reject do |view|
+        ignored?(view.name)
+      end
+    end
 
     unless ActiveRecord::SchemaDumper.instance_methods(false).include?(:ignored?)
       # This method will be present in Rails 4.2.0 and can be removed then.
