@@ -5,6 +5,26 @@ changelog, see the [CHANGELOG] for each version via the version links.
 
 [CHANGELOG]: https://github.com/thoughtbot/scenic/commits/master
 
+## [1.2.0] - February 5, 2016
+
+### Added
+- The generators now accept namespaced view definitions. For example: `rails
+  generate scenic:view my_app.users`.
+
+### Fixed
+- Materialized view indexes are now properly dumped to `db/schema.rb`. This was
+  an oversight in previous releases, meaning `rake db:schema:load` was missing
+  indexes.
+- Calling `update_view` for a materialized view now properly finds associated
+  indexes for automatic reapplication. An issue in the previous index query was
+  returning no indexes.
+
+**Note**: Dumping materialized view indexes will produce an invalid
+`db/schema.rb` file  under Rails 5 beta 1 and beta 2. This is fixed on Rails
+master.
+
+[1.2.0]: https://github.com/thoughtbot/scenic/compare/v1.1.1...v1.2.0
+
 ## [1.1.1] - January 29, 2016
 
 ### Fixed
