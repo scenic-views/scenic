@@ -78,6 +78,49 @@ Scenic detected that we already had an existing `search_results` view at version
 update to the version 2 schema. All that's left for you to do is tweak the
 schema in the new definition and run the `update_view` migration.
 
+## What if I want to change a view without dropping it?
+
+The `update_view` statement used by default will drop your view then create
+a new version of it.
+
+This is not desirable when you have complicated hierarchies of views, especially
+when some of those views may be materialized and take a long time to recreate.
+
+You can use `replace_view` to generate a CREATE OR REPLACE VIEW SQL statement.
+
+See postgresql documentation on how this works:
+http://www.postgresql.org/docs/current/static/sql-createview.html
+
+To start replacing a view run the generator like for a regular change:
+
+```sh
+$ rails generate scenic:view search_results
+      create  db/views/search_results_v02.sql
+      create  db/migrate/[TIMESTAMP]_update_search_results_to_version_2.rb
+```
+
+Now, edit the migration. It should look something like:
+
+```ruby
+class UpdateSearchResultsToVersion2 < ActiveRecord::Migration
+  def change
+    update_view :search_results, version: 2, revert_to_version: 1
+  end
+end
+```
+
+Update it to use replace view:
+
+```ruby
+class UpdateSearchResultsToVersion2 < ActiveRecord::Migration
+  def change
+    replace_view :search_results, version: 2, revert_to_version: 1
+  end
+end
+```
+
+Now you can run the migration like normal.
+
 ## Can I use this view to back a model?
 
 You bet! Using view-backed models can help promote concepts hidden in your

@@ -81,6 +81,31 @@ module Scenic
         create_view(name, sql_definition)
       end
 
+      # Replaces a view in the database using `CREATE OR REPLACE VIEW`.
+      #
+      # This results in a `CREATE OR REPLACE VIEW`. Most of the time the
+      # explicitness of the two step process used in {#update_view} is preferred
+      # to `CREATE OR REPLACE VIEW` because the former ensures that the view you
+      # are trying to update did, in fact, already exist. Additionally,
+      # `CREATE OR REPLACE VIEW` is allowed only to add new columns to the end
+      # of an existing view schema. Existing columns cannot be re-ordered,
+      # removed, or have their types changed. Drop and create overcomes this
+      # limitation as well.
+      #
+      # However, when there is a tangled dependency tree
+      # `CREATE OR REPLACE VIEW` can be preferable.
+      #
+      # This is typically called in a migration via
+      # {Statements#replace_view}.
+      #
+      # @param name The name of the view to update
+      # @param sql_definition The SQL schema for the updated view.
+      #
+      # @return [void]
+      def replace_view(name, sql_definition)
+        execute "CREATE OR REPLACE VIEW #{quote_table_name(name)} AS #{sql_definition};"
+      end
+
       # Drops the named view from the database
       #
       # This is typically called in a migration via {Statements#drop_view}.

@@ -89,6 +89,36 @@ module Scenic
       end
     end
 
+    # Update a database view to a new version using `CREATE OR REPLACE VIEW`.
+    #
+    # The existing view is replaced using the supplied `version`
+    # parameter.
+    #
+    # Does not work with materialized views due to lack of database support.
+    #
+    # @param name [String, Symbol] The name of the database view.
+    # @param version [Fixnum] The version number of the view.
+    # @param revert_to_version [Fixnum] The version number to rollback to on
+    #   `rake db rollback`
+    # @return The database response from executing the create statement.
+    #
+    # @example
+    #   replace_view :engagement_reports, version: 3, revert_to_version: 2
+    #
+    def replace_view(name, version: nil, revert_to_version: nil, materialized: false)
+      if version.blank?
+        raise ArgumentError, "version is required"
+      end
+
+      if materialized
+        raise ArgumentError, "Cannot replace materialized views"
+      end
+
+      sql_definition = definition(name, version)
+
+      Scenic.database.replace_view(name, sql_definition)
+    end
+
     private
 
     def definition(name, version)
