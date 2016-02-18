@@ -15,6 +15,10 @@ module Scenic
       record(:update_view, args)
     end
 
+    def update_view_replace(*args)
+      record(:update_view_replace, args)
+    end
+
     def invert_create_view(args)
       [:drop_view, args]
     end
@@ -25,6 +29,10 @@ module Scenic
 
     def invert_update_view(args)
       perform_scenic_inversion(:update_view, args)
+    end
+
+    def invert_update_view_replace(args)
+      perform_scenic_inversion(:update_view_replace, args)
     end
 
     private
