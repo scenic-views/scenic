@@ -1,4 +1,4 @@
-require 'erb'
+require "erb"
 
 module Scenic
   # @api private
