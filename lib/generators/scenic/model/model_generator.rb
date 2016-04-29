@@ -11,12 +11,12 @@ module Scenic
       source_root File.expand_path("../templates", __FILE__)
 
       def invoke_rails_model_generator
-        invoke "model", [name], options.merge(migration: false)
+        invoke "model", [file_path.singularize], options.merge(migration: false)
       end
 
       def inject_model_methods
         if materialized? && generating?
-          inject_into_class "app/models/#{file_path}.rb", class_name do
+          inject_into_class "app/models/#{file_path.singularize}.rb", class_name do
             evaluate_template("model.erb")
           end
         end

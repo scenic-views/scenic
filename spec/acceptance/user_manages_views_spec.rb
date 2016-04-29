@@ -49,6 +49,10 @@ describe "User manages views" do
     successfully "rails destroy scenic:model child"
   end
 
+  it "handles plural view names gracefully during generation" do
+    successfully "rails generate scenic:model search_results --materialized"
+  end
+
   def successfully(command)
     `RAILS_ENV=test #{command}`
     expect($?.exitstatus).to eq(0), "'#{command}' was unsuccessful"
