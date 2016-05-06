@@ -38,6 +38,20 @@ module Scenic
         end
       end
 
+      describe "#replace_view" do
+        it "successfully replaces a view" do
+          adapter = Postgres.new
+
+          adapter.create_view("greetings", "SELECT text 'hi' AS greeting")
+
+          expect(adapter.views.first.definition).to eql "SELECT 'hi'::text AS greeting;"
+
+          adapter.replace_view("greetings", "SELECT text 'hello' AS greeting")
+
+          expect(adapter.views.first.definition).to eql "SELECT 'hello'::text AS greeting;"
+        end
+      end
+
       describe "#drop_view" do
         it "successfully drops a view" do
           adapter = Postgres.new

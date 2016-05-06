@@ -95,6 +95,25 @@ module Scenic
       end
     end
 
+    describe "replace_view" do
+      it "replaces the view in the database" do
+        definition = instance_double("Definition", to_sql: "definition")
+        allow(Definition).to receive(:new)
+                              .with(:name, 3)
+                              .and_return(definition)
+
+        connection.replace_view(:name, version: 3)
+
+        expect(Scenic.database).to have_received(:replace_view)
+                                    .with(:name, definition.to_sql)
+      end
+
+      it "raises an error if not supplied a version" do
+        expect { connection.replace_view :views }
+          .to raise_error(ArgumentError, /version is required/)
+      end
+    end
+
     def connection
       Class.new { extend Statements }
     end

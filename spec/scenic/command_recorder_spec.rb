@@ -65,6 +65,32 @@ describe Scenic::CommandRecorder do
     end
   end
 
+  describe "#replace_view" do
+    it "records the replaced view" do
+      args = [:users, { version: 2 }]
+
+      recorder.replace_view(*args)
+
+      expect(recorder.commands).to eq [[:replace_view, args, nil]]
+    end
+
+    it "reverts to replace_view with the specified revert_to_version" do
+      args = [:users, { version: 2, revert_to_version: 1 }]
+      revert_args = [:users, { version: 1 }]
+
+      recorder.revert { recorder.replace_view(*args) }
+
+      expect(recorder.commands).to eq [[:replace_view, revert_args]]
+    end
+
+    it "raises when reverting without revert_to_version set" do
+      args = [:users, { version: 42, another_argument: 1 }]
+
+      expect { recorder.revert { recorder.replace_view(*args) } }
+        .to raise_error(ActiveRecord::IrreversibleMigration)
+    end
+  end
+
   def recorder
     @recorder ||= ActiveRecord::Migration::CommandRecorder.new
   end
