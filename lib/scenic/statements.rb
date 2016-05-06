@@ -91,7 +91,7 @@ module Scenic
 
     # Update a database view to a new version using `CREATE OR REPLACE VIEW`.
     #
-    # The existing view is created/replaced using the supplied `version`
+    # The existing view is replaced using the supplied `version`
     # parameter.
     #
     # Does not work with materialized views, no parameter for that is provided!
@@ -103,16 +103,16 @@ module Scenic
     # @return The database response from executing the create statement.
     #
     # @example
-    #   update_view_replace :engagement_reports, version: 3, revert_to_version: 2
+    #   replace_view :engagement_reports, version: 3, revert_to_version: 2
     #
-    def update_view_replace(name, version: nil, revert_to_version: nil)
+    def replace_view(name, version: nil, revert_to_version: nil)
       if version.blank?
         raise ArgumentError, "version is required"
       end
 
       sql_definition = definition(name, version)
 
-      Scenic.database.update_view_replace(name, sql_definition)
+      Scenic.database.replace_view(name, sql_definition)
     end
 
     private
