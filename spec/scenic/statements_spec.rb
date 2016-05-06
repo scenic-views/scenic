@@ -99,20 +99,20 @@ module Scenic
       it "replaces the view in the database" do
         definition = instance_double("Definition", to_sql: "definition")
         allow(Definition).to receive(:new)
-                              .with(:name, 3)
-                              .and_return(definition)
+          .with(:name, 3)
+          .and_return(definition)
 
         connection.replace_view(:name, version: 3)
 
         expect(Scenic.database).to have_received(:replace_view)
-                                    .with(:name, definition.to_sql)
+          .with(:name, definition.to_sql)
       end
 
       it "fails to replace the materialized view in the database" do
         definition = instance_double("Definition", to_sql: "definition")
         allow(Definition).to receive(:new)
-                              .with(:name, 3)
-                              .and_return(definition)
+          .with(:name, 3)
+          .and_return(definition)
 
         expect do
           connection.replace_view(:name, version: 3, materialized: true)
