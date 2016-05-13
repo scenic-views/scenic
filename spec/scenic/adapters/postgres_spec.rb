@@ -137,6 +137,27 @@ module Scenic
             "people_with_names",
           ]
         end
+
+        context "with views in non public schemas" do
+          it "returns also the non public views" do
+            adapter = Postgres.new
+
+            ActiveRecord::Base.connection.execute <<-SQL
+              CREATE VIEW parents AS SELECT text 'Joe' AS name
+            SQL
+
+            ActiveRecord::Base.connection.execute <<-SQL
+              CREATE SCHEMA scenic;
+              CREATE VIEW scenic.parents AS SELECT text 'Maarten' AS name;
+              SET search_path TO scenic, public;
+            SQL
+
+            expect(adapter.views.map(&:name)).to eq [
+              "parents",
+              "scenic.parents",
+            ]
+          end
+        end
       end
     end
   end
