@@ -27,7 +27,8 @@ module Scenic
             SELECT
               c.relname as viewname,
               pg_get_viewdef(c.oid) AS definition,
-              c.relkind AS kind
+              c.relkind AS kind,
+              n.nspname AS namespace
             FROM pg_class c
               LEFT JOIN pg_namespace n ON n.oid = c.relnamespace
             WHERE
@@ -39,8 +40,16 @@ module Scenic
         end
 
         def to_scenic_view(result)
+          namespace, viewname = result.values_at "namespace", "viewname"
+
+          if namespace != "public"
+            namespaced_viewname = "#{namespace}.#{viewname}"
+          else
+            namespaced_viewname = viewname
+          end
+
           Scenic::View.new(
-            name: result["viewname"],
+            name: namespaced_viewname,
             definition: result["definition"].strip,
             materialized: result["kind"] == "m",
           )
