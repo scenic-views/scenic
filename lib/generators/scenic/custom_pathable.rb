@@ -8,8 +8,8 @@ module Scenic
         class_option :custom_path,
           type: :string,
           required: false,
-          desc: 'Sets the path for the view',
-          default: ''
+          desc: "Sets the path for the view",
+          default: ""
       end
 
       private

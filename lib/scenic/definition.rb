@@ -21,9 +21,9 @@ module Scenic
 
     def path
       if @custom_path.blank?
-        File.join('db', 'views', filename)
+        File.join("db", "views", filename)
       else
-        File.join(@custom_path, 'views', filename)
+        File.join(@custom_path, "views", filename)
       end
     end
 

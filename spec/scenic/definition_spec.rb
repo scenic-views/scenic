@@ -23,7 +23,7 @@ module Scenic
 
     describe "path" do
       context "no custom path" do
-        it "returns a sql file in db/views with padded version and view name"  do
+        it "returns a sql file in db/views with padded version and view name" do
           expected = "db/views/searches_v01.sql"
 
           definition = Definition.new("searches", 1, nil)
@@ -33,7 +33,7 @@ module Scenic
       end
 
       context "with custom path" do
-        it "returns a sql file in custom path with padded version and view name"  do
+        it "returns a sql file in custom path with padded version and view name" do
           expected = "my_path/views/searches_v01.sql"
 
           definition = Definition.new("searches", 1, "my_path")

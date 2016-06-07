@@ -68,18 +68,18 @@ module Scenic
       private
 
       def views_directory_path
-        @views_directory_path ||= Rails.root.join(base_path, 'views')
+        @views_directory_path ||= Rails.root.join(base_path, "views")
       end
 
       def migration_directory_path
-        @migration_directory_path ||= Rails.root.join(base_path, 'migrate')
+        @migration_directory_path ||= Rails.root.join(base_path, "migrate")
       end
 
       def base_path
         @base_path ||= if custom_path.present?
                          custom_path
                        else
-                         'db'
+                         "db"
                        end
       end
 
