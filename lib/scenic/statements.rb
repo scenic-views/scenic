@@ -21,7 +21,7 @@ module Scenic
     #     SELECT * FROM users WHERE users.active = 't'
     #   SQL
     #
-    def create_view(name, version: 1, sql_definition: nil, materialized: false)
+    def create_view(name, version: 1, sql_definition: nil, materialized: false, custom_path: nil)
       if version.blank? && sql_definition.nil?
         raise(
           ArgumentError,
@@ -29,7 +29,7 @@ module Scenic
         )
       end
 
-      sql_definition ||= definition(name, version)
+      sql_definition ||= definition(name, version, custom_path)
 
       if materialized
         Scenic.database.create_materialized_view(name, sql_definition)
@@ -51,7 +51,7 @@ module Scenic
     # @example Drop a view, rolling back to version 3 on rollback
     #   drop_view(:users_who_recently_logged_in, revert_to_version: 3)
     #
-    def drop_view(name, revert_to_version: nil, materialized: false)
+    def drop_view(name, revert_to_version: nil, materialized: false, custom_path: nil)
       if materialized
         Scenic.database.drop_materialized_view(name)
       else
@@ -75,12 +75,12 @@ module Scenic
     # @example
     #   update_view :engagement_reports, version: 3, revert_to_version: 2
     #
-    def update_view(name, version: nil, revert_to_version: nil, materialized: false)
+    def update_view(name, version: nil, revert_to_version: nil, materialized: false, custom_path: nil)
       if version.blank?
         raise ArgumentError, "version is required"
       end
 
-      sql_definition = definition(name, version)
+      sql_definition = definition(name, version, custom_path)
 
       if materialized
         Scenic.database.update_materialized_view(name, sql_definition)
@@ -105,7 +105,7 @@ module Scenic
     # @example
     #   replace_view :engagement_reports, version: 3, revert_to_version: 2
     #
-    def replace_view(name, version: nil, revert_to_version: nil, materialized: false)
+    def replace_view(name, version: nil, revert_to_version: nil, materialized: false, custom_path: nil)
       if version.blank?
         raise ArgumentError, "version is required"
       end
@@ -114,15 +114,15 @@ module Scenic
         raise ArgumentError, "Cannot replace materialized views"
       end
 
-      sql_definition = definition(name, version)
+      sql_definition = definition(name, version, custom_path)
 
       Scenic.database.replace_view(name, sql_definition)
     end
 
     private
 
-    def definition(name, version)
-      Scenic::Definition.new(name, version).to_sql
+    def definition(name, version, custom_path)
+      Scenic::Definition.new(name, version, custom_path).to_sql
     end
   end
 end

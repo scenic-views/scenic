@@ -1,9 +1,10 @@
 module Scenic
   # @api private
   class Definition
-    def initialize(name, version)
+    def initialize(name, version, custom_path)
       @name = name
       @version = version.to_i
+      @custom_path = custom_path
     end
 
     def to_sql
@@ -19,7 +20,11 @@ module Scenic
     end
 
     def path
-      File.join("db", "views", filename)
+      if @custom_path.blank?
+        File.join('db', 'views', filename)
+      else
+        File.join(@custom_path, 'views', filename)
+      end
     end
 
     def version
