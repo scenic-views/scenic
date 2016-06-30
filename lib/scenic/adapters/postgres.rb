@@ -257,7 +257,7 @@ module Scenic
       end
 
       def update_index_names_for(old_tbl, tbl)
-        indexes_for(tbl).map{ |r| r['indexname'] }.each do |indexname|
+        indexes_for(tbl).map { |r| r["indexname"] }.each do |indexname|
           new_indexname = indexname.gsub(old_tbl, tbl)
 
           execute "ALTER INDEX #{indexname} RENAME TO #{new_indexname}" unless indexname == new_indexname
@@ -273,11 +273,11 @@ module Scenic
 
         sql_definition.
           strip.
-          split(';').
+          split(";").
           send(command) do |sql_line|
             sql_line.
-              gsub(/\n/,'').
-              start_with?('CREATE INDEX', 'CREATE UNIQUE INDEX')
+              gsub(/\n/, "").
+              start_with?("CREATE INDEX", "CREATE UNIQUE INDEX")
           end
       end
     end
