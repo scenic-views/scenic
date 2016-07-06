@@ -111,7 +111,6 @@ module Scenic
     # The existing view is replaced using the supplied `version`
     # parameter.
     #
-    # Does not work with materialized views due to lack of database support.
     #
     # @param name [String, Symbol] The name of the database view.
     # @param version [Fixnum] The version number of the view.
@@ -127,13 +126,13 @@ module Scenic
         raise ArgumentError, "version is required"
       end
 
-      if materialized
-        raise ArgumentError, "Cannot replace materialized views"
-      end
-
       sql_definition = definition(name, version)
 
-      Scenic.database.replace_view(name, sql_definition)
+      if materialized
+        Scenic.database.replace_materialized_view(name, sql_definition)
+      else
+        Scenic.database.replace_view(name, sql_definition)
+      end
     end
 
     private

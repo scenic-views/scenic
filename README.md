@@ -86,7 +86,12 @@ a new version of it.
 This is not desirable when you have complicated hierarchies of views, especially
 when some of those views may be materialized and take a long time to recreate.
 
-You can use `replace_view` to generate a CREATE OR REPLACE VIEW SQL statement.
+You can use `replace_view`. `replace_view` generates a CREATE OR REPLACE VIEW
+SQL statement on a normal view. For a materialized view, it creates a new
+materialized view under a temporary name (including the index definition
+specified in that version of the materialized view), then it drops the previous
+existing materialized view and then renames the new materialized view to its
+original name.
 
 See postgresql documentation on how this works:
 http://www.postgresql.org/docs/current/static/sql-createview.html

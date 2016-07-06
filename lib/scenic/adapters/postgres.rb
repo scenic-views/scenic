@@ -154,23 +154,48 @@ module Scenic
       def update_materialized_view(name, sql_definition)
         raise_unless_materialized_views_supported
 
-        temp_mv_name = "#{name}_temp"
         IndexReapplication.new(connection: connection).on(name) do
-          mv_definition = get_definition_for(:create_definition, sql_definition)
-          create_materialized_view(temp_mv_name, mv_definition.first)
-
-          new_index_definitions = get_definition_for(:indexes, sql_definition)
-
-          new_index_definitions.each do |idx_definition|
-            execute idx_definition.gsub(name, temp_mv_name)
-          end
-
-          drop_materialized_view(name)
-
-          execute "ALTER MATERIALIZED VIEW #{quote_table_name(temp_mv_name)} RENAME TO #{quote_table_name(name)};"
-
-          update_index_names_for(temp_mv_name, name)
+          replace_materialized_view(name, sql_definition)
         end
+      end
+
+      # Replaces a materialized view in the database.
+      #
+      # Recreate the materialized view under a temporary name and apply new
+      # indexes (if any). Drop previous materialized view, renames the
+      # temporary materialized view to its original name.
+      #
+      # This is typically called in a migration via {Statements#replace_view}.
+      #
+      # @param name The name of the view to update
+      # @param sql_definition The SQL schema for the updated view.
+      #
+      # @raise [MaterializedViewsNotSupportedError] if the version of Postgres
+      #   in use does not support materialized views.
+      #
+      # @return [void]
+      def replace_materialized_view(name, sql_definition)
+        raise_unless_materialized_views_supported
+
+        temp_mv_name = "#{name}_temp"
+
+        mv_definition = get_definition_for(:create_definition, sql_definition)
+        create_materialized_view(temp_mv_name, mv_definition.first)
+
+        new_index_definitions = get_definition_for(:indexes, sql_definition)
+
+        new_index_definitions.each do |idx_definition|
+          execute idx_definition.gsub(name, temp_mv_name)
+        end
+
+        drop_materialized_view(name)
+
+        sql = "ALTER MATERIALIZED VIEW #{quote_table_name(temp_mv_name)} " +
+          "RENAME TO #{quote_table_name(name)};"
+
+        execute sql
+
+        update_index_names_for(temp_mv_name, name)
       end
 
       # Drops a materialized view in the database
@@ -260,7 +285,9 @@ module Scenic
         indexes_for(tbl).map { |r| r["indexname"] }.each do |indexname|
           new_indexname = indexname.gsub(old_tbl, tbl)
 
-          execute "ALTER INDEX #{indexname} RENAME TO #{new_indexname}" unless indexname == new_indexname
+          if indexname != new_indexname
+            execute "ALTER INDEX #{indexname} RENAME TO #{new_indexname}"
+          end
         end
       end
 
@@ -277,6 +304,7 @@ module Scenic
           send(command) do |sql_line|
             sql_line.
               gsub(/\n/, "").
+              upcase.
               start_with?("CREATE INDEX", "CREATE UNIQUE INDEX")
           end
       end
