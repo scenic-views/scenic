@@ -180,7 +180,9 @@ end
 This will perform a non-concurrent refresh, locking the view for selects until
 the refresh is complete. You can avoid locking the view by passing
 `concurrently: true` but this requires both PostgreSQL 9.4 and your view to have
-at least one unique index that covers all rows.
+at least one unique index that covers all rows. You can add or update indexes for
+materialized views using table migration methods (e.g. `add_index table_name`)
+and these will be automatically re-applied when views are updated.
 
 ## I don't need this view anymore. Make it go away.
 
