@@ -10,9 +10,10 @@ module Scenic
     describe "create_view" do
       it "creates a view from a file" do
         version = 15
+        custom_path = nil
         definition_stub = instance_double("Definition", to_sql: "foo")
         allow(Definition).to receive(:new)
-          .with(:views, version)
+          .with(:views, version, custom_path)
           .and_return(definition_stub)
 
         connection.create_view :views, version: version
@@ -68,7 +69,7 @@ module Scenic
       it "updates the view in the database" do
         definition = instance_double("Definition", to_sql: "definition")
         allow(Definition).to receive(:new)
-          .with(:name, 3)
+          .with(:name, 3, nil)
           .and_return(definition)
 
         connection.update_view(:name, version: 3)
@@ -80,7 +81,7 @@ module Scenic
       it "updates the materialized view in the database" do
         definition = instance_double("Definition", to_sql: "definition")
         allow(Definition).to receive(:new)
-          .with(:name, 3)
+          .with(:name, 3, nil)
           .and_return(definition)
 
         connection.update_view(:name, version: 3, materialized: true)
@@ -99,7 +100,7 @@ module Scenic
       it "replaces the view in the database" do
         definition = instance_double("Definition", to_sql: "definition")
         allow(Definition).to receive(:new)
-          .with(:name, 3)
+          .with(:name, 3, nil)
           .and_return(definition)
 
         connection.replace_view(:name, version: 3)
@@ -111,7 +112,7 @@ module Scenic
       it "fails to replace the materialized view in the database" do
         definition = instance_double("Definition", to_sql: "definition")
         allow(Definition).to receive(:new)
-          .with(:name, 3)
+          .with(:name, 3, nil)
           .and_return(definition)
 
         expect do

@@ -1,6 +1,7 @@
 require "rails/generators"
 require "rails/generators/active_record"
 require "generators/scenic/materializable"
+require "generators/scenic/custom_pathable"
 
 module Scenic
   module Generators
@@ -8,6 +9,7 @@ module Scenic
     class ViewGenerator < Rails::Generators::NamedBase
       include Rails::Generators::Migration
       include Scenic::Generators::Materializable
+      include Scenic::Generators::CustomPathable
       source_root File.expand_path("../templates", __FILE__)
 
       def create_views_directory
@@ -28,12 +30,12 @@ module Scenic
         if creating_new_view? || destroying_initial_view?
           migration_template(
             "db/migrate/create_view.erb",
-            "db/migrate/create_#{plural_file_name}.rb",
+            "#{migration_directory_path}/create_#{plural_file_name}.rb",
           )
         else
           migration_template(
             "db/migrate/update_view.erb",
-            "db/migrate/update_#{plural_file_name}_to_version_#{version}.rb",
+            "#{migration_directory_path}/update_#{plural_file_name}_to_version_#{version}.rb",
           )
         end
       end
@@ -66,7 +68,19 @@ module Scenic
       private
 
       def views_directory_path
-        @views_directory_path ||= Rails.root.join(*%w(db views))
+        @views_directory_path ||= Rails.root.join(base_path, "views")
+      end
+
+      def migration_directory_path
+        @migration_directory_path ||= Rails.root.join(base_path, "migrate")
+      end
+
+      def base_path
+        @base_path ||= if custom_path.present?
+                         custom_path
+                       else
+                         "db"
+                       end
       end
 
       def version_regex
@@ -78,11 +92,11 @@ module Scenic
       end
 
       def definition
-        Scenic::Definition.new(plural_file_name, version)
+        Scenic::Definition.new(plural_file_name, version, custom_path)
       end
 
       def previous_definition
-        Scenic::Definition.new(plural_file_name, previous_version)
+        Scenic::Definition.new(plural_file_name, previous_version, custom_path)
       end
 
       def plural_file_name

@@ -1,12 +1,5 @@
 class <%= migration_class_name %> < ActiveRecord::Migration
   def change
-  <%- if materialized? -%>
-    update_view <%= formatted_plural_name %>,
-      version: <%= version %>,
-      revert_to_version: <%= previous_version %>,
-      materialized: true
-  <%- else -%>
-    update_view <%= formatted_plural_name %>, version: <%= version %>, revert_to_version: <%= previous_version %>
-  <%- end -%>
+    update_view <%= formatted_plural_name %>, version: <%= version %>, revert_to_version: <%= previous_version %><%= ", materialized: true" if materialized? %><%= ", custom_path: '#{custom_path}'" if custom_path? %>
   end
 end
