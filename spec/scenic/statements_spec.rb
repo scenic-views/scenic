@@ -30,9 +30,22 @@ module Scenic
           .with(:views, sql_definition)
       end
 
-      it "raises an error if neither version nor sql_defintion are provided" do
+      it "creates version 1 of the view if neither version nor sql_defintion are provided" do
+        version = 1
+        definition_stub = instance_double("Definition", to_sql: "foo")
+        allow(Definition).to receive(:new).
+          with(:views, version).
+          and_return(definition_stub)
+
+        connection.create_view :views
+
+        expect(Scenic.database).to have_received(:create_view).
+          with(:views, definition_stub.to_sql)
+      end
+
+      it "raises an error if both version and sql_defintion are provided" do
         expect do
-          connection.create_view :foo, version: nil, sql_definition: nil
+          connection.create_view :foo, version: 1, sql_definition: "a defintion"
         end.to raise_error ArgumentError
       end
     end
@@ -77,6 +90,15 @@ module Scenic
           .with(:name, definition.to_sql)
       end
 
+      it "updates a view from a text definition" do
+        sql_definition = "a defintion"
+
+        connection.update_view(:name, sql_definition: sql_definition)
+
+        expect(Scenic.database).to have_received(:update_view).
+          with(:name, sql_definition)
+      end
+
       it "updates the materialized view in the database" do
         definition = instance_double("Definition", to_sql: "definition")
         allow(Definition).to receive(:new)
@@ -85,13 +107,23 @@ module Scenic
 
         connection.update_view(:name, version: 3, materialized: true)
 
-        expect(Scenic.database).to have_received(:update_materialized_view)
-          .with(:name, definition.to_sql)
+        expect(Scenic.database).to have_received(:update_materialized_view).
+          with(:name, definition.to_sql)
       end
 
-      it "raises an error if not supplied a version" do
-        expect { connection.update_view :views }
-          .to raise_error(ArgumentError, /version is required/)
+      it "raises an error if not supplied a version or sql_defintion" do
+        expect { connection.update_view :views }.to raise_error(
+          ArgumentError,
+          /sql_definition or version must be specified/)
+      end
+
+      it "raises an error if both version and sql_defintion are provided" do
+        expect do
+          connection.update_view(
+            :views,
+            version: 1,
+            sql_definition: "a defintion")
+        end.to raise_error ArgumentError, /cannot both be set/
       end
     end
 

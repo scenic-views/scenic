@@ -6,9 +6,9 @@ module Scenic
     # @param name [String, Symbol] The name of the database view.
     # @param version [Fixnum] The version number of the view, used to find the
     #   definition file in `db/views`. This defaults to `1` if not provided.
-    # @param sql_definition [String] The SQL query for the view schema. If both
-    #   `sql_defintiion` and `version` are provided, `sql_definition` takes
-    #   prescedence.
+    # @param sql_definition [String] The SQL query for the view schema. An error
+    #   will be raised if `sql_definition` and `version` are both set,
+    #   as they are mutually exclusive.
     # @param materialized [Boolean] Set to true to create a materialized view.
     #   Defaults to false.
     # @return The database response from executing the create statement.
@@ -21,12 +21,16 @@ module Scenic
     #     SELECT * FROM users WHERE users.active = 't'
     #   SQL
     #
-    def create_view(name, version: 1, sql_definition: nil, materialized: false)
-      if version.blank? && sql_definition.nil?
+    def create_view(name, version: nil, sql_definition: nil, materialized: false)
+      if version.present? && sql_definition.present?
         raise(
           ArgumentError,
-          "view_definition or version_number must be specified"
+          "sql_definition and version cannot both be set",
         )
+      end
+
+      if version.blank? && sql_definition.blank?
+        version = 1
       end
 
       sql_definition ||= definition(name, version)
@@ -66,6 +70,9 @@ module Scenic
     #
     # @param name [String, Symbol] The name of the database view.
     # @param version [Fixnum] The version number of the view.
+    # @param sql_definition [String] The SQL query for the view schema. An error
+    #   will be raised if `sql_definition` and `version` are both set,
+    #   as they are mutually exclusive.
     # @param revert_to_version [Fixnum] The version number to rollback to on
     #   `rake db rollback`
     # @param materialized [Boolean] True if updating a materialized view.
@@ -75,12 +82,22 @@ module Scenic
     # @example
     #   update_view :engagement_reports, version: 3, revert_to_version: 2
     #
-    def update_view(name, version: nil, revert_to_version: nil, materialized: false)
-      if version.blank?
-        raise ArgumentError, "version is required"
+    def update_view(name, version: nil, sql_definition: nil, revert_to_version: nil, materialized: false)
+      if version.blank? && sql_definition.blank?
+        raise(
+          ArgumentError,
+          "sql_definition or version must be specified",
+        )
       end
 
-      sql_definition = definition(name, version)
+      if version.present? && sql_definition.present?
+        raise(
+          ArgumentError,
+          "sql_definition and version cannot both be set",
+        )
+      end
+
+      sql_definition ||= definition(name, version)
 
       if materialized
         Scenic.database.update_materialized_view(name, sql_definition)
