@@ -83,9 +83,6 @@ schema in the new definition and run the `update_view` migration.
 The `update_view` statement used by default will drop your view then create
 a new version of it.
 
-This is not desirable when you have complicated hierarchies of views, especially
-when some of those views may be materialized and take a long time to recreate.
-
 You can use `replace_view` to generate a CREATE OR REPLACE VIEW SQL statement.
 
 See postgresql documentation on how this works:
@@ -120,6 +117,16 @@ end
 ```
 
 Now you can run the migration like normal.
+
+Note: Using `replace_view` on materialized view will raise an error. The migration for changing a materialized view should looks like this :
+
+```ruby
+class UpdateSearchResultsToVersion2 < ActiveRecord::Migration
+  def change
+    update_view :search_results, materialized: true, version: 2, revert_to_version: 1
+  end
+end
+```
 
 ## Can I use this view to back a model?
 
