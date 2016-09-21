@@ -5,6 +5,20 @@ changelog, see the [CHANGELOG] for each version via the version links.
 
 [CHANGELOG]: https://github.com/thoughtbot/scenic/commits/master
 
+## [1.3.0] - May 27, 2016
+
+### Added
+
+- An update_view migration statement (and associated code) that uses
+`CREATE OR REPLACE VIEW` instead of dropping and creating the view.
+
+### Fixed
+
+- Issue with inconsistent singularization with materialization
+  (https://github.com/thoughtbot/scenic/issues/148)
+- Add view namespaces to SchemaDumper, useful when views live in another 
+  schema than `public`.
+
 ## [1.2.0] - February 5, 2016
 
 ### Added
