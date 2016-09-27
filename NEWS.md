@@ -5,6 +5,22 @@ changelog, see the [CHANGELOG] for each version via the version links.
 
 [CHANGELOG]: https://github.com/thoughtbot/scenic/commits/master
 
+## [1.3.0] - May 27, 2016
+
+### Added
+- Add `replace_view` migration statement, which issues `CREATE OR REPLACE
+  VIEW` rather than `CREATE VIEW` or `DROP VIEW` and `CREATE VIEW`.
+- Schema-qualify views outside the 'public' namespace, such as
+  `scenic.searches`
+
+### Fixed
+* Singularize generated model name when injecting into class.
+  Previously, pluralized names would issue a warning and Scenic would
+  attempt to insert model code into the pluralized model file.
+* Convert shell-based smoke tests to RSpec syntax.
+
+[1.3.0]: https://github.com/thoughtbot/scenic/compare/v1.2.0...v1.3.0
+
 ## [1.2.0] - February 5, 2016
 
 ### Added
