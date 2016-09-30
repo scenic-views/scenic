@@ -9,6 +9,10 @@ module Scenic
       expect(Scenic.database).to be_a Adapters::Postgres
     end
 
+    it "defaults the namespace_functions flag to false" do
+      expect(Scenic.configuration.dump_function_namespace_in_schema).to eq(false)
+    end
+
     it "allows the database adapter to be set" do
       adapter = double("Scenic Adapter")
 

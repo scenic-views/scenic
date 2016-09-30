@@ -1,0 +1,9 @@
+class <%= migration_class_name %> < ActiveRecord::Migration
+  def up
+    create_function <%= formatted_name %>
+  end
+
+  def down
+    drop_function <%= formatted_name %>
+  end
+end
