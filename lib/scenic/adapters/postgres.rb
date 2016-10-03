@@ -3,6 +3,7 @@ require_relative "postgres/errors"
 require_relative "postgres/index_reapplication"
 require_relative "postgres/indexes"
 require_relative "postgres/views"
+require_relative "postgres/functions"
 
 module Scenic
   # Scenic database adapters.
@@ -40,12 +41,22 @@ module Scenic
 
       # Returns an array of views in the database.
       #
-      # This collection of views is used by the [Scenic::SchemaDumper] to
+      # This collection of views is used by the [Scenic::SchemaViewDumper] to
       # populate the `schema.rb` file.
       #
       # @return [Array<Scenic::View>]
       def views
         Views.new(connection).all
+      end
+
+      # Returns an array of functions in the database.
+      #
+      # This collection of views is used by the [Scenic::SchemaFunctionDumper] to
+      # populate the `schema.rb` file.
+      #
+      # @return [Array<Scenic::View>]
+      def functions
+        Functions.new(connection).all
       end
 
       # Creates a view in the database.
@@ -58,6 +69,19 @@ module Scenic
       # @return [void]
       def create_view(name, sql_definition)
         execute "CREATE VIEW #{quote_table_name(name)} AS #{sql_definition};"
+      end
+
+      # Creates a function in the database.
+      #
+      # This is typically called in a migration via {Statements#create_function}.
+      #
+      # @param name The name of the view to create
+      # @param sql_definition The SQL schema for the function.
+      # NOTE: This should be the fully formed SQL definition including the 'CREATE OR REPLACE FUNCTION' part
+      #
+      # @return [void]
+      def create_function(sql_definition)
+        execute sql_definition
       end
 
       # Updates a view in the database.
@@ -79,6 +103,21 @@ module Scenic
       def update_view(name, sql_definition)
         drop_view(name)
         create_view(name, sql_definition)
+      end      
+      
+      # Updates a function in the database.
+      #
+      # This results in a {#drop_function} followed by a {#create_function}.
+      #
+      # This is typically called in a migration via {Statements#update_function}.
+      #
+      # @param name The name of the function to update
+      # @param sql_definition The SQL schema for the updated function.
+      #
+      # @return [void]
+      def update_function(name, sql_definition)
+        drop_function(name)
+        create_function(sql_definition)
       end
 
       # Replaces a view in the database using `CREATE OR REPLACE VIEW`.
@@ -115,6 +154,27 @@ module Scenic
       # @return [void]
       def drop_view(name)
         execute "DROP VIEW #{quote_table_name(name)};"
+      end
+      
+      # Drops the named function from the database
+      #
+      # This is typically called in a migration via {Statements#drop_function}.
+      #
+      # @param name The name of the function to drop
+      # @param custom_drop_statement A custom drop statement to be used especially when the function has parameters or in
+      # otherwise complex cases
+      #
+      # @return [void]
+      def drop_function(name, custom_drop_statement = nil)
+
+        drop_statement = if custom_drop_statement.present?
+                           custom_drop_statement
+                         else
+                           function_name = name.to_s.ends_with?(')') ? name : "#{name.to_s}()"
+                           "DROP function #{function_name};"
+                         end
+
+        execute drop_statement
       end
 
       # Creates a materialized view in the database

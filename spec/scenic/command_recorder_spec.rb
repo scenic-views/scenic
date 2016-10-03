@@ -1,97 +1,26 @@
-require "spec_helper"
+require 'spec_helper'
 
-describe Scenic::CommandRecorder do
-  describe "#create_view" do
-    it "records the created view" do
-      recorder.create_view :greetings
+module Scenic
+  describe Scenic::CommandRecorder do
 
-      expect(recorder.commands).to eq [[:create_view, [:greetings], nil]]
-    end
+    subject { Class.new { extend CommandRecorder } }
 
-    it "reverts to drop_view" do
-      recorder.revert { recorder.create_view :greetings }
+    it { is_expected.to respond_to(:create_view) }
+    it { is_expected.to respond_to(:drop_view) }
+    it { is_expected.to respond_to(:update_view) }
+    it { is_expected.to respond_to(:replace_view) }
+    it { is_expected.to respond_to(:invert_create_view) }
+    it { is_expected.to respond_to(:invert_drop_view) }
+    it { is_expected.to respond_to(:invert_update_view) }
+    it { is_expected.to respond_to(:invert_replace_view) }
 
-      expect(recorder.commands).to eq [[:drop_view, [:greetings]]]
-    end
-  end
 
-  describe "#drop_view" do
-    it "records the dropped view" do
-      recorder.drop_view :users
-
-      expect(recorder.commands).to eq [[:drop_view, [:users], nil]]
-    end
-
-    it "reverts to create_view with specified revert_to_version" do
-      args = [:users, { revert_to_version: 3 }]
-      revert_args = [:users, { version: 3 }]
-
-      recorder.revert { recorder.drop_view(*args) }
-
-      expect(recorder.commands).to eq [[:create_view, revert_args]]
-    end
-
-    it "raises when reverting without revert_to_version set" do
-      args = [:users, { another_argument: 1 }]
-
-      expect { recorder.revert { recorder.drop_view(*args) } }
-        .to raise_error(ActiveRecord::IrreversibleMigration)
-    end
-  end
-
-  describe "#update_view" do
-    it "records the updated view" do
-      args = [:users, { version: 2 }]
-
-      recorder.update_view(*args)
-
-      expect(recorder.commands).to eq [[:update_view, args, nil]]
-    end
-
-    it "reverts to update_view with the specified revert_to_version" do
-      args = [:users, { version: 2, revert_to_version: 1 }]
-      revert_args = [:users, { version: 1 }]
-
-      recorder.revert { recorder.update_view(*args) }
-
-      expect(recorder.commands).to eq [[:update_view, revert_args]]
-    end
-
-    it "raises when reverting without revert_to_version set" do
-      args = [:users, { version: 42, another_argument: 1 }]
-
-      expect { recorder.revert { recorder.update_view(*args) } }
-        .to raise_error(ActiveRecord::IrreversibleMigration)
-    end
-  end
-
-  describe "#replace_view" do
-    it "records the replaced view" do
-      args = [:users, { version: 2 }]
-
-      recorder.replace_view(*args)
-
-      expect(recorder.commands).to eq [[:replace_view, args, nil]]
-    end
-
-    it "reverts to replace_view with the specified revert_to_version" do
-      args = [:users, { version: 2, revert_to_version: 1 }]
-      revert_args = [:users, { version: 1 }]
-
-      recorder.revert { recorder.replace_view(*args) }
-
-      expect(recorder.commands).to eq [[:replace_view, revert_args]]
-    end
-
-    it "raises when reverting without revert_to_version set" do
-      args = [:users, { version: 42, another_argument: 1 }]
-
-      expect { recorder.revert { recorder.replace_view(*args) } }
-        .to raise_error(ActiveRecord::IrreversibleMigration)
-    end
-  end
-
-  def recorder
-    @recorder ||= ActiveRecord::Migration::CommandRecorder.new
+    it { is_expected.to respond_to(:create_function) }
+    it { is_expected.to respond_to(:drop_function) }
+    it { is_expected.to respond_to(:update_function) }
+    it { is_expected.to respond_to(:invert_create_function) }
+    it { is_expected.to respond_to(:invert_drop_function) }
+    it { is_expected.to respond_to(:invert_update_function) }
+    
   end
 end

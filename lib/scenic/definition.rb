@@ -1,15 +1,16 @@
 module Scenic
   # @api private
   class Definition
-    def initialize(name, version)
+    def initialize(name, version, type=:view)
       @name = name
       @version = version.to_i
+      @type = type.to_s
     end
 
     def to_sql
       File.read(full_path).tap do |content|
         if content.empty?
-          raise "Define view query in #{path} before migrating."
+          raise "Define #{@type.pluralize} query in #{path} before migrating."
         end
       end
     end
@@ -19,7 +20,7 @@ module Scenic
     end
 
     def path
-      File.join("db", "views", filename)
+      File.join("db", @type.pluralize, filename)
     end
 
     def version

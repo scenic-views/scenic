@@ -1,0 +1,8 @@
+Description:
+  Create a new database function
+
+Examples:
+    rails generate scenic:function say_hello
+
+      create: db/functions/say_hello_v1.sql
+      create: db/migrate/20140803191158_create_say_hello.rb

@@ -2,7 +2,7 @@ require "rails"
 
 module Scenic
   # @api private
-  module SchemaDumper
+  module SchemaViewDumper
     def tables(stream)
       super
       views(stream)
