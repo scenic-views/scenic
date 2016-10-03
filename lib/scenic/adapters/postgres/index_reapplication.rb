@@ -1,7 +1,7 @@
 module Scenic
   module Adapters
     class Postgres
-      # Updatine a materialized view causes the view to be dropped and
+      # Updating a materialized view causes the view to be dropped and
       # recreated. This causes any associated indexes to be dropped as well.
       # This object can be used to capture the existing indexes before the drop
       # and then reapply appropriate indexes following the create.
