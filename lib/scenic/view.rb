@@ -43,10 +43,9 @@ module Scenic
     # @api private
     def to_schema
       materialized_option = materialized ? "materialized: true, " : ""
-      safe_to_symbolize_name = name.include?(".") ? "'#{name}'" : name
 
       <<-DEFINITION
-  create_view :#{safe_to_symbolize_name}, #{materialized_option} sql_definition: <<-\SQL
+  create_view #{name.inspect}, #{materialized_option} sql_definition: <<-\SQL
     #{definition.indent(2)}
   SQL
 
