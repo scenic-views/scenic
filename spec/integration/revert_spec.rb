@@ -29,7 +29,7 @@ describe "Reverting scenic schema statements", :db do
   end
 
   def migration_for_create
-    Class.new(::ActiveRecord::Migration) do
+    Class.new(migration_class) do
       def change
         create_view :greetings
       end
@@ -37,7 +37,7 @@ describe "Reverting scenic schema statements", :db do
   end
 
   def migration_for_drop
-    Class.new(::ActiveRecord::Migration) do
+    Class.new(migration_class) do
       def change
         drop_view :greetings, revert_to_version: 1
       end
@@ -45,10 +45,18 @@ describe "Reverting scenic schema statements", :db do
   end
 
   def migration_for_update
-    Class.new(::ActiveRecord::Migration) do
+    Class.new(migration_class) do
       def change
         update_view :greetings, version: 2, revert_to_version: 1
       end
+    end
+  end
+
+  def migration_class
+    if Rails::VERSION::MAJOR >= 5
+      ::ActiveRecord::Migration[5.0]
+    else
+      ::ActiveRecord::Migration
     end
   end
 
