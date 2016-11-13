@@ -100,6 +100,15 @@ module Scenic
             .to raise_error err
         end
 
+        it "can refresh the views dependencies first" do
+          connection = double("Connection").as_null_object
+          connectable = double("Connectable", connection: connection)
+          adapter = Postgres.new(connectable)
+          expect(Scenic::Adapters::Postgres::RefreshDependencies).
+            to receive(:call).with(:tests, adapter, connection)
+          adapter.refresh_materialized_view(:tests, cascade: true)
+        end
+
         context "refreshing concurrently" do
           it "raises descriptive error if concurrent refresh is not possible" do
             adapter = Postgres.new
