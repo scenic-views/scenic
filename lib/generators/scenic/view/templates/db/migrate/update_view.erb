@@ -1,4 +1,4 @@
-class <%= migration_class_name %> < ActiveRecord::Migration
+class <%= migration_class_name %> < <%= activerecord_migration_class %>
   def change
   <%- if materialized? -%>
     update_view <%= formatted_plural_name %>,
