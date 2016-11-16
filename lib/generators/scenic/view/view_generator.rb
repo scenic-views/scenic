@@ -61,6 +61,14 @@ module Scenic
             "Update#{class_name.pluralize}ToVersion#{version}"
           end
         end
+
+        def activerecord_migration_class
+          if ActiveRecord::Migration.respond_to?(:current_version)
+            "ActiveRecord::Migration[5.0]"
+          else
+            "ActiveRecord::Migration"
+          end
+        end
       end
 
       private
