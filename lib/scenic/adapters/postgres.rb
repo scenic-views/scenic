@@ -3,6 +3,7 @@ require_relative "postgres/errors"
 require_relative "postgres/index_reapplication"
 require_relative "postgres/indexes"
 require_relative "postgres/views"
+require_relative "postgres/refresh_dependencies"
 
 module Scenic
   # Scenic database adapters.
@@ -195,8 +196,9 @@ module Scenic
       #   Scenic.database.refresh_materialized_view(:posts, concurrent: true)
       #
       # @return [void]
-      def refresh_materialized_view(name, concurrently: false)
+      def refresh_materialized_view(name, concurrently: false, cascade: false)
         raise_unless_materialized_views_supported
+        refresh_dependencies_for(name) if cascade
 
         if concurrently
           raise_unless_concurrent_refresh_supported
@@ -225,6 +227,14 @@ module Scenic
         unless connection.supports_concurrent_refreshes?
           raise ConcurrentRefreshesNotSupportedError
         end
+      end
+
+      def refresh_dependencies_for(name)
+        Scenic::Adapters::Postgres::RefreshDependencies.call(
+          name,
+          self,
+          connection,
+        )
       end
     end
   end
