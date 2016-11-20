@@ -1,7 +1,10 @@
 require "spec_helper"
 
 class Search < ActiveRecord::Base; end
-class SearchInAHaystack < ActiveRecord::Base; self.table_name = '"search in a haystack"'; end
+
+class SearchInAHaystack < ActiveRecord::Base
+   self.table_name = '"search in a haystack"'
+end
 
 describe Scenic::SchemaDumper, :db do
   it "dumps a create_view for a view in the database" do
@@ -58,11 +61,13 @@ describe Scenic::SchemaDumper, :db do
     end
   end
 
-  context "with views using unexpected characters in name including namespace" do
+  context "with views using unexpected characters, name including namespace" do
     it "dumps a create_view for a view in the database" do
       view_definition = "SELECT 'needle'::text AS haystack"
-      Search.connection.execute "CREATE SCHEMA scenic; SET search_path TO scenic, public"
-      Search.connection.create_view 'scenic."search in a haystack"', sql_definition: view_definition
+      Search.connection.execute(
+        "CREATE SCHEMA scenic; SET search_path TO scenic, public")
+      Search.connection.create_view 'scenic."search in a haystack"', 
+          sql_definition: view_definition
       stream = StringIO.new
 
       ActiveRecord::SchemaDumper.dump(Search.connection, stream)
