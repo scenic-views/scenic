@@ -10,3 +10,10 @@ if [ -z "$CI" ]; then
 fi
 
 bundle exec rake dummy:db:create
+
+if ! [ -z "$CI" ]; then
+  rails -v | grep -q '5.'
+  if [[ $? -eq 0 ]]; then
+    bundle exec rake dummy:db:environment:set RAILS_ENV=test
+  fi
+fi

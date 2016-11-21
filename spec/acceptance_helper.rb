@@ -21,12 +21,21 @@ RSpec.configure do |config|
 
   config.after(:suite) do
     Dir.chdir("spec/dummy") do
-      system <<-CMD
-        rake db:drop db:create &&
-        git add -A &&
-        git reset --hard HEAD 1>/dev/null &&
-        rm -rf .git/ 1>/dev/null
-      CMD
+      if Rails::VERSION::MAJOR >= 5
+        system <<-CMD
+          rake db:drop db:create db:environment:set &&
+          git add -A &&
+          git reset --hard HEAD 1>/dev/null &&
+          rm -rf .git/ 1>/dev/null
+        CMD
+      else
+        system <<-CMD
+          rake db:drop db:create &&
+          git add -A &&
+          git reset --hard HEAD 1>/dev/null &&
+          rm -rf .git/ 1>/dev/null
+        CMD
+      end
     end
   end
 end
