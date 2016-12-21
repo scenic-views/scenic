@@ -173,7 +173,7 @@ refreshes:
 
 ```ruby
 def self.refresh
-  Scenic.database.refresh_materialized_view(table_name, concurrently: false)
+  Scenic.database.refresh_materialized_view(table_name, concurrently: false, cascade: false)
 end
 ```
 
@@ -183,6 +183,13 @@ the refresh is complete. You can avoid locking the view by passing
 at least one unique index that covers all rows. You can add or update indexes for
 materialized views using table migration methods (e.g. `add_index table_name`)
 and these will be automatically re-applied when views are updated.
+
+The `cascade` option is to refresh materialized views that depend on other
+materialized views. For example, say you have materialized view A, which selects
+data from materialized view B. To get the most up to date information in view A
+you would need to refresh view B first, then right after refresh view A. If you
+would like this cascading refresh of materialized views, set `cascade: true`
+when you refresh your materialized view.
 
 ## I don't need this view anymore. Make it go away.
 

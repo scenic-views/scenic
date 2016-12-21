@@ -198,7 +198,9 @@ module Scenic
       # @return [void]
       def refresh_materialized_view(name, concurrently: false, cascade: false)
         raise_unless_materialized_views_supported
-        refresh_dependencies_for(name) if cascade
+        if cascade
+          refresh_dependencies_for(name)
+        end
 
         if concurrently
           raise_unless_concurrent_refresh_supported
