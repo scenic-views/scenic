@@ -22,7 +22,8 @@ RSpec.configure do |config|
   config.after(:suite) do
     Dir.chdir("spec/dummy") do
       system <<-CMD
-        rake db:drop db:create &&
+        echo &&
+        rake db:environment:set db:drop db:create &&
         git add -A &&
         git reset --hard HEAD 1>/dev/null &&
         rm -rf .git/ 1>/dev/null

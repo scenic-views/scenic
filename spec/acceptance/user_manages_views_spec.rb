@@ -51,6 +51,7 @@ describe "User manages views" do
 
   it "handles plural view names gracefully during generation" do
     successfully "rails generate scenic:model search_results --materialized"
+    successfully "rails destroy scenic:model search_results --materialized"
   end
 
   def successfully(command)

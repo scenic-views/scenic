@@ -9,4 +9,5 @@ if [ -z "$CI" ]; then
   bundle exec appraisal install
 fi
 
+bundle exec rake dummy:db:drop
 bundle exec rake dummy:db:create
