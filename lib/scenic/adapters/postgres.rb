@@ -193,7 +193,7 @@ module Scenic
       # @example Non-concurrent refresh
       #   Scenic.database.refresh_materialized_view(:search_results)
       # @example Concurrent refresh
-      #   Scenic.database.refresh_materialized_view(:posts, concurrent: true)
+      #   Scenic.database.refresh_materialized_view(:posts, concurrently: true)
       #
       # @return [void]
       def refresh_materialized_view(name, concurrently: false, cascade: false)
