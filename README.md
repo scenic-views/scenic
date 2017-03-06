@@ -21,6 +21,18 @@ Scenic ships with support for PostgreSQL. The adapter is configurable (see
 `Scenic::Configuration`) and has a minimal interface (see
 `Scenic::Adapters::Postgres`) that other gems can provide.
 
+## Installation
+
+Include scenic as a gem in your Gemfile:
+```ruby
+gem "scenic", "~> 1.3.0"
+```
+Or, if you want to get the latest, you can get master from the main scenic repository:
+
+```ruby
+gem "scenic", git: "git@github.com:thoughtbot/scenic.git"
+```
+
 ## Great, how do I create a view?
 
 You've got this great idea for a view you'd like to call `search_results`. You
