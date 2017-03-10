@@ -35,7 +35,7 @@ module Scenic
               c.relkind IN ('m', 'v')
               AND c.relname NOT IN (SELECT extname FROM pg_extension)
               AND n.nspname = ANY (current_schemas(false))
-            ORDER BY c.oid
+            ORDER BY c.relname
           SQL
         end
 

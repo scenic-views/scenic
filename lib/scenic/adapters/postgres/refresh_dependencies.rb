@@ -67,7 +67,7 @@ module Scenic
           end
 
           def tsort(hash)
-            each_node = lambda { |&b| hash.each_key(&b) }
+            each_node = lambda { |&b| hash.keys.sort.each(&b) }
             each_child = lambda { |n, &b| hash[n].each(&b) }
             TSort.tsort(each_node, each_child)
           end

@@ -156,11 +156,54 @@ module Scenic
           SQL
 
           expect(adapter.views.map(&:name)).to eq [
-            "parents",
             "children",
+            "parents",
             "people",
             "people_with_names",
           ]
+        end
+
+        it "returns the views topological sorted alphabetically" do
+          adapter = Postgres.new
+
+          ActiveRecord::Base.connection.execute <<-SQL
+            CREATE VIEW c AS SELECT text 'c' AS name
+          SQL
+
+          ActiveRecord::Base.connection.execute <<-SQL
+            CREATE VIEW a AS SELECT text 'a' AS name
+          SQL
+
+          ActiveRecord::Base.connection.execute <<-SQL
+            CREATE VIEW b AS SELECT text 'b' AS name
+          SQL
+
+          ActiveRecord::Base.connection.execute <<-SQL
+            CREATE VIEW f_ab AS
+            SELECT * FROM a
+            UNION SELECT * FROM b
+          SQL
+
+          ActiveRecord::Base.connection.execute <<-SQL
+            CREATE VIEW e_ab AS
+            SELECT * FROM a
+            UNION SELECT * FROM b
+          SQL
+
+          ActiveRecord::Base.connection.execute <<-SQL
+            CREATE MATERIALIZED VIEW d_ef AS
+            SELECT * FROM e_ab
+            UNION SELECT * FROM f_ab
+          SQL
+
+          expect(adapter.views.map(&:name)).to eq %w(
+            a
+            b
+            c
+            e_ab
+            f_ab
+            d_ef
+          )
         end
 
         context "with views in non public schemas" do
