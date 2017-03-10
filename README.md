@@ -252,7 +252,7 @@ thoughtbot, inc.
 [Derek Prior]: http://prioritized.net
 [Caleb Thompson]: http://calebthompson.io
 
-![thoughtbot](https://thoughtbot.com/logo.png)
+![thoughtbot](http://presskit.thoughtbot.com/images/thoughtbot-logo-for-readmes.svg)
 
 We love open source software!  See [our other projects][community] or [hire
 us][hire] to help build your product.
