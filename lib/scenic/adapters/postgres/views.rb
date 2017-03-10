@@ -43,9 +43,9 @@ module Scenic
           namespace, viewname = result.values_at "namespace", "viewname"
 
           if namespace != "public"
-            namespaced_viewname = "#{namespace}.#{viewname}"
+            namespaced_viewname = "#{pg_identifier(namespace)}.#{pg_identifier(viewname)}"
           else
-            namespaced_viewname = viewname
+            namespaced_viewname = pg_identifier(viewname)
           end
 
           Scenic::View.new(
@@ -53,6 +53,11 @@ module Scenic
             definition: result["definition"].strip,
             materialized: result["kind"] == "m",
           )
+        end
+
+        def pg_identifier(name)
+          return name if name =~ /^[a-zA-Z_][a-zA-Z0-9_]*$/
+          PGconn.quote_ident(name)
         end
       end
     end
