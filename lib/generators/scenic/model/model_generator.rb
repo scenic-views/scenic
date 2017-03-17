@@ -11,7 +11,12 @@ module Scenic
       source_root File.expand_path("../templates", __FILE__)
 
       def invoke_rails_model_generator
-        invoke "model", [file_path.singularize], options.merge(migration: false)
+        invoke "model",
+          [file_path.singularize],
+          options.merge(
+            fixture_replacement: false,
+            migration: false,
+          )
       end
 
       def inject_model_methods

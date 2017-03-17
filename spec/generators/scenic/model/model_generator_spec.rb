@@ -32,5 +32,12 @@ module Scenic::Generators
       expect(model_definition).to contain("self.refresh")
       expect(model_definition).to have_correct_syntax
     end
+
+    it "does not create a factory definition" do
+      run_generator ["current_customer"]
+      factory_definition = file("spec/factories/current_customers.rb")
+
+      expect(factory_definition).not_to exist
+    end
   end
 end

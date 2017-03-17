@@ -13,6 +13,13 @@ appraise "rails42" do
   gem "railties", "~> 4.2.0"
 end
 
+appraise "rails42-with-fg-rails" do
+  gem "activerecord", "~> 4.2.0"
+  gem "railties", "~> 4.2.0"
+  gem "rspec-rails"
+  gem "factory_girl_rails"
+end
+
 if RUBY_VERSION > "2.2.0"
   appraise "rails50" do
     gem "activerecord", "~> 5.0"
