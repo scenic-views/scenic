@@ -36,4 +36,18 @@ describe Scenic::SchemaDumper, :db do
       Search.connection.drop_view :'scenic.searches'
     end
   end
+
+  it "ignores tables internal to Rails" do
+    view_definition = "SELECT 'needle'::text AS haystack"
+    Search.connection.create_view :searches, sql_definition: view_definition
+    stream = StringIO.new
+
+    ActiveRecord::SchemaDumper.dump(Search.connection, stream)
+
+    output = stream.string
+
+    expect(output).to include "create_view :searches"
+    expect(output).not_to include "ar_internal_metadata"
+    expect(output).not_to include "schema_migrations"
+  end
 end
