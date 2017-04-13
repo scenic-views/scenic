@@ -27,14 +27,10 @@ module Scenic
       end
     end
 
-    unless ActiveRecord::SchemaDumper.instance_methods(false).include?(:ignored?)
+    unless ActiveRecord::SchemaDumper.private_instance_methods(false).include?(:ignored?)
       # This method will be present in Rails 4.2.0 and can be removed then.
       def ignored?(table_name)
-        [
-          "ar_internal_metadata",
-          "schema_migrations",
-          ignore_tables,
-        ].flatten.any? do |ignored|
+        ["schema_migrations", ignore_tables].flatten.any? do |ignored|
           case ignored
           when String; remove_prefix_and_suffix(table_name) == ignored
           when Regexp; remove_prefix_and_suffix(table_name) =~ ignored
