@@ -102,8 +102,8 @@ module Scenic
       end
 
       def formatted_plural_name
-        if plural_name.include?(".")
-          "\"#{plural_name}\""
+        if /[\/\.]/ === plural_name
+          "'#{plural_name}'"
         else
           ":#{plural_name}"
         end
