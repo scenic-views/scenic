@@ -39,21 +39,23 @@ describe Scenic::SchemaDumper, :db do
 
   context "with dependent views " do
     it "dumps create_view sorted alphabetically" do
-      Search.connection.execute("CREATE SCHEMA scenic")
-      Search.connection.execute("SET search_path TO scenic, public")
-
       views = {
-        "scenic.view1": "SELECT 'needle1'::text AS haystack",
-        "scenic.view2": "SELECT 'needle2'::text AS haystack",
-        "scenic.view1_1": "SELECT * FROM scenic.view1",
-        "scenic.view1_2": "SELECT * FROM scenic.view1",
+        "view1": "SELECT 'needle1'::text AS haystack",
+        "view2": "SELECT 'needle2'::text AS haystack",
+        "view1_1": "SELECT * FROM view1",
+        "view1_2": "SELECT * FROM view1",
+        "a_view1_1_1": "SELECT * FROM view1_1",
+        "c_view1_and_1_1": "SELECT * FROM view1_1 UNION SELECT * FROM view1",
+        "z_view1_1_2": "SELECT * FROM view1_1",
       }
 
       expected_order = %w(
-        scenic.view1
-        scenic.view1_1
-        scenic.view1_2
-        scenic.view2
+        view1
+        view1_1
+        a_view1_1_1
+        view1_2
+        view2
+        z_view1_1_2
       )
 
       views.each do |name, definition|
@@ -67,11 +69,11 @@ describe Scenic::SchemaDumper, :db do
       output = stream.string
 
       views.each do |name, _|
-        expect(output).to include "create_view :'#{name}',"
+        expect(output).to include "create_view :#{name},"
       end
 
       create_views = output.lines.grep(/create_view :/)
-      order = create_views.map { |line| line.scan(/scenic\.[a-z_0-9]+/).first }
+      order = create_views.map { |line| line.scan(/:([a-z_0-9]+),/).first.first }
 
       expect(order).to eq(expected_order)
 
