@@ -23,6 +23,8 @@ changelog, see the [CHANGELOG] for each version via the version links.
   and newer apps.
 - Using the `scenic:model` generator will no longer create a fixture or factory.
 
+[1.4.0]: https://github.com/thoughtbot/scenic/compare/v1.3.0...v1.4.0
+
 ## [1.3.0] - May 27, 2016
 
 ### Added
