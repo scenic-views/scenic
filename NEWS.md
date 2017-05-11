@@ -5,6 +5,24 @@ changelog, see the [CHANGELOG] for each version via the version links.
 
 [CHANGELOG]: https://github.com/thoughtbot/scenic/commits/master
 
+## [1.4.0] - May 11, 2017
+
+### Added
+
+- `refresh_materialized_view` now accepts a `cascade` option, which defaults to
+  `false`. Setting this option to `true` will refresh any materialized views the
+  current view depends on first, ensuring the view being refreshed has the most
+  up-to-date information.
+- `sql_definition` argument is now supported when using `update_view`.
+
+### Fixed
+
+- View migrations created under Rails 5 and newer will no longer result in
+  warnings.
+- `ar_internal_metadata` is no longer included in the schema dump for Rails 5
+  and newer apps.
+- Using the `scenic:model` generator will no longer create a fixture or factory.
+
 ## [1.3.0] - May 27, 2016
 
 ### Added
