@@ -19,6 +19,15 @@ module Scenic
           Definition.new("searches", 1).to_sql
         end.to raise_error RuntimeError
       end
+
+      it "interprets embeded ERB statements" do
+        sql_definition = "SELECT text '<%= %w{ H i }.join %>' as greeting"
+        allow(File).to receive(:read).and_return(sql_definition)
+
+        definition = Definition.new("searches", 1)
+
+        expect(definition.to_sql).to eq "SELECT text 'Hi' as greeting"
+      end
     end
 
     describe "path" do
