@@ -55,7 +55,7 @@ module Scenic
     # @example Drop a view, rolling back to version 3 on rollback
     #   drop_view(:users_who_recently_logged_in, revert_to_version: 3)
     #
-    def drop_view(name, revert_to_version: nil, materialized: false)
+    def drop_view(name, revert_to_version: nil, materialized: false, sql_definition: nil)
       if materialized
         Scenic.database.drop_materialized_view(name)
       else
