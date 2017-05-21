@@ -33,7 +33,7 @@ module Scenic
       #
       # @example
       #  Scenic.configure do |config|
-      #    config.adapter = Scenic::Adapters::Postgres.new
+      #    config.database = Scenic::Adapters::Postgres.new
       #  end
       def initialize(connectable = ActiveRecord::Base)
         @connectable = connectable
