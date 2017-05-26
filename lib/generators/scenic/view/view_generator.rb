@@ -64,7 +64,7 @@ module Scenic
 
         def activerecord_migration_class
           if ActiveRecord::Migration.respond_to?(:current_version)
-            "ActiveRecord::Migration[5.0]"
+            "ActiveRecord::Migration[#{ActiveRecord::Migration.current_version}]"
           else
             "ActiveRecord::Migration"
           end
