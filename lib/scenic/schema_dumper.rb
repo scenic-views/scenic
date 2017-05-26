@@ -22,9 +22,10 @@ module Scenic
     private
 
     def dumpable_views_in_database
-      @dumpable_views_in_database ||= Scenic.database.views.reject do |view|
-        ignored?(view.name)
-      end
+      return @dumpable_views_in_database if @dumpable_views_in_database
+
+      views = Scenic.database.views.sort_by(&:name)
+      @dumpable_views_in_database = views.reject { |view| ignored?(view.name) }
     end
 
     unless ActiveRecord::SchemaDumper.private_instance_methods(false).include?(:ignored?)
