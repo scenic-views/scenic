@@ -56,7 +56,7 @@ module Scenic
 
         def migration_class_name
           if creating_new_view?
-            "Create#{class_name.gsub('.', '').pluralize}"
+            "Create#{cleaned_class_name}"
           else
             "Update#{class_name.pluralize}ToVersion#{version}"
           end
@@ -83,6 +83,10 @@ module Scenic
 
       def creating_new_view?
         previous_version == 0
+      end
+
+      def cleaned_class_name
+        class_name.gsub(/\../, &:upcase).delete(".").pluralize
       end
 
       def definition

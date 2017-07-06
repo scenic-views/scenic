@@ -46,6 +46,7 @@ describe Scenic::Generators::ViewGenerator, :generator do
 
       expect(migration).to be_a_migration
       expect(view_definition).to exist
+      expect(migration_file(migration)).to contain "NonPublicSearches"
     end
   end
 end
