@@ -122,6 +122,8 @@ module Scenic
       #
       # @param name The name of the materialized view to create
       # @param sql_definition The SQL schema that defines the materialized view.
+      # @param no_data [Boolean] Default: false. Set to true to create materialized view fast w/o
+      # feeding it with data. You will then need to `REFRESH MATERIALIZED VIEW`
       #
       # This is typically called in a migration via {Statements#create_view}.
       #
@@ -129,9 +131,10 @@ module Scenic
       #   in use does not support materialized views.
       #
       # @return [void]
-      def create_materialized_view(name, sql_definition)
+      def create_materialized_view(name, sql_definition, no_data = false)
         raise_unless_materialized_views_supported
-        execute "CREATE MATERIALIZED VIEW #{quote_table_name(name)} AS #{sql_definition};"
+        no_data_option = no_data ? "\nWITH NO DATA" : ""
+        execute "CREATE MATERIALIZED VIEW #{quote_table_name(name)} AS #{sql_definition}#{no_data_option};"
       end
 
       # Updates a materialized view in the database.
@@ -144,17 +147,19 @@ module Scenic
       #
       # @param name The name of the view to update
       # @param sql_definition The SQL schema for the updated view.
+      # @param no_data [Boolean] Default: false. Set to true to create materialized view fast w/o
+      # feeding it with data. You will then need to `REFRESH MATERIALIZED VIEW`
       #
       # @raise [MaterializedViewsNotSupportedError] if the version of Postgres
       #   in use does not support materialized views.
       #
       # @return [void]
-      def update_materialized_view(name, sql_definition)
+      def update_materialized_view(name, sql_definition, no_data = false)
         raise_unless_materialized_views_supported
 
         IndexReapplication.new(connection: connection).on(name) do
           drop_materialized_view(name)
-          create_materialized_view(name, sql_definition)
+          create_materialized_view(name, sql_definition, no_data)
         end
       end
 

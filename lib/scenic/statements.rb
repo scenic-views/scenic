@@ -21,7 +21,7 @@ module Scenic
     #     SELECT * FROM users WHERE users.active = 't'
     #   SQL
     #
-    def create_view(name, version: nil, sql_definition: nil, materialized: false)
+    def create_view(name, version: nil, sql_definition: nil, materialized: false, materialized_no_data: false)
       if version.present? && sql_definition.present?
         raise(
           ArgumentError,
@@ -36,7 +36,7 @@ module Scenic
       sql_definition ||= definition(name, version)
 
       if materialized
-        Scenic.database.create_materialized_view(name, sql_definition)
+        Scenic.database.create_materialized_view(name, sql_definition, materialized_no_data)
       else
         Scenic.database.create_view(name, sql_definition)
       end
@@ -82,7 +82,7 @@ module Scenic
     # @example
     #   update_view :engagement_reports, version: 3, revert_to_version: 2
     #
-    def update_view(name, version: nil, sql_definition: nil, revert_to_version: nil, materialized: false)
+    def update_view(name, version: nil, sql_definition: nil, revert_to_version: nil, materialized: false, materialized_no_data: false)
       if version.blank? && sql_definition.blank?
         raise(
           ArgumentError,
@@ -100,7 +100,7 @@ module Scenic
       sql_definition ||= definition(name, version)
 
       if materialized
-        Scenic.database.update_materialized_view(name, sql_definition)
+        Scenic.database.update_materialized_view(name, sql_definition, materialized_no_data)
       else
         Scenic.database.update_view(name, sql_definition)
       end

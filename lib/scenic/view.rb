@@ -22,15 +22,20 @@ module Scenic
     # @return [Boolean]
     attr_reader :materialized
 
+    # True if the view is materialized with NO DATA
+    # @return [Boolean]
+    attr_reader :materialized_no_data
+
     # Returns a new instance of View.
     #
     # @param name [String] The name of the view.
     # @param definition [String] The SQL for the query that defines the view.
     # @param materialized [String] `true` if the view is materialized.
-    def initialize(name:, definition:, materialized:)
+    def initialize(name:, definition:, materialized:, materialized_no_data: false)
       @name = name
       @definition = definition
       @materialized = materialized
+      @materialized_no_data = materialized_no_data
     end
 
     # @api private
@@ -42,13 +47,14 @@ module Scenic
 
     # @api private
     def to_schema
-      materialized_option = materialized ? "materialized: true, " : ""
+      materialized_option = materialized || materialized_no_data ? "materialized: true, " : ""
+      no_data_option = materialized_no_data ? ", no_data: true" : ""
 
       <<-DEFINITION
   create_view #{name.inspect}, #{materialized_option} sql_definition: <<-\SQL
     #{definition.indent(2)}
   SQL
-
+  #{no_data_option}
       DEFINITION
     end
   end

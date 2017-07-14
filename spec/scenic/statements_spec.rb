@@ -61,6 +61,17 @@ module Scenic
       end
     end
 
+    describe "create_view :materialized with :materialized_no_data" do
+      it "sends the create_materialized_view message" do
+        allow(Definition).to receive(:new)
+          .and_return(instance_double("Scenic::Definition").as_null_object)
+
+        connection.create_view(:views, version: 1, materialized: true, materialized_no_data: true)
+
+        expect(Scenic.database).to have_received(:create_materialized_view)
+      end
+    end
+
     describe "drop_view" do
       it "removes a view from the database" do
         connection.drop_view :name
@@ -108,7 +119,19 @@ module Scenic
         connection.update_view(:name, version: 3, materialized: true)
 
         expect(Scenic.database).to have_received(:update_materialized_view).
-          with(:name, definition.to_sql)
+          with(:name, definition.to_sql, false)
+      end
+
+      it "updates the materialized view in the database with NO DATA" do
+        definition = instance_double("Definition", to_sql: "definition")
+        allow(Definition).to receive(:new)
+          .with(:name, 3)
+          .and_return(definition)
+
+        connection.update_view(:name, version: 3, materialized: true, materialized_no_data: true)
+
+        expect(Scenic.database).to have_received(:update_materialized_view).
+          with(:name, definition.to_sql, true)
       end
 
       it "raises an error if not supplied a version or sql_defintion" do
