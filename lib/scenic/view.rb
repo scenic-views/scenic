@@ -48,7 +48,6 @@ module Scenic
   create_view #{name.inspect}, #{materialized_option} sql_definition: <<-\SQL
     #{definition.indent(2)}
   SQL
-
       DEFINITION
     end
   end

@@ -109,6 +109,11 @@ module Scenic
         end
       end
 
+      def create_view_options
+        return "" unless materialized?
+        ", materialized: #{no_data? ? '{ no_data: true }' : true}"
+      end
+
       def destroying_initial_view?
         destroying? && version == 1
       end
