@@ -131,10 +131,13 @@ module Scenic
       #   in use does not support materialized views.
       #
       # @return [void]
-      def create_materialized_view(name, sql_definition, no_data = false)
+      def create_materialized_view(name, sql_definition, no_data: false)
         raise_unless_materialized_views_supported
-        no_data_option = no_data ? "\nWITH NO DATA" : ""
-        execute "CREATE MATERIALIZED VIEW #{quote_table_name(name)} AS #{sql_definition}#{no_data_option};"
+        execute <<-SQL
+  CREATE MATERIALIZED VIEW #{quote_table_name(name)} AS
+  #{sql_definition}
+  #{'WITH NO DATA' if no_data};
+        SQL
       end
 
       # Updates a materialized view in the database.
@@ -154,12 +157,12 @@ module Scenic
       #   in use does not support materialized views.
       #
       # @return [void]
-      def update_materialized_view(name, sql_definition, no_data = false)
+      def update_materialized_view(name, sql_definition, no_data: false)
         raise_unless_materialized_views_supported
 
         IndexReapplication.new(connection: connection).on(name) do
           drop_materialized_view(name)
-          create_materialized_view(name, sql_definition, no_data)
+          create_materialized_view(name, sql_definition, no_data: no_data)
         end
       end
 

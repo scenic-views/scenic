@@ -112,7 +112,7 @@ module Scenic
       def create_view_options
         view_options = ""
         view_options += ", materialized: true" if materialized?
-        view_options += ", materialized_no_data: true" if materialized_no_data?
+        view_options += ", no_data: true" if no_data?
         view_options
       end
 
