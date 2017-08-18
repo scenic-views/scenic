@@ -132,8 +132,6 @@ no different than a table.
 class SearchResult < ActiveRecord::Base
   belongs_to :searchable, polymorphic: true
 
-  private
-
   # this isn't strictly necessary, but it will prevent
   # rails from calling save, which would fail anyway.
   def readonly?
