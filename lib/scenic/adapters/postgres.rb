@@ -75,11 +75,25 @@ module Scenic
       #
       # @param name The name of the view to update
       # @param sql_definition The SQL schema for the updated view.
+      # @param cascade Whether to drop and recreate dependent objects or not
       #
       # @return [void]
-      def update_view(name, sql_definition)
-        drop_view(name)
+      def update_view(name, sql_definition, cascade=false)
+        if cascade
+          # Get existing views that could be dependent on this one.
+          existing_views = views.drop_while{|v| v.name != name}.drop(1)
+
+          # Get indexes of existing materialized views 
+          indexes = Indexes.new(connection: connection)
+          view_indexes = existing_views.select(&:materialized).flat_map do |view|
+            indexes.on(view.name)
+          end
+        end
+
+        drop_view(name, cascade)
         create_view(name, sql_definition)
+
+        recreate_dropped_views(existing_views, views, view_indexes) if cascade
       end
 
       # Replaces a view in the database using `CREATE OR REPLACE VIEW`.
@@ -112,10 +126,11 @@ module Scenic
       # This is typically called in a migration via {Statements#drop_view}.
       #
       # @param name The name of the view to drop
+      # @param cascade Whether to drop dependent objects or not
       #
       # @return [void]
-      def drop_view(name)
-        execute "DROP VIEW #{quote_table_name(name)};"
+      def drop_view(name, cascade=false)
+        execute "DROP VIEW #{quote_table_name(name)}#{" CASCADE" if cascade};"
       end
 
       # Creates a materialized view in the database
@@ -144,16 +159,17 @@ module Scenic
       #
       # @param name The name of the view to update
       # @param sql_definition The SQL schema for the updated view.
+      # @param cascade Whether to drop and recreate dependent objects or not
       #
       # @raise [MaterializedViewsNotSupportedError] if the version of Postgres
       #   in use does not support materialized views.
       #
       # @return [void]
-      def update_materialized_view(name, sql_definition)
+      def update_materialized_view(name, sql_definition, cascade=false)
         raise_unless_materialized_views_supported
 
         IndexReapplication.new(connection: connection).on(name) do
-          drop_materialized_view(name)
+          drop_materialized_view(name, cascade)
           create_materialized_view(name, sql_definition)
         end
       end
@@ -163,13 +179,14 @@ module Scenic
       # This is typically called in a migration via {Statements#update_view}.
       #
       # @param name The name of the materialized view to drop.
+      # @param cascade Whether to drop dependent objects or not.
       # @raise [MaterializedViewsNotSupportedError] if the version of Postgres
       #   in use does not support materialized views.
       #
       # @return [void]
-      def drop_materialized_view(name)
+      def drop_materialized_view(name, cascade=false)
         raise_unless_materialized_views_supported
-        execute "DROP MATERIALIZED VIEW #{quote_table_name(name)};"
+        execute "DROP MATERIALIZED VIEW #{quote_table_name(name)}#{" CASCADE" if cascade};"
       end
 
       # Refreshes a materialized view from its SQL schema.
@@ -237,6 +254,24 @@ module Scenic
           self,
           connection,
         )
+      end
+
+      def recreate_dropped_views(old_views, current_views, indexes=[])
+        index_reapplier = IndexReapplication.new(connection: connection)
+
+        # Find any views that were lost
+        dropped_views = old_views.reject{|ov| current_views.any?{|cv| ov.name == cv.name}}
+        # Recreate them
+        dropped_views.each do |view|
+          if view.materialized
+            create_materialized_view view.name, view.definition
+            # Also recreate any indexes that were lost
+            lost_indexes = indexes.select{|index| index.object_name == view.name}
+            lost_indexes.each{|index| index_reapplier.try_index_create  index}
+          else
+            create_view view.name, view.definition
+          end
+        end
       end
     end
   end

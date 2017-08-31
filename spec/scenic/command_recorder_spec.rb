@@ -37,6 +37,13 @@ describe Scenic::CommandRecorder do
       expect { recorder.revert { recorder.drop_view(*args) } }
         .to raise_error(ActiveRecord::IrreversibleMigration)
     end
+
+    it "raises when reverting with cascade set" do
+      args = [:users, { cascade: true, revert_to_version: 3 }]
+
+      expect { recorder.revert { recorder.drop_view(*args) } }
+        .to raise_error(ActiveRecord::IrreversibleMigration)
+    end
   end
 
   describe "#update_view" do

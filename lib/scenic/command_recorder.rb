@@ -45,6 +45,11 @@ module Scenic
         raise ActiveRecord::IrreversibleMigration, message
       end
 
+      if method == :create_view && scenic_args.cascade
+        message = "#{method} is not reversible if dependent objects were also dropped with CASCADE"
+        raise ActiveRecord::IrreversibleMigration, message
+      end
+
       [method, scenic_args.invert_version.to_a]
     end
   end

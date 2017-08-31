@@ -78,6 +78,21 @@ Scenic detected that we already had an existing `search_results` view at version
 update to the version 2 schema. All that's left for you to do is tweak the
 schema in the new definition and run the `update_view` migration.
 
+If your view has dependent objects (e.g. other views) you can pass `cascade:
+true` to the `update_view` call to drop and recreate your view's children too:
+
+```ruby
+class UpdateSearchResultsToVersion2 < ActiveRecord::Migration
+  def change
+    update_view :search_results, version: 2, revert_to_version: 1, cascade: true
+  end
+end
+```
+
+If your view has any dependent _materialized_ views with indexes, those 
+indexes will be recreated too. If you have a complex heirarchy of materialized
+views with expensive calculations and large indexes this could take some time.
+
 ## What if I want to change a view without dropping it?
 
 The `update_view` statement used by default will drop your view then create
@@ -198,6 +213,14 @@ Scenic gives you `drop_view` too:
 ```ruby
 def change
   drop_view :search_results, revert_to_version: 2
+end
+```
+
+If your view has dependencies and you want Scenic to drop those too:
+
+```ruby
+def change
+  drop_view :search_results, revert_to_version: 2, cascade: true
 end
 ```
 

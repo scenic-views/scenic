@@ -50,16 +50,18 @@ module Scenic
     #   `version` argument to {#create_view}.
     # @param materialized [Boolean] Set to true if dropping a meterialized view.
     #   defaults to false.
+    # @param cascade [Boolean] Set to true if dependent objects should also be
+    #   dropped. defaults to false.
     # @return The database response from executing the drop statement.
     #
     # @example Drop a view, rolling back to version 3 on rollback
     #   drop_view(:users_who_recently_logged_in, revert_to_version: 3)
     #
-    def drop_view(name, revert_to_version: nil, materialized: false)
+    def drop_view(name, revert_to_version: nil, materialized: false, cascade: false)
       if materialized
-        Scenic.database.drop_materialized_view(name)
+        Scenic.database.drop_materialized_view(name, cascade)
       else
-        Scenic.database.drop_view(name)
+        Scenic.database.drop_view(name, cascade)
       end
     end
 
@@ -77,12 +79,14 @@ module Scenic
     #   `rake db rollback`
     # @param materialized [Boolean] True if updating a materialized view.
     #   Defaults to false.
+    # @param cascade [Boolean] Set to true if dependent objects should also be
+    #   dropped. defaults to false.
     # @return The database response from executing the create statement.
     #
     # @example
     #   update_view :engagement_reports, version: 3, revert_to_version: 2
     #
-    def update_view(name, version: nil, sql_definition: nil, revert_to_version: nil, materialized: false)
+    def update_view(name, version: nil, sql_definition: nil, revert_to_version: nil, materialized: false, cascade: false)
       if version.blank? && sql_definition.blank?
         raise(
           ArgumentError,
@@ -100,9 +104,9 @@ module Scenic
       sql_definition ||= definition(name, version)
 
       if materialized
-        Scenic.database.update_materialized_view(name, sql_definition)
+        Scenic.database.update_materialized_view(name, sql_definition, cascade)
       else
-        Scenic.database.update_view(name, sql_definition)
+        Scenic.database.update_view(name, sql_definition, cascade)
       end
     end
 

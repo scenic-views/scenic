@@ -52,23 +52,4 @@ describe "Reverting scenic schema statements", :db do
     end
   end
 
-  def migration_class
-    if Rails::VERSION::MAJOR >= 5
-      ::ActiveRecord::Migration[5.0]
-    else
-      ::ActiveRecord::Migration
-    end
-  end
-
-  def run_migration(migration, directions)
-    silence_stream(STDOUT) do
-      Array.wrap(directions).each do |direction|
-        migration.migrate(direction)
-      end
-    end
-  end
-
-  def execute(sql)
-    ActiveRecord::Base.connection.execute(sql)
-  end
 end

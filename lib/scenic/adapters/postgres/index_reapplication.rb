@@ -35,10 +35,6 @@ module Scenic
           indexes.each(&method(:try_index_create))
         end
 
-        private
-
-        attr_reader :connection, :speaker
-
         def try_index_create(index)
           success = with_savepoint(index.index_name) do
             connection.execute(index.definition)
@@ -50,6 +46,10 @@ module Scenic
             say "index '#{index.index_name}' on '#{index.object_name}' is no longer valid and has been dropped."
           end
         end
+
+        private
+
+        attr_reader :connection, :speaker
 
         def with_savepoint(name)
           connection.execute("SAVEPOINT #{name}")

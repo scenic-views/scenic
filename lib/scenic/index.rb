@@ -32,5 +32,11 @@ module Scenic
       @index_name = index_name
       @definition = definition
     end
+
+    def ==(index)
+      @object_name == index.object_name &&
+        @index_name = index.index_name &&
+        @definition == index.definition
+    end
   end
 end

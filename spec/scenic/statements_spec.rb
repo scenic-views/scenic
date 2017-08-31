@@ -65,7 +65,7 @@ module Scenic
       it "removes a view from the database" do
         connection.drop_view :name
 
-        expect(Scenic.database).to have_received(:drop_view).with(:name)
+        expect(Scenic.database).to have_received(:drop_view).with(:name, false)
       end
     end
 
@@ -87,7 +87,7 @@ module Scenic
         connection.update_view(:name, version: 3)
 
         expect(Scenic.database).to have_received(:update_view)
-          .with(:name, definition.to_sql)
+          .with(:name, definition.to_sql, false)
       end
 
       it "updates a view from a text definition" do
@@ -96,7 +96,7 @@ module Scenic
         connection.update_view(:name, sql_definition: sql_definition)
 
         expect(Scenic.database).to have_received(:update_view).
-          with(:name, sql_definition)
+          with(:name, sql_definition, false)
       end
 
       it "updates the materialized view in the database" do
@@ -108,7 +108,7 @@ module Scenic
         connection.update_view(:name, version: 3, materialized: true)
 
         expect(Scenic.database).to have_received(:update_materialized_view).
-          with(:name, definition.to_sql)
+          with(:name, definition.to_sql, false)
       end
 
       it "raises an error if not supplied a version or sql_defintion" do

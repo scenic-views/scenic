@@ -18,6 +18,10 @@ module Scenic
         options[:revert_to_version]
       end
 
+      def cascade
+        options[:cascade]
+      end
+
       def invert_version
         StatementArguments.new([view, options_for_revert])
       end
