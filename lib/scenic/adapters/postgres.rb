@@ -81,7 +81,7 @@ module Scenic
       def update_view(name, sql_definition, cascade=false)
         if cascade
           # Get existing views that could be dependent on this one.
-          existing_views = views.drop_while{|v| v.name != name}.drop(1)
+          existing_views = views.reject{|v| v.name == name}
 
           # Get indexes of existing materialized views 
           indexes = Indexes.new(connection: connection)
