@@ -168,10 +168,23 @@ module Scenic
       def update_materialized_view(name, sql_definition, cascade=false)
         raise_unless_materialized_views_supported
 
+        if cascade
+          # Get existing views that could be dependent on this one.
+          existing_views = views.reject{|v| v.name == name}
+
+          # Get indexes of existing materialized views 
+          indexes = Indexes.new(connection: connection)
+          view_indexes = existing_views.select(&:materialized).flat_map do |view|
+            indexes.on(view.name)
+          end
+        end
+
         IndexReapplication.new(connection: connection).on(name) do
           drop_materialized_view(name, cascade)
           create_materialized_view(name, sql_definition)
         end
+
+        recreate_dropped_views(existing_views, views, view_indexes) if cascade
       end
 
       # Drops a materialized view in the database
