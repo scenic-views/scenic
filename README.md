@@ -247,6 +247,7 @@ We are aware of the following existing adapter libraries for Scenic which may
 meet your needs:
 
 * [scenic_sqlite_adapter](https://github.com/pdebelak/scenic_sqlite_adapter)
+* [scenic-mysql_adapter](https://github.com/EmpaticoOrg/scenic-mysql_adapter.)
 
 ## About
 
