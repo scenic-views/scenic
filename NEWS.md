@@ -5,6 +5,15 @@ changelog, see the [CHANGELOG] for each version via the version links.
 
 [CHANGELOG]: https://github.com/thoughtbot/scenic/commits/master
 
+## [1.4.1] - December 15, 2017
+
+### Fixed
+
+- View migrations created under Rails 5 and newer will use the current migration
+  version in the generated migration class rather than always using `5.0`.
+
+[1.4.1]: https://github.com/thoughtbot/scenic/compare/v1.4.0...v1.4.1
+
 ## [1.4.0] - May 11, 2017
 
 ### Added
