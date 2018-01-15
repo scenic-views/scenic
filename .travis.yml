@@ -5,6 +5,7 @@ before_install:
   - "echo 'gem: --no-document' > ~/.gemrc"
   - git config --global user.name 'Travis CI'
   - git config --global user.email 'travis-ci@example.com'
+  - gem update --system
 branches:
   only:
     - master
@@ -17,6 +18,7 @@ notifications:
     - false
 sudo: false
 rvm:
+  - 2.5.0
   - 2.4.1
   - 2.3.4
   - 2.2.7
@@ -30,6 +32,10 @@ gemfile:
   - gemfiles/rails_edge.gemfile
 matrix:
   exclude:
+    - rvm: 2.5.0
+      gemfile: gemfiles/rails40.gemfile
+    - rvm: 2.5.0
+      gemfile: gemfiles/rails41.gemfile
     - rvm: 2.4.1
       gemfile: gemfiles/rails40.gemfile
     - rvm: 2.4.1
