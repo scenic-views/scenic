@@ -37,6 +37,19 @@ module Scenic
 
         described_class.call(:fourth, adapter, ActiveRecord::Base.connection)
       end
+
+      it "does not raise an error when a view has no materialized view dependencies" do
+        adapter = Postgres.new
+
+        adapter.create_materialized_view(
+          "first",
+          "SELECT text 'hi' AS greeting",
+        )
+
+        expect {
+          described_class.call(:first, adapter, ActiveRecord::Base.connection)
+        }.not_to raise_error
+      end
     end
   end
 end

@@ -49,6 +49,7 @@ module Scenic
             idx = sorted_arr.find_index do |dep|
               dep.include?(view_to_refresh.to_s)
             end
+            return [] if idx.nil?
             sorted_arr[0...idx]
           end
 

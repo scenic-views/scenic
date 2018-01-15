@@ -25,7 +25,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'database_cleaner'
   spec.add_development_dependency 'rake'
   spec.add_development_dependency 'rspec', '>= 3.3'
-  spec.add_development_dependency 'pg'
+  spec.add_development_dependency 'pg', '~> 0.19'
   spec.add_development_dependency 'pry'
   spec.add_development_dependency 'ammeter', '>= 1.1.3'
   spec.add_development_dependency 'yard'
