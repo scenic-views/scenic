@@ -5,19 +5,46 @@ module Scenic
     describe "to_sql" do
       it "returns the content of a view definition" do
         sql_definition = "SELECT text 'Hi' as greeting"
-        allow(File).to receive(:read).and_return(sql_definition)
 
-        definition = Definition.new("searches", 1)
+        with_fixtures do
+          definition = Definition.new("searches", 1)
 
-        expect(definition.to_sql).to eq sql_definition
+          expect(definition.to_sql).to eq sql_definition
+        end
       end
 
       it "raises an error if the file is empty" do
-        allow(File).to receive(:read).and_return("")
+        definition = Definition.new("empty_view", 1)
 
-        expect do
-          Definition.new("searches", 1).to_sql
-        end.to raise_error RuntimeError
+        with_fixtures do
+          expect do
+            definition.to_sql
+          end.to raise_error RuntimeError
+        end
+      end
+    end
+
+    describe "find_definition" do
+      it "finds definitions in Rails.root db/views" do
+        definition = Definition.new("search_results", 1)
+
+        expect(definition.find_definition).to be
+      end
+
+      it "raises an error if file cant be found" do
+        definition = Definition.new("searches", 1)
+
+        expect {
+          definition.find_definition
+        }.to raise_error RuntimeError, /Unable to locate searches_v01.sql/
+      end
+
+      it "finds definintions in Rails db/views path" do
+        with_fixtures do
+          definition = Definition.new("empty_view", 1)
+
+          expect(definition.find_definition).to be
+        end
       end
     end
 
@@ -51,6 +78,14 @@ module Scenic
 
         expect(definition.version).to eq "15"
       end
+    end
+
+    def with_fixtures
+      original = Rails.application.config.paths["db/views"].to_a
+      Rails.application.config.paths["db/views"] << File.expand_path("../../fixtures/db_views", __FILE__)
+      yield
+    ensure
+      Rails.application.config.paths["db/views"] = original
     end
   end
 end

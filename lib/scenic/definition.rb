@@ -7,11 +7,23 @@ module Scenic
     end
 
     def to_sql
-      File.read(full_path).tap do |content|
+      File.read(find_definition).tap do |content|
         if content.empty?
           raise "Define view query in #{path} before migrating."
         end
       end
+    end
+
+    def find_definition
+      definition = views_paths.expanded.flat_map do |directory|
+        Dir.glob("#{directory}/**/#{filename}")
+      end.first
+
+      unless definition
+        raise "Unable to locate #{filename} in #{views_paths.expanded}"
+      end
+
+      definition
     end
 
     def full_path
@@ -27,6 +39,10 @@ module Scenic
     end
 
     private
+
+    def views_paths
+      Rails.application.config.paths["db/views"]
+    end
 
     def filename
       "#{@name}_v#{version}.sql"
