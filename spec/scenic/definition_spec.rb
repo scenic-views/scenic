@@ -2,11 +2,37 @@ require "spec_helper"
 
 module Scenic
   describe Definition do
+    describe "find_definition" do
+      it "raises an error if file cant be found" do
+        definition = Definition.new("not_valid", 1)
+
+        expect {
+          definition.find_definition
+        }.to raise_error RuntimeError, /Unable to locate not_valid_v01.sql/
+      end
+
+      it "looks inside Rails.root db/views" do
+        definition = Definition.new("not_valid", 1)
+
+        expect {
+          definition.find_definition
+        }.to raise_error RuntimeError, /spec\/dummy\/db\/views/
+      end
+
+      it "looks inside configured additional paths" do
+        with_views_fixtures do
+          definition = Definition.new("empty_view", 1)
+
+          expect(definition.find_definition).to be
+        end
+      end
+    end
+
     describe "to_sql" do
       it "returns the content of a view definition" do
         sql_definition = "SELECT text 'Hi' as greeting"
 
-        with_fixtures do
+        with_views_fixtures do
           definition = Definition.new("searches", 1)
 
           expect(definition.to_sql).to eq sql_definition
@@ -16,34 +42,10 @@ module Scenic
       it "raises an error if the file is empty" do
         definition = Definition.new("empty_view", 1)
 
-        with_fixtures do
+        with_views_fixtures do
           expect do
             definition.to_sql
           end.to raise_error RuntimeError
-        end
-      end
-    end
-
-    describe "find_definition" do
-      it "finds definitions in Rails.root db/views" do
-        definition = Definition.new("search_results", 1)
-
-        expect(definition.find_definition).to be
-      end
-
-      it "raises an error if file cant be found" do
-        definition = Definition.new("searches", 1)
-
-        expect {
-          definition.find_definition
-        }.to raise_error RuntimeError, /Unable to locate searches_v01.sql/
-      end
-
-      it "finds definintions in Rails db/views path" do
-        with_fixtures do
-          definition = Definition.new("empty_view", 1)
-
-          expect(definition.find_definition).to be
         end
       end
     end
@@ -80,7 +82,7 @@ module Scenic
       end
     end
 
-    def with_fixtures
+    def with_views_fixtures
       original = Rails.application.config.paths["db/views"].to_a
       Rails.application.config.paths["db/views"] << File.expand_path("../../fixtures/db_views", __FILE__)
       yield
