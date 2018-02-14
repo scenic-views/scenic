@@ -15,12 +15,12 @@ module Scenic
     end
 
     def find_definition
-      definition = views_paths.expanded.flat_map do |directory|
+      definition = views_paths.flat_map do |directory|
         Dir.glob("#{directory}/**/#{filename}")
       end.first
 
       unless definition
-        raise "Unable to locate #{filename} in #{views_paths.expanded}"
+        raise "Unable to locate #{filename} in #{views_paths}"
       end
 
       definition
@@ -41,7 +41,7 @@ module Scenic
     private
 
     def views_paths
-      Rails.application.config.paths["db/views"]
+      Rails.application.config.paths["db/views"].expanded
     end
 
     def filename
