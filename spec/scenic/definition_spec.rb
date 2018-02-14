@@ -6,17 +6,17 @@ module Scenic
       it "raises an error if file cant be found" do
         definition = Definition.new("not_valid", 1)
 
-        expect {
+        expect do
           definition.find_definition
-        }.to raise_error RuntimeError, /Unable to locate not_valid_v01.sql/
+        end.to raise_error RuntimeError, /Unable to locate not_valid_v01.sql/
       end
 
       it "looks inside Rails.root db/views" do
         definition = Definition.new("not_valid", 1)
 
-        expect {
+        expect do
           definition.find_definition
-        }.to raise_error RuntimeError, /spec\/dummy\/db\/views/
+        end.to raise_error RuntimeError, /spec\/dummy\/db\/views/
       end
 
       it "looks inside configured additional paths" do
@@ -84,7 +84,8 @@ module Scenic
 
     def with_views_fixtures
       original = Rails.application.config.paths["db/views"].to_a
-      Rails.application.config.paths["db/views"] << File.expand_path("../../fixtures/db_views", __FILE__)
+      fixtures_path = File.expand_path("../../fixtures/db_views", __FILE__)
+      Rails.application.config.paths["db/views"] << fixtures_path
       yield
     ensure
       Rails.application.config.paths["db/views"] = original
