@@ -21,30 +21,11 @@ rvm:
   - 2.5.0
   - 2.4.1
   - 2.3.4
-  - 2.2.7
-  - 2.1.8
 gemfile:
-  - gemfiles/rails40.gemfile
-  - gemfiles/rails41.gemfile
   - gemfiles/rails42.gemfile
   - gemfiles/rails50.gemfile
   - gemfiles/rails51.gemfile
   - gemfiles/rails_edge.gemfile
 matrix:
-  exclude:
-    - rvm: 2.5.0
-      gemfile: gemfiles/rails40.gemfile
-    - rvm: 2.5.0
-      gemfile: gemfiles/rails41.gemfile
-    - rvm: 2.4.1
-      gemfile: gemfiles/rails40.gemfile
-    - rvm: 2.4.1
-      gemfile: gemfiles/rails41.gemfile
-    - rvm: 2.1.8
-      gemfile: gemfiles/rails50.gemfile
-    - rvm: 2.1.8
-      gemfile: gemfiles/rails51.gemfile
-    - rvm: 2.1.8
-      gemfile: gemfiles/rails_edge.gemfile
   allow_failures:
     - gemfile: gemfiles/rails_edge.gemfile
