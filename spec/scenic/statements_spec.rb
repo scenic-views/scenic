@@ -52,12 +52,25 @@ module Scenic
 
     describe "create_view :materialized" do
       it "sends the create_materialized_view message" do
-        allow(Definition).to receive(:new)
-          .and_return(instance_double("Scenic::Definition").as_null_object)
+        definition = instance_double("Definition", to_sql: "definition")
+        allow(Definition).to receive(:new).and_return(definition)
 
         connection.create_view(:views, version: 1, materialized: true)
 
-        expect(Scenic.database).to have_received(:create_materialized_view)
+        expect(Scenic.database).to have_received(:create_materialized_view).
+          with(:views, definition.to_sql, no_data: false)
+      end
+    end
+
+    describe "create_view :materialized with :no_data" do
+      it "sends the create_materialized_view message" do
+        definition = instance_double("Definition", to_sql: "definition")
+        allow(Definition).to receive(:new).and_return(definition)
+
+        connection.create_view(:views, version: 1, materialized: { no_data: true })
+
+        expect(Scenic.database).to have_received(:create_materialized_view).
+          with(:views, definition.to_sql, no_data: true)
       end
     end
 
@@ -108,7 +121,19 @@ module Scenic
         connection.update_view(:name, version: 3, materialized: true)
 
         expect(Scenic.database).to have_received(:update_materialized_view).
-          with(:name, definition.to_sql)
+          with(:name, definition.to_sql, no_data: false)
+      end
+
+      it "updates the materialized view in the database with NO DATA" do
+        definition = instance_double("Definition", to_sql: "definition")
+        allow(Definition).to receive(:new).
+          with(:name, 3).
+          and_return(definition)
+
+        connection.update_view(:name, version: 3, materialized: { no_data: true })
+
+        expect(Scenic.database).to have_received(:update_materialized_view).
+          with(:name, definition.to_sql, no_data: true)
       end
 
       it "raises an error if not supplied a version or sql_defintion" do

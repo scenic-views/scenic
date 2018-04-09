@@ -6,6 +6,7 @@ Description:
   and a migration to replace the old version with the new.
 
   To create a materialized view, pass the '--materialized' option.
+  To create a materialized view with NO DATA, pass '--no-data' option.
 
 Examples:
     rails generate scenic:view searches
