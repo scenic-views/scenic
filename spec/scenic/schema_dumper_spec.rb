@@ -15,7 +15,8 @@ describe Scenic::SchemaDumper, :db do
     ActiveRecord::SchemaDumper.dump(Search.connection, stream)
 
     output = stream.string
-    expect(output).to include 'create_view "searches"'
+
+    expect(output).to include 'create_view "searches", sql_definition: <<-SQL'
     expect(output).to include view_definition
 
     Search.connection.drop_view :searches
@@ -23,6 +24,19 @@ describe Scenic::SchemaDumper, :db do
     silence_stream(STDOUT) { eval(output) }
 
     expect(Search.first.haystack).to eq "needle"
+  end
+
+  it "dumps a create_view for a materialized view in the database" do
+    view_definition = "SELECT 'needle'::text AS haystack"
+    Search.connection.create_view :searches, materialized: true, sql_definition: view_definition
+    stream = StringIO.new
+
+    ActiveRecord::SchemaDumper.dump(Search.connection, stream)
+
+    output = stream.string
+
+    expect(output).to include 'create_view "searches", materialized: true, sql_definition: <<-SQL'
+    expect(output).to include view_definition
   end
 
   context "with views in non public schemas" do

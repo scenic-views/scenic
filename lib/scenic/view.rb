@@ -45,7 +45,7 @@ module Scenic
       materialized_option = materialized ? "materialized: true, " : ""
 
       <<-DEFINITION
-  create_view #{name.inspect}, #{materialized_option} sql_definition: <<-\SQL
+  create_view #{name.inspect}, #{materialized_option}sql_definition: <<-\SQL
     #{definition.indent(2)}
   SQL
       DEFINITION
