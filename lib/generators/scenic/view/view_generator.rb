@@ -78,7 +78,7 @@ module Scenic
       end
 
       def version_regex
-        /\A#{plural_file_name}_v(?<version>\d+)\.sql\z/
+        /\A#{sql_file_name}_v(?<version>\d+)\.sql\z/
       end
 
       def creating_new_view?
@@ -95,6 +95,10 @@ module Scenic
 
       def plural_file_name
         @plural_file_name ||= file_name.pluralize.gsub(".", "_")
+      end
+
+      def sql_file_name
+        @sql_file_name ||= file_name.pluralize
       end
 
       def destroying?
