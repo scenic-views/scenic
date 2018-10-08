@@ -1,5 +1,9 @@
 development: &default
   adapter: postgresql
+  host: postgres
+  port: 5432
+  username: postgres
+  password: postgres
   database: dummy_development
   encoding: unicode
   pool: 5
