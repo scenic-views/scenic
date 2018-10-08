@@ -56,9 +56,9 @@ module Scenic
 
         def migration_class_name
           if creating_new_view?
-            "Create#{class_name.pluralize.gsub('.', '')}"
+            "Create#{class_name.gsub('.', '_').camelize}"
           else
-            "Update#{class_name.pluralize}ToVersion#{version}"
+            "Update#{class_name.gsub('.', '_').camelize}ToVersion#{version}"
           end
         end
 
@@ -78,7 +78,7 @@ module Scenic
       end
 
       def version_regex
-        /\A#{sql_file_name}_v(?<version>\d+)\.sql\z/
+        /\A#{plural_file_name}_v(?<version>\d+)\.sql\z/
       end
 
       def creating_new_view?
@@ -94,11 +94,7 @@ module Scenic
       end
 
       def plural_file_name
-        @plural_file_name ||= file_name.pluralize.gsub(".", "_")
-      end
-
-      def sql_file_name
-        @sql_file_name ||= file_name.pluralize
+        @plural_file_name ||= file_name.pluralize
       end
 
       def destroying?
