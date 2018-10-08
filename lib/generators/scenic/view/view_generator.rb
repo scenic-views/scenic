@@ -28,12 +28,12 @@ module Scenic
         if creating_new_view? || destroying_initial_view?
           migration_template(
             "db/migrate/create_view.erb",
-            "db/migrate/create_#{plural_file_name}.rb",
+            "db/migrate/create_#{file_name.gsub('.', "_").pluralize}.rb",
           )
         else
           migration_template(
             "db/migrate/update_view.erb",
-            "db/migrate/update_#{plural_file_name}_to_version_#{version}.rb",
+            "db/migrate/update_#{file_name.gsub('.', "_").pluralize}_to_version_#{version}.rb",
           )
         end
       end
