@@ -56,9 +56,9 @@ module Scenic
 
         def migration_class_name
           if creating_new_view?
-            "Create#{class_name.gsub('.', '_').camelize}"
+            "Create#{class_name.gsub('.', '_').pluralize.camelize}"
           else
-            "Update#{class_name.gsub('.', '_').camelize}ToVersion#{version}"
+            "Update#{class_name.gsub('.', '_').pluralize.camelize}ToVersion#{version}"
           end
         end
 
