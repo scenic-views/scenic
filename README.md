@@ -5,6 +5,7 @@
 [![Build Status](https://travis-ci.org/thoughtbot/scenic.svg)](https://travis-ci.org/thoughtbot/scenic)
 [![Code Climate](https://codeclimate.com/repos/53c9736269568066a3000c35/badges/85aa9b19f3037252c55d/gpa.svg)](https://codeclimate.com/repos/53c9736269568066a3000c35/feed)
 [![Documentation Quality](http://inch-ci.org/github/thoughtbot/scenic.svg?branch=master)](http://inch-ci.org/github/thoughtbot/scenic)
+[![Reviewed by Hound](https://img.shields.io/badge/Reviewed_by-Hound-8E64B0.svg)](https://houndci.com)
 
 Scenic adds methods to `ActiveRecord::Migration` to create and manage database
 views in Rails.
