@@ -22,8 +22,13 @@ module Scenic
         )
 
         adapter.create_materialized_view(
-          "fourth",
+          "fourth_staging",
           "SELECT * from third",
+        )
+
+        adapter.create_materialized_view(
+          "fourth",
+          "SELECT * from fourth_staging",
         )
 
         expect(adapter).to receive(:refresh_materialized_view).
@@ -34,6 +39,9 @@ module Scenic
 
         expect(adapter).to receive(:refresh_materialized_view).
           with("public.third").ordered
+
+        expect(adapter).to receive(:refresh_materialized_view).
+          with("public.fourth_staging").ordered
 
         described_class.call(:fourth, adapter, ActiveRecord::Base.connection)
       end
