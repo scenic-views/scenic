@@ -3,7 +3,7 @@
 The noteworthy changes for each Scenic version are included here. For a complete
 changelog, see the [CHANGELOG] for each version via the version links.
 
-[CHANGELOG]: https://github.com/thoughtbot/scenic/commits/master
+[CHANGELOG]: https://github.com/scenic-views/scenic/commits/master
 
 ## [1.4.1] - December 15, 2017
 
@@ -12,7 +12,7 @@ changelog, see the [CHANGELOG] for each version via the version links.
 - View migrations created under Rails 5 and newer will use the current migration
   version in the generated migration class rather than always using `5.0`.
 
-[1.4.1]: https://github.com/thoughtbot/scenic/compare/v1.4.0...v1.4.1
+[1.4.1]: https://github.com/scenic-views/scenic/compare/v1.4.0...v1.4.1
 
 ## [1.4.0] - May 11, 2017
 
@@ -32,7 +32,7 @@ changelog, see the [CHANGELOG] for each version via the version links.
   and newer apps.
 - Using the `scenic:model` generator will no longer create a fixture or factory.
 
-[1.4.0]: https://github.com/thoughtbot/scenic/compare/v1.3.0...v1.4.0
+[1.4.0]: https://github.com/scenic-views/scenic/compare/v1.3.0...v1.4.0
 
 ## [1.3.0] - May 27, 2016
 
@@ -48,7 +48,7 @@ changelog, see the [CHANGELOG] for each version via the version links.
   attempt to insert model code into the pluralized model file.
 * Convert shell-based smoke tests to RSpec syntax.
 
-[1.3.0]: https://github.com/thoughtbot/scenic/compare/v1.2.0...v1.3.0
+[1.3.0]: https://github.com/scenic-views/scenic/compare/v1.2.0...v1.3.0
 
 ## [1.2.0] - February 5, 2016
 
@@ -68,7 +68,7 @@ changelog, see the [CHANGELOG] for each version via the version links.
 `db/schema.rb` file  under Rails 5 beta 1 and beta 2. This is fixed on Rails
 master.
 
-[1.2.0]: https://github.com/thoughtbot/scenic/compare/v1.1.1...v1.2.0
+[1.2.0]: https://github.com/scenic-views/scenic/compare/v1.1.1...v1.2.0
 
 ## [1.1.1] - January 29, 2016
 
@@ -77,7 +77,7 @@ master.
   closed` error. This has been fixed by ensuring we grab a fresh connection for
   all operations.
 
-[1.1.1]: https://github.com/thoughtbot/scenic/compare/v1.1.0...v1.1.1
+[1.1.1]: https://github.com/scenic-views/scenic/compare/v1.1.0...v1.1.1
 
 ## [1.1.0] - January 8, 2016
 
@@ -97,7 +97,7 @@ master.
 - Fixed inability to dump materialized views in Rails 5.0.0.beta1.
 
 [supported versions of Postgres]: http://www.postgresql.org/support/versioning/
-[1.1.0]: https://github.com/thoughtbot/scenic/compare/v1.0.0...v1.1.0
+[1.1.0]: https://github.com/scenic-views/scenic/compare/v1.0.0...v1.1.0
 
 ## [1.0.0] - November 23, 2015
 
@@ -112,8 +112,8 @@ master.
 - Eliminated `alias_method_chain` deprecation when running with Rails master
   (5.0).
 
-[materialized views]:https://github.com/thoughtbot/scenic/blob/v1.0.0/README.md
-[1.0.0]: https://github.com/thoughtbot/scenic/compare/v0.3.0...v1.0.0
+[materialized views]:https://github.com/scenic-views/scenic/blob/v1.0.0/README.md
+[1.0.0]: https://github.com/scenic-views/scenic/compare/v0.3.0...v1.0.0
 
 ## [0.3.0] - January 23, 2015
 
@@ -125,14 +125,14 @@ master.
 - We avoid dumping views that belong to Postgres extensions.
 - `db/schema.rb` is prettier thanks to a blank line after each view definition.
 
-[0.3.0]: https://github.com/thoughtbot/scenic/compare/v0.2.1...v0.3.0
+[0.3.0]: https://github.com/scenic-views/scenic/compare/v0.2.1...v0.3.0
 
 ## [0.2.1] - January 5, 2015
 
 ### Fixed
 - View generator will now create `db/views` directory if necessary.
 
-[0.2.1]: https://github.com/thoughtbot/scenic/compare/v0.2.0...v0.2.1
+[0.2.1]: https://github.com/scenic-views/scenic/compare/v0.2.0...v0.2.1
 
 ## [0.2.0] - August 11, 2014
 
@@ -142,7 +142,7 @@ master.
 ### Fixed
 - Raise an error if view definition is empty.
 
-[0.2.0]: https://github.com/thoughtbot/scenic/compare/v0.1.0...v0.2.0
+[0.2.0]: https://github.com/scenic-views/scenic/compare/v0.1.0...v0.2.0
 
 ## [0.1.0] - August 4, 2014
 
@@ -155,4 +155,4 @@ definition files.
 
 In short, go add a view to your app.
 
-[0.1.0]: https://github.com/thoughtbot/scenic/compare/8599daa132880cd6c07efb0395c0fb023b171f47...v0.1.0
+[0.1.0]: https://github.com/scenic-views/scenic/compare/8599daa132880cd6c07efb0395c0fb023b171f47...v0.1.0

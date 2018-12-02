@@ -13,7 +13,7 @@ Gem::Specification.new do |spec|
     Adds methods to ActiveRecord::Migration to create and manage database views
     in Rails
   DESCRIPTION
-  spec.homepage      = 'https://github.com/thoughtbot/scenic'
+  spec.homepage      = 'https://github.com/scenic-views/scenic'
   spec.license       = 'MIT'
 
   spec.files         = `git ls-files -z`.split("\x0")

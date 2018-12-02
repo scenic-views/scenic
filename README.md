@@ -1,10 +1,9 @@
 # Scenic
 
-![Scenic Landscape](https://images.thoughtbot.com/announcing-scenic--versioned-database-views-for-rails/MRUcPsxrTGCeWKyE59Zg_landscape.png)
+![Scenic Landscape](https://user-images.githubusercontent.com/152152/49344534-a8817480-f646-11e8-8431-3d95d349c070.png)
 
-[![Build Status](https://travis-ci.org/thoughtbot/scenic.svg)](https://travis-ci.org/thoughtbot/scenic)
-[![Code Climate](https://codeclimate.com/repos/53c9736269568066a3000c35/badges/85aa9b19f3037252c55d/gpa.svg)](https://codeclimate.com/repos/53c9736269568066a3000c35/feed)
-[![Documentation Quality](http://inch-ci.org/github/thoughtbot/scenic.svg?branch=master)](http://inch-ci.org/github/thoughtbot/scenic)
+[![Build Status](https://travis-ci.org/scenic-views/scenic.svg)](https://travis-ci.org/scenic-views/scenic)
+[![Documentation Quality](http://inch-ci.org/github/scenic-views/scenic.svg?branch=master)](http://inch-ci.org/github/scenic-views/scenic)
 
 Scenic adds methods to `ActiveRecord::Migration` to create and manage database
 views in Rails.
@@ -252,17 +251,8 @@ meet your needs:
 
 ## About
 
-Scenic is maintained by [Derek Prior] and [Caleb Thompson], funded by
-thoughtbot, inc. The names and logos for thoughtbot are trademarks of
-thoughtbot, inc.
+Scenic is maintained by [Derek Prior], [Caleb Thompson], and you, our
+contributors.
 
 [Derek Prior]: http://prioritized.net
 [Caleb Thompson]: http://calebthompson.io
-
-![thoughtbot](http://presskit.thoughtbot.com/images/thoughtbot-logo-for-readmes.svg)
-
-We love open source software!  See [our other projects][community] or [hire
-us][hire] to help build your product.
-
-[community]: https://thoughtbot.com/community?utm_source=github
-[hire]: https://thoughtbot.com/hire-us?utm_source=github
