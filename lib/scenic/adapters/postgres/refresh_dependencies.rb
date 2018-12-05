@@ -47,7 +47,7 @@ module Scenic
             dependency_hash = parse_to_hash(raw_dependencies)
             sorted_arr = tsort(dependency_hash)
             idx = sorted_arr.find_index do |dep|
-              if view_to_refresh.to_s.include?('.')
+              if view_to_refresh.to_s.include?(".")
                 dep == view_to_refresh.to_s
               else
                 dep.ends_with?(".#{view_to_refresh}")
