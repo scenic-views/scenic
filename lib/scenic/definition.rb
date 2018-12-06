@@ -14,16 +14,8 @@ module Scenic
       end
     end
 
-      definition = views_paths.flat_map do |directory|
-        Dir.glob("#{directory}/**/#{filename}")
-      end.first
-
-      unless definition
-        raise "Unable to locate #{filename} in #{views_paths}"
-      end
-
-      definition
     def definition_path
+      resolve_definition || raise("Unable to locate #{filename} in #{views_paths}")
     end
 
     def full_path
@@ -39,6 +31,12 @@ module Scenic
     end
 
     private
+
+    def resolve_definition
+      views_paths.flat_map do |directory|
+        Dir.glob("#{directory}/**/#{filename}")
+      end.first
+    end
 
     def views_paths
       Rails.application.config.paths["db/views"].expanded
