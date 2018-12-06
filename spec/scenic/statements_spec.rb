@@ -22,7 +22,7 @@ module Scenic
       end
 
       it "creates a view from a text definition" do
-        sql_definition = "a defintion"
+        sql_definition = "a definition"
 
         connection.create_view(:views, sql_definition: sql_definition)
 
@@ -30,7 +30,7 @@ module Scenic
           .with(:views, sql_definition)
       end
 
-      it "creates version 1 of the view if neither version nor sql_defintion are provided" do
+      it "creates version 1 of the view if neither version nor sql_definition are provided" do
         version = 1
         definition_stub = instance_double("Definition", to_sql: "foo")
         allow(Definition).to receive(:new).
@@ -43,9 +43,9 @@ module Scenic
           with(:views, definition_stub.to_sql)
       end
 
-      it "raises an error if both version and sql_defintion are provided" do
+      it "raises an error if both version and sql_definition are provided" do
         expect do
-          connection.create_view :foo, version: 1, sql_definition: "a defintion"
+          connection.create_view :foo, version: 1, sql_definition: "a definition"
         end.to raise_error ArgumentError
       end
     end
@@ -108,7 +108,7 @@ module Scenic
       end
 
       it "updates a view from a text definition" do
-        sql_definition = "a defintion"
+        sql_definition = "a definition"
 
         connection.update_view(:name, sql_definition: sql_definition)
 
@@ -144,18 +144,18 @@ module Scenic
           with(:name, definition.to_sql, no_data: true)
       end
 
-      it "raises an error if not supplied a version or sql_defintion" do
+      it "raises an error if not supplied a version or sql_definition" do
         expect { connection.update_view :views }.to raise_error(
           ArgumentError,
           /sql_definition or version must be specified/)
       end
 
-      it "raises an error if both version and sql_defintion are provided" do
+      it "raises an error if both version and sql_definition are provided" do
         expect do
           connection.update_view(
             :views,
             version: 1,
-            sql_definition: "a defintion")
+            sql_definition: "a definition")
         end.to raise_error ArgumentError, /cannot both be set/
       end
     end
