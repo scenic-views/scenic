@@ -7,14 +7,14 @@ module Scenic
     end
 
     def to_sql
-      File.read(find_definition).tap do |content|
+      File.read(defintion_path).tap do |content|
         if content.empty?
           raise "Define view query in #{path} before migrating."
         end
       end
     end
 
-    def find_definition
+    def defintion_path
       definition = views_paths.flat_map do |directory|
         Dir.glob("#{directory}/**/#{filename}")
       end.first

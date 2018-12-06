@@ -2,12 +2,12 @@ require "spec_helper"
 
 module Scenic
   describe Definition do
-    describe "find_definition" do
+    describe "defintion_path" do
       it "raises an error if file cant be found" do
         definition = Definition.new("not_valid", 1)
 
         expect do
-          definition.find_definition
+          definition.defintion_path
         end.to raise_error RuntimeError, /Unable to locate not_valid_v01.sql/
       end
 
@@ -15,7 +15,7 @@ module Scenic
         definition = Definition.new("not_valid", 1)
 
         expect do
-          definition.find_definition
+          definition.defintion_path
         end.to raise_error RuntimeError, /spec\/dummy\/db\/views/
       end
 
@@ -23,7 +23,7 @@ module Scenic
         with_views_fixtures do
           definition = Definition.new("empty_view", 1)
 
-          expect(definition.find_definition).to be
+          expect(definition.defintion_path).to be
         end
       end
     end
