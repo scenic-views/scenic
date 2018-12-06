@@ -4,7 +4,7 @@ class <%= migration_class_name %> < <%= activerecord_migration_class %>
     update_view <%= formatted_plural_name %>,
       version: <%= version %>,
       revert_to_version: <%= previous_version %>,
-      materialized: true
+      materialized: <%= no_data? ? "{ no_data: true }" : true %>
   <%- else -%>
     update_view <%= formatted_plural_name %>, version: <%= version %>, revert_to_version: <%= previous_version %>
   <%- end -%>

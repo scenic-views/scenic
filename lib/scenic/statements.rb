@@ -9,8 +9,9 @@ module Scenic
     # @param sql_definition [String] The SQL query for the view schema. An error
     #   will be raised if `sql_definition` and `version` are both set,
     #   as they are mutually exclusive.
-    # @param materialized [Boolean] Set to true to create a materialized view.
-    #   Defaults to false.
+    # @param materialized [Boolean, Hash] Set to true to create a materialized
+    #   view. Set to { no_data: true } to create materialized view without
+    #   loading data. Defaults to false.
     # @return The database response from executing the create statement.
     #
     # @example Create from `db/views/searches_v02.sql`
@@ -36,7 +37,11 @@ module Scenic
       sql_definition ||= definition(name, version)
 
       if materialized
-        Scenic.database.create_materialized_view(name, sql_definition)
+        Scenic.database.create_materialized_view(
+          name,
+          sql_definition,
+          no_data: no_data(materialized),
+        )
       else
         Scenic.database.create_view(name, sql_definition)
       end
@@ -75,8 +80,9 @@ module Scenic
     #   as they are mutually exclusive.
     # @param revert_to_version [Fixnum] The version number to rollback to on
     #   `rake db rollback`
-    # @param materialized [Boolean] True if updating a materialized view.
-    #   Defaults to false.
+    # @param materialized [Boolean, Hash] True if updating a materialized view.
+    #   Set to { no_data: true } to update materialized view without loading
+    #   data. Defaults to false.
     # @return The database response from executing the create statement.
     #
     # @example
@@ -100,7 +106,11 @@ module Scenic
       sql_definition ||= definition(name, version)
 
       if materialized
-        Scenic.database.update_materialized_view(name, sql_definition)
+        Scenic.database.update_materialized_view(
+          name,
+          sql_definition,
+          no_data: no_data(materialized),
+        )
       else
         Scenic.database.update_view(name, sql_definition)
       end
@@ -140,6 +150,11 @@ module Scenic
 
     def definition(name, version)
       Scenic::Definition.new(name, version).to_sql
+    end
+
+    def no_data(materialized)
+      return false unless materialized.is_a? Hash
+      materialized.fetch(:no_data, false)
     end
   end
 end
