@@ -234,7 +234,8 @@ module Scenic
         # all relations other than some materialized views)
         # Doc: https://www.postgresql.org/docs/10/static/catalog-pg-class.html
         # Test case: https://github.com/postgres/postgres/blob/master/src/test/regress/expected/matview.out
-        execute("SELECT relispopulated FROM pg_class WHERE relname = '#{quote_string(name)}'")&.first["relispopulated"].in? ["t", true]
+        relations = execute("SELECT relispopulated FROM pg_class WHERE relname = '#{quote_string(name)}'")
+        relations.length > 0 && relations.first["relispopulated"].in? ["t", true]
       end
 
       private
