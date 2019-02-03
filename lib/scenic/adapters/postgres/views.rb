@@ -57,7 +57,15 @@ module Scenic
 
         def pg_identifier(name)
           return name if name =~ /^[a-zA-Z_][a-zA-Z0-9_]*$/
-          PGconn.quote_ident(name)
+          pgconn.quote_ident(name)
+        end
+
+        def pgconn
+          if defined?(PG::Connection)
+            PG::Connection
+          else
+            PGconn
+          end
         end
       end
     end
