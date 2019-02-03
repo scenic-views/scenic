@@ -26,6 +26,22 @@ describe Scenic::SchemaDumper, :db do
     expect(Search.first.haystack).to eq "needle"
   end
 
+  it "accurately dumps create view statements with a regular expression" do
+    view_definition = "SELECT 'needle'::text AS haystack WHERE 'a2z' ~ '\\d+'"
+    Search.connection.create_view :searches, sql_definition: view_definition
+    stream = StringIO.new
+
+    ActiveRecord::SchemaDumper.dump(Search.connection, stream)
+
+    output = stream.string
+    expect(output).to include "~ '\\\\d+'::text"
+
+    Search.connection.drop_view :searches
+    silence_stream(STDOUT) { eval(output) }
+
+    expect(Search.first.haystack).to eq "needle"
+  end
+
   it "dumps a create_view for a materialized view in the database" do
     view_definition = "SELECT 'needle'::text AS haystack"
     Search.connection.create_view :searches, materialized: true, sql_definition: view_definition
