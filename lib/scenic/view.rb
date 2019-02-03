@@ -46,9 +46,13 @@ module Scenic
 
       <<-DEFINITION
   create_view #{UnaffixedName.for(name).inspect}, #{materialized_option}sql_definition: <<-\SQL
-    #{definition.indent(2)}
+    #{escaped_definition.indent(2)}
   SQL
       DEFINITION
+    end
+
+    def escaped_definition
+      definition.gsub("\\", "\\\\\\")
     end
   end
 end
