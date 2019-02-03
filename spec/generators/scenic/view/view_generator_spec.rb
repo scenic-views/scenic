@@ -31,7 +31,7 @@ describe Scenic::Generators::ViewGenerator, :generator do
 
       run_generator ["aired_episode", "--materialized"]
       migration = migration_file(
-        "db/migrate/update_aired_episodes_to_version_2.rb"
+        "db/migrate/update_aired_episodes_to_version_2.rb",
       )
       expect(migration).to contain "materialized: true"
     end

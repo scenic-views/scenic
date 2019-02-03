@@ -33,14 +33,14 @@ module Scenic
       it "creates version 1 of the view if neither version nor sql_defintion are provided" do
         version = 1
         definition_stub = instance_double("Definition", to_sql: "foo")
-        allow(Definition).to receive(:new).
-          with(:views, version).
-          and_return(definition_stub)
+        allow(Definition).to receive(:new)
+          .with(:views, version)
+          .and_return(definition_stub)
 
         connection.create_view :views
 
-        expect(Scenic.database).to have_received(:create_view).
-          with(:views, definition_stub.to_sql)
+        expect(Scenic.database).to have_received(:create_view)
+          .with(:views, definition_stub.to_sql)
       end
 
       it "raises an error if both version and sql_defintion are provided" do
@@ -57,8 +57,8 @@ module Scenic
 
         connection.create_view(:views, version: 1, materialized: true)
 
-        expect(Scenic.database).to have_received(:create_materialized_view).
-          with(:views, definition.to_sql, no_data: false)
+        expect(Scenic.database).to have_received(:create_materialized_view)
+          .with(:views, definition.to_sql, no_data: false)
       end
     end
 
@@ -73,8 +73,8 @@ module Scenic
           materialized: { no_data: true },
         )
 
-        expect(Scenic.database).to have_received(:create_materialized_view).
-          with(:views, definition.to_sql, no_data: true)
+        expect(Scenic.database).to have_received(:create_materialized_view)
+          .with(:views, definition.to_sql, no_data: true)
       end
     end
 
@@ -112,8 +112,8 @@ module Scenic
 
         connection.update_view(:name, sql_definition: sql_definition)
 
-        expect(Scenic.database).to have_received(:update_view).
-          with(:name, sql_definition)
+        expect(Scenic.database).to have_received(:update_view)
+          .with(:name, sql_definition)
       end
 
       it "updates the materialized view in the database" do
@@ -124,15 +124,15 @@ module Scenic
 
         connection.update_view(:name, version: 3, materialized: true)
 
-        expect(Scenic.database).to have_received(:update_materialized_view).
-          with(:name, definition.to_sql, no_data: false)
+        expect(Scenic.database).to have_received(:update_materialized_view)
+          .with(:name, definition.to_sql, no_data: false)
       end
 
       it "updates the materialized view in the database with NO DATA" do
         definition = instance_double("Definition", to_sql: "definition")
-        allow(Definition).to receive(:new).
-          with(:name, 3).
-          and_return(definition)
+        allow(Definition).to receive(:new)
+          .with(:name, 3)
+          .and_return(definition)
 
         connection.update_view(
           :name,
@@ -140,14 +140,15 @@ module Scenic
           materialized: { no_data: true },
         )
 
-        expect(Scenic.database).to have_received(:update_materialized_view).
-          with(:name, definition.to_sql, no_data: true)
+        expect(Scenic.database).to have_received(:update_materialized_view)
+          .with(:name, definition.to_sql, no_data: true)
       end
 
       it "raises an error if not supplied a version or sql_defintion" do
         expect { connection.update_view :views }.to raise_error(
           ArgumentError,
-          /sql_definition or version must be specified/)
+          /sql_definition or version must be specified/,
+        )
       end
 
       it "raises an error if both version and sql_defintion are provided" do
@@ -155,7 +156,8 @@ module Scenic
           connection.update_view(
             :views,
             version: 1,
-            sql_definition: "a defintion")
+            sql_definition: "a defintion",
+          )
         end.to raise_error ArgumentError, /cannot both be set/
       end
     end

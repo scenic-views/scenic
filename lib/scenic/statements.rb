@@ -153,8 +153,11 @@ module Scenic
     end
 
     def no_data(materialized)
-      return false unless materialized.is_a? Hash
-      materialized.fetch(:no_data, false)
+      if materialized.is_a?(Hash)
+        materialized.fetch(:no_data, false)
+      else
+        false
+      end
     end
   end
 end

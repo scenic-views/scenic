@@ -1,4 +1,5 @@
 require "acceptance_helper"
+require "English"
 
 describe "User manages views" do
   it "handles simple views" do
@@ -56,7 +57,7 @@ describe "User manages views" do
 
   def successfully(command)
     `RAILS_ENV=test #{command}`
-    expect($?.exitstatus).to eq(0), "'#{command}' was unsuccessful"
+    expect($CHILD_STATUS.exitstatus).to eq(0), "'#{command}' was unsuccessful"
   end
 
   def write_definition(file, contents)

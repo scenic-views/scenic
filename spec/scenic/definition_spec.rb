@@ -22,7 +22,7 @@ module Scenic
     end
 
     describe "path" do
-      it "returns a sql file in db/views with padded version and view name"  do
+      it "returns a sql file in db/views with padded version and view name" do
         expected = "db/views/searches_v01.sql"
 
         definition = Definition.new("searches", 1)

@@ -93,7 +93,8 @@ describe Scenic::SchemaDumper, :db do
     it "dumps a create_view for a view in the database" do
       view_definition = "SELECT 'needle'::text AS haystack"
       Search.connection.execute(
-        "CREATE SCHEMA scenic; SET search_path TO scenic, public")
+        "CREATE SCHEMA scenic; SET search_path TO scenic, public",
+      )
       Search.connection.create_view 'scenic."search in a haystack"',
         sql_definition: view_definition
       stream = StringIO.new

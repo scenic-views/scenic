@@ -46,11 +46,16 @@ module Scenic
           def to_sorted_array
             dependency_hash = parse_to_hash(raw_dependencies)
             sorted_arr = tsort(dependency_hash)
+
             idx = sorted_arr.find_index do |dep|
               dep.include?(view_to_refresh.to_s)
             end
-            return [] if idx.nil?
-            sorted_arr[0...idx]
+
+            if idx.present?
+              sorted_arr[0...idx]
+            else
+              []
+            end
           end
 
           private

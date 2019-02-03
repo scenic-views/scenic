@@ -6,7 +6,7 @@ module Scenic::Generators
     before do
       allow(ViewGenerator).to receive(:new)
         .and_return(
-          instance_double("Scenic::Generators::ViewGenerator").as_null_object
+          instance_double("Scenic::Generators::ViewGenerator").as_null_object,
         )
     end
 

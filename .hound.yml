@@ -1,4 +1,2 @@
-DotPosition:
-  EnforcedStyle: leading
-Style/AlignParameters:
-  EnforcedStyle: with_fixed_indentation
+rubocop:
+  config_file: .rubocop.yml

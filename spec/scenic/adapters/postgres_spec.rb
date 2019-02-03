@@ -104,8 +104,8 @@ module Scenic
           connection = double("Connection").as_null_object
           connectable = double("Connectable", connection: connection)
           adapter = Postgres.new(connectable)
-          expect(Scenic::Adapters::Postgres::RefreshDependencies).
-            to receive(:call).with(:tests, adapter, connection)
+          expect(Scenic::Adapters::Postgres::RefreshDependencies)
+            .to receive(:call).with(:tests, adapter, connection)
           adapter.refresh_materialized_view(:tests, cascade: true)
         end
 

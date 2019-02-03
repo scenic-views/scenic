@@ -8,7 +8,7 @@ module Scenic
     # @api private
     class ModelGenerator < Rails::Generators::NamedBase
       include Scenic::Generators::Materializable
-      source_root File.expand_path("../templates", __FILE__)
+      source_root File.expand_path("templates", __dir__)
 
       def invoke_rails_model_generator
         invoke "model",
@@ -35,7 +35,7 @@ module Scenic
 
       def evaluate_template(source)
         source  = File.expand_path(find_in_source_paths(source.to_s))
-        context = instance_eval("binding")
+        context = instance_eval("binding", __FILE__, __LINE__)
         ERB.new(
           ::File.binread(source),
           nil,

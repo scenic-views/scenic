@@ -26,14 +26,14 @@ module Scenic
           "SELECT * from third",
         )
 
-        expect(adapter).to receive(:refresh_materialized_view).
-          with("public.first").ordered
+        expect(adapter).to receive(:refresh_materialized_view)
+          .with("public.first").ordered
 
-        expect(adapter).to receive(:refresh_materialized_view).
-          with("public.second").ordered
+        expect(adapter).to receive(:refresh_materialized_view)
+          .with("public.second").ordered
 
-        expect(adapter).to receive(:refresh_materialized_view).
-          with("public.third").ordered
+        expect(adapter).to receive(:refresh_materialized_view)
+          .with("public.third").ordered
 
         described_class.call(:fourth, adapter, ActiveRecord::Base.connection)
       end

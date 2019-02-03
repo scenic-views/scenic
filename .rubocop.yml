@@ -1,0 +1,129 @@
+AllCops:
+  TargetRubyVersion: 2.3.0
+  Exclude:
+    - "tmp/**/*"
+    - "bin/*"
+    - "spec/dummy/**/*"
+
+Bundler/OrderedGems:
+  Enabled: false
+
+Gemspec/OrderedDependencies:
+  Enabled: false
+
+Layout/AlignParameters:
+  Enabled: true
+  EnforcedStyle: with_fixed_indentation
+Layout/ConditionPosition:
+  Enabled: false
+Layout/DotPosition:
+  EnforcedStyle: leading
+Layout/ExtraSpacing:
+  Enabled: true
+Layout/IndentAssignment:
+  Enabled: False
+Layout/MultilineOperationIndentation:
+  Enabled: true
+  EnforcedStyle: indented
+Layout/MultilineMethodCallIndentation:
+  Enabled: true
+  EnforcedStyle: indented
+
+Lint/AmbiguousOperator:
+  Enabled: true
+Lint/AmbiguousRegexpLiteral:
+  Enabled: true
+Lint/DuplicatedKey:
+  Enabled: true
+
+Metrics/ClassLength:
+  Enabled: false
+Metrics/ModuleLength:
+  Enabled: false
+Metrics/AbcSize:
+  Enabled: false
+Metrics/BlockLength:
+  CountComments: true  # count full line comments?
+  Max: 25
+  ExcludedMethods: []
+  Exclude:
+    - "spec/**/*"
+    - "*.gemspec"
+Metrics/CyclomaticComplexity:
+  Enabled: false
+Metrics/LineLength:
+  Max: 80
+Metrics/MethodLength:
+  Enabled: false
+
+Security/Eval:
+  Enabled: true
+  Exclude:
+    - "spec/scenic/schema_dumper_spec.rb"
+Style/BlockDelimiters:
+  Enabled: false
+Style/CollectionMethods:
+  Enabled: true
+  PreferredMethods:
+    find: find
+    inject: reduce
+    collect: map
+    find_all: select
+Style/ConditionalAssignment:
+  Enabled: false
+Style/ClassAndModuleChildren:
+  Enabled: true
+  Exclude:
+    - "spec/**/*"
+Style/Documentation:
+  Enabled: false
+Style/FrozenStringLiteralComment:
+  Description: >-
+    Add the frozen_string_literal comment to the top of files
+    to help transition from Ruby 2.3.0 to Ruby 3.0.
+  Enabled: false
+Style/GuardClause:
+  Enabled: false
+Style/IfUnlessModifier:
+  Enabled: false
+Style/Lambda:
+  Enabled: false
+Style/NumericLiterals:
+  Enabled: false
+Style/OneLineConditional:
+  Enabled: false
+Style/PercentLiteralDelimiters:
+  Enabled: false
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+  Enabled: true
+Style/TrailingCommaInArguments:
+  Description: 'Checks for trailing comma in argument lists.'
+  StyleGuide: 'https://github.com/bbatsov/ruby-style-guide#no-trailing-array-commas'
+  EnforcedStyleForMultiline: comma
+  SupportedStylesForMultiline:
+    - comma
+    - consistent_comma
+    - no_comma
+  Enabled: true
+Style/TrailingCommaInArrayLiteral:
+  Description: 'Checks for trailing comma in array literals.'
+  StyleGuide: 'https://github.com/bbatsov/ruby-style-guide#no-trailing-array-commas'
+  EnforcedStyleForMultiline: comma
+  SupportedStylesForMultiline:
+    - comma
+    - consistent_comma
+    - no_comma
+  Enabled: true
+Style/TrailingCommaInHashLiteral:
+  Description: 'Checks for trailing comma in hash literals.'
+  StyleGuide: 'https://github.com/bbatsov/ruby-style-guide#no-trailing-array-commas'
+  EnforcedStyleForMultiline: comma
+  SupportedStylesForMultiline:
+    - comma
+    - consistent_comma
+    - no_comma
+  Enabled: true
+Style/WordArray:
+  Enabled: false
+
