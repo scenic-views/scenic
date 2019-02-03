@@ -5,7 +5,7 @@ module Scenic
     describe Postgres::RefreshDependencies, :db do
       let(:adapter) { Postgres.new }
 
-      context "when the view has dependencies" do
+      context "view has dependencies" do
         before do
           adapter.create_materialized_view(
             "first",
@@ -53,11 +53,11 @@ module Scenic
             with("public.more_fourth").ordered
         end
 
-        it "refreshes dependencies in the correct order when called without a namespace" do
+        it "refreshes in the correct order when called without a namespace" do
           described_class.call(:fourth, adapter, ActiveRecord::Base.connection)
         end
 
-        it "refreshes dependencies in the correct order when called with a namespace" do
+        it "refreshes in the correct order when called with a namespace" do
           described_class.call(:'public.fourth', adapter, ActiveRecord::Base.connection)
         end
       end

@@ -53,8 +53,12 @@ module Scenic
                 dep.ends_with?(".#{view_to_refresh}")
               end
             end
-            return [] if idx.nil?
-            sorted_arr[0...idx]
+
+            if idx.present?
+              sorted_arr[0...idx]
+            else
+              []
+            end
           end
 
           private
