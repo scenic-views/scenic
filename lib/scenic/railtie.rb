@@ -7,6 +7,8 @@ module Scenic
   # @see Scenic.load
   class Railtie < Rails::Railtie
     initializer "scenic.load" do
+      Rails.application.config.paths.add("db/views")
+
       ActiveSupport.on_load :active_record do
         Scenic.load
       end

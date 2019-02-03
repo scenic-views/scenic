@@ -2,22 +2,51 @@ require "spec_helper"
 
 module Scenic
   describe Definition do
+    describe "definition_path" do
+      it "raises an error if file cant be found" do
+        definition = Definition.new("not_valid", 1)
+
+        expect do
+          definition.definition_path
+        end.to raise_error RuntimeError, /Unable to locate not_valid_v01.sql/
+      end
+
+      it "looks inside Rails.root db/views" do
+        definition = Definition.new("not_valid", 1)
+
+        expect do
+          definition.definition_path
+        end.to raise_error RuntimeError, /spec\/dummy\/db\/views/
+      end
+
+      it "looks inside configured additional paths" do
+        with_views_fixtures do
+          definition = Definition.new("empty_view", 1)
+
+          expect(definition.definition_path).to be
+        end
+      end
+    end
+
     describe "to_sql" do
       it "returns the content of a view definition" do
         sql_definition = "SELECT text 'Hi' as greeting"
-        allow(File).to receive(:read).and_return(sql_definition)
 
-        definition = Definition.new("searches", 1)
+        with_views_fixtures do
+          definition = Definition.new("searches", 1)
 
-        expect(definition.to_sql).to eq sql_definition
+          expect(definition.to_sql).to eq sql_definition
+        end
       end
 
       it "raises an error if the file is empty" do
-        allow(File).to receive(:read).and_return("")
+        definition = Definition.new("empty_view", 1)
 
-        expect do
-          Definition.new("searches", 1).to_sql
-        end.to raise_error RuntimeError
+        with_views_fixtures do
+          expect do
+            definition.to_sql
+          end.to raise_error RuntimeError
+        end
       end
     end
 
@@ -51,6 +80,15 @@ module Scenic
 
         expect(definition.version).to eq "15"
       end
+    end
+
+    def with_views_fixtures
+      original = Rails.application.config.paths["db/views"].to_a
+      fixtures_path = File.expand_path("../../fixtures/db_views", __FILE__)
+      Rails.application.config.paths["db/views"] << fixtures_path
+      yield
+    ensure
+      Rails.application.config.paths["db/views"] = original
     end
   end
 end
