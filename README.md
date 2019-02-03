@@ -249,6 +249,7 @@ meet your needs:
 * [scenic_sqlite_adapter](https://github.com/pdebelak/scenic_sqlite_adapter)
 * [scenic-mysql_adapter](https://github.com/EmpaticoOrg/scenic-mysql_adapter)
 * [scenic-sqlserver-adapter](https://github.com/ClickMechanic/scenic_sqlserver_adapter)
+* [scenic-oracle_enhanced_adapter](https://github.com/PMACS/scenic_oracle_enhanced_adapter)
 
 ## About
 
