@@ -5,6 +5,25 @@ changelog, see the [CHANGELOG] for each version via the version links.
 
 [CHANGELOG]: https://github.com/scenic-views/scenic/commits/master
 
+## [1.5.0] - February 8, 2019
+
+### Added
+
+- `create_view` can now be passed `materialized: { no_data: true }` to create
+  the materialized view without populating it. Generators have been updated to
+  accept a `--no-data` option.
+
+### Fixed
+
+- Passing `cascade: true` when refreshing a materialized view will no longer
+  error when the view in question has no dependencies.
+- Fixed runtime deprecation warnings when using `pg` 0.21 and newer.
+- Fixed a cascading refresh issue when the name of the view to trigger the
+  refresh is a substring of one of its dependencies.
+
+
+[1.5.0]: https://github.com/scenic-views/scenic/compare/v1.4.1...v1.5.0
+
 ## [1.4.1] - December 15, 2017
 
 ### Fixed
