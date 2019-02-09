@@ -48,7 +48,11 @@ module Scenic
             sorted_arr = tsort(dependency_hash)
 
             idx = sorted_arr.find_index do |dep|
-              dep.include?(view_to_refresh.to_s)
+              if view_to_refresh.to_s.include?(".")
+                dep == view_to_refresh.to_s
+              else
+                dep.ends_with?(".#{view_to_refresh}")
+              end
             end
 
             if idx.present?
