@@ -5,6 +5,15 @@ changelog, see the [CHANGELOG] for each version via the version links.
 
 [CHANGELOG]: https://github.com/scenic-views/scenic/commits/master
 
+## [1.5.1] - February 10, 2019
+
+### Fixed
+
+- Passing `no_data: true` when creating a materialized view would error if the
+  corresponding SQL file had statement-terminating semicolon.
+
+[1.5.1]: https://github.com/scenic-views/scenic/compare/v1.5.0...v1.5.1
+
 ## [1.5.0] - February 8, 2019
 
 ### Added
