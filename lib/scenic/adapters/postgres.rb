@@ -134,9 +134,10 @@ module Scenic
       # @return [void]
       def create_materialized_view(name, sql_definition, no_data: false)
         raise_unless_materialized_views_supported
+
         execute <<-SQL
   CREATE MATERIALIZED VIEW #{quote_table_name(name)} AS
-  #{sql_definition}
+  #{sql_definition.rstrip.chomp(';')}
   #{'WITH NO DATA' if no_data};
         SQL
       end
