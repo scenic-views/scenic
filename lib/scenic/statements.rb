@@ -9,6 +9,10 @@ module Scenic
     # @param sql_definition [String] The SQL query for the view schema. An error
     #   will be raised if `sql_definition` and `version` are both set,
     #   as they are mutually exclusive.
+    # @param defined_in [String] The file where the view is defined. If
+    #   `defined_in` isn't set, the default file is the name of the view. An
+    #   error will be raised if `sql_definition` and `defined_in` are both set,
+    #   as they are mutually exclusive.
     # @param materialized [Boolean, Hash] Set to true to create a materialized
     #   view. Set to { no_data: true } to create materialized view without
     #   loading data. Defaults to false.
@@ -22,7 +26,7 @@ module Scenic
     #     SELECT * FROM users WHERE users.active = 't'
     #   SQL
     #
-    def create_view(name, version: nil, sql_definition: nil, materialized: false)
+    def create_view(name, version: nil, sql_definition: nil, defined_in: nil, materialized: false)
       if version.present? && sql_definition.present?
         raise(
           ArgumentError,
@@ -30,11 +34,20 @@ module Scenic
         )
       end
 
+      if defined_in.present? && sql_definition.present?
+        raise(
+          ArgumentError,
+          "sql_definition and defined_in cannot both be set",
+        )
+      end
+
       if version.blank? && sql_definition.blank?
         version = 1
       end
 
-      sql_definition ||= definition(name, version)
+      defined_in ||= name
+
+      sql_definition ||= definition(defined_in, version)
 
       if materialized
         Scenic.database.create_materialized_view(
@@ -60,7 +73,7 @@ module Scenic
     # @example Drop a view, rolling back to version 3 on rollback
     #   drop_view(:users_who_recently_logged_in, revert_to_version: 3)
     #
-    def drop_view(name, revert_to_version: nil, materialized: false)
+    def drop_view(name, revert_to_version: nil, defined_in: nil, materialized: false)
       if materialized
         Scenic.database.drop_materialized_view(name)
       else
@@ -78,6 +91,10 @@ module Scenic
     # @param sql_definition [String] The SQL query for the view schema. An error
     #   will be raised if `sql_definition` and `version` are both set,
     #   as they are mutually exclusive.
+    # @param defined_in [String] The file where the view is defined. If
+    #   `defined_in` isn't set, the default file is the name of the view. An
+    #   error will be raised if `sql_definition` and `defined_in` are both set,
+    #   as they are mutually exclusive.
     # @param revert_to_version [Fixnum] The version number to rollback to on
     #   `rake db rollback`
     # @param materialized [Boolean, Hash] True if updating a materialized view.
@@ -88,7 +105,7 @@ module Scenic
     # @example
     #   update_view :engagement_reports, version: 3, revert_to_version: 2
     #
-    def update_view(name, version: nil, sql_definition: nil, revert_to_version: nil, materialized: false)
+    def update_view(name, version: nil, sql_definition: nil, defined_in: nil, revert_to_version: nil, materialized: false)
       if version.blank? && sql_definition.blank?
         raise(
           ArgumentError,
@@ -103,7 +120,16 @@ module Scenic
         )
       end
 
-      sql_definition ||= definition(name, version)
+      if defined_in.present? && sql_definition.present?
+        raise(
+          ArgumentError,
+          "sql_definition and defined_in cannot both be set",
+        )
+      end
+
+      defined_in ||= name
+
+      sql_definition ||= definition(defined_in, version)
 
       if materialized
         Scenic.database.update_materialized_view(
@@ -127,12 +153,14 @@ module Scenic
     # @param version [Fixnum] The version number of the view.
     # @param revert_to_version [Fixnum] The version number to rollback to on
     #   `rake db rollback`
+    # @param defined_in [String] The file where the view is defined. If
+    #   `defined_in` isn't set, the default file is the name of the view.
     # @return The database response from executing the create statement.
     #
     # @example
     #   replace_view :engagement_reports, version: 3, revert_to_version: 2
     #
-    def replace_view(name, version: nil, revert_to_version: nil, materialized: false)
+    def replace_view(name, version: nil, defined_in: nil, revert_to_version: nil, materialized: false)
       if version.blank?
         raise ArgumentError, "version is required"
       end
@@ -141,7 +169,9 @@ module Scenic
         raise ArgumentError, "Cannot replace materialized views"
       end
 
-      sql_definition = definition(name, version)
+      defined_in ||= name
+
+      sql_definition = definition(defined_in, version)
 
       Scenic.database.replace_view(name, sql_definition)
     end

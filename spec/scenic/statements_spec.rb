@@ -30,6 +30,19 @@ module Scenic
           .with(:views, sql_definition)
       end
 
+      it "creates a view from a file whose name does not match the view's name" do
+        version = 15
+        definition_stub = instance_double("Definition", to_sql: "foo")
+        allow(Definition).to receive(:new)
+          .with(:random_name, version)
+          .and_return(definition_stub)
+
+        connection.create_view :views, defined_in: :random_name, version: version
+
+        expect(Scenic.database).to have_received(:create_view)
+          .with(:views, definition_stub.to_sql)
+      end
+
       it "creates version 1 of the view if neither version nor sql_defintion are provided" do
         version = 1
         definition_stub = instance_double("Definition", to_sql: "foo")
@@ -47,6 +60,16 @@ module Scenic
         expect do
           connection.create_view :foo, version: 1, sql_definition: "a defintion"
         end.to raise_error ArgumentError
+      end
+
+      it "raises an error if both defined_in and sql_definition are provided" do
+        expect do
+          connection.create_view(
+            :views,
+            defined_in: :random_name,
+            sql_definition: "a defintion",
+          )
+        end.to raise_error ArgumentError, /cannot both be set/
       end
     end
 
@@ -116,6 +139,19 @@ module Scenic
           .with(:name, sql_definition)
       end
 
+      it "updates a view from a file whose name does not match the view's name" do
+        version = 15
+        definition_stub = instance_double("Definition", to_sql: "foo")
+        allow(Definition).to receive(:new)
+          .with(:random_name, version)
+          .and_return(definition_stub)
+
+        connection.update_view :views, defined_in: :random_name, version: version
+
+        expect(Scenic.database).to have_received(:update_view)
+          .with(:views, definition_stub.to_sql)
+      end
+      
       it "updates the materialized view in the database" do
         definition = instance_double("Definition", to_sql: "definition")
         allow(Definition).to receive(:new)
@@ -160,6 +196,16 @@ module Scenic
           )
         end.to raise_error ArgumentError, /cannot both be set/
       end
+      
+      it "raises an error if both defined_in and sql_definition are provided" do
+        expect do
+          connection.update_view(
+            :views,
+            defined_in: :random_name,
+            sql_definition: "a defintion",
+          )
+        end.to raise_error ArgumentError, /cannot both be set/
+      end
     end
 
     describe "replace_view" do
@@ -173,6 +219,19 @@ module Scenic
 
         expect(Scenic.database).to have_received(:replace_view)
           .with(:name, definition.to_sql)
+      end
+
+      it "creates a view from a file whose name does not match the view's name" do
+        version = 15
+        definition_stub = instance_double("Definition", to_sql: "foo")
+        allow(Definition).to receive(:new)
+          .with(:random_name, version)
+          .and_return(definition_stub)
+
+        connection.replace_view :views, defined_in: :random_name, version: version
+
+        expect(Scenic.database).to have_received(:replace_view)
+          .with(:views, definition_stub.to_sql)
       end
 
       it "fails to replace the materialized view in the database" do
