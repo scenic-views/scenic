@@ -73,6 +73,12 @@ module Scenic
 
       private
 
+      alias singular_name file_name
+
+      def file_name
+        super.tr(".", "_")
+      end
+
       def views_directory_path
         @views_directory_path ||= Rails.root.join("db", "views")
       end
@@ -91,10 +97,6 @@ module Scenic
 
       def previous_definition
         Scenic::Definition.new(plural_file_name, previous_version)
-      end
-
-      def plural_file_name
-        @plural_file_name ||= file_name.pluralize.tr(".", "_")
       end
 
       def destroying?
