@@ -29,6 +29,12 @@ module Scenic
 
         expect(definition.path).to eq expected
       end
+
+      it "handles schema qualified view names" do
+        definition = Definition.new("non_public.searches", 1)
+
+        expect(definition.path).to eq "db/views/non_public_searches_v01.sql"
+      end
     end
 
     describe "full_path" do
