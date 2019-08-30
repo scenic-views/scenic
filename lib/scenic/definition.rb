@@ -29,7 +29,7 @@ module Scenic
     private
 
     def filename
-      "#{@name}_v#{version}.sql"
+      "#{@name.to_s.tr('.', '_')}_v#{version}.sql"
     end
   end
 end
