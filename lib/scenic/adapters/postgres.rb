@@ -112,10 +112,11 @@ module Scenic
       # This is typically called in a migration via {Statements#drop_view}.
       #
       # @param name The name of the view to drop
+      # @param cascade Whether or not the DROP should be CASCADE-d
       #
       # @return [void]
-      def drop_view(name)
-        execute "DROP VIEW #{quote_table_name(name)};"
+      def drop_view(name, cascade: false)
+        execute "DROP VIEW #{quote_table_name(name)} #{'CASCADE' if cascade};"
       end
 
       # Creates a materialized view in the database

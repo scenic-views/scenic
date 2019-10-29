@@ -55,16 +55,17 @@ module Scenic
     #   `version` argument to {#create_view}.
     # @param materialized [Boolean] Set to true if dropping a meterialized view.
     #   defaults to false.
+    # @param cascade [Boolean] Whether or not the DROP should be CASCADE-d.
     # @return The database response from executing the drop statement.
     #
     # @example Drop a view, rolling back to version 3 on rollback
     #   drop_view(:users_who_recently_logged_in, revert_to_version: 3)
     #
-    def drop_view(name, revert_to_version: nil, materialized: false)
+    def drop_view(name, revert_to_version: nil, materialized: false, cascade: false)
       if materialized
-        Scenic.database.drop_materialized_view(name)
+        Scenic.database.drop_materialized_view(name, cascade: cascade)
       else
-        Scenic.database.drop_view(name)
+        Scenic.database.drop_view(name, cascade: cascade)
       end
     end
 

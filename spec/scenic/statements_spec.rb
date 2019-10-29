@@ -82,7 +82,8 @@ module Scenic
       it "removes a view from the database" do
         connection.drop_view :name
 
-        expect(Scenic.database).to have_received(:drop_view).with(:name)
+        expect(Scenic.database).to have_received(:drop_view)
+          .with(:name, cascade: false)
       end
     end
 
