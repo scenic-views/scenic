@@ -36,7 +36,6 @@ module Scenic
 
       sql_definition ||= definition(name, version, root_path: root_path)
 
-
       if materialized
         Scenic.database.create_materialized_view(
           name,

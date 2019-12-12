@@ -4,7 +4,7 @@ module Scenic
     def initialize(name, version, root_path: Rails.root)
       @name = name
       @version = version.to_i
-      @root_path = root_path
+      @root_path = root_path.is_a?(String) ? Pathname.new(root_path) : root_path
     end
 
     def to_sql
