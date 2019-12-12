@@ -1,9 +1,10 @@
 module Scenic
   # @api private
   class Definition
-    def initialize(name, version)
+    def initialize(name, version, root_path: Rails.root)
       @name = name
       @version = version.to_i
+      @root_path = root_path
     end
 
     def to_sql
@@ -15,7 +16,7 @@ module Scenic
     end
 
     def full_path
-      Rails.root.join(path)
+      @root_path.join(path)
     end
 
     def path
