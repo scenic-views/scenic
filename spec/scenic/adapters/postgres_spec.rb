@@ -119,8 +119,14 @@ module Scenic
           connectable = double("Connectable", connection: connection)
           adapter = Postgres.new(connectable)
           expect(Scenic::Adapters::Postgres::RefreshDependencies)
-            .to receive(:call).with(:tests, adapter, connection)
-          adapter.refresh_materialized_view(:tests, cascade: true)
+            .to receive(:call)
+            .with(:tests, adapter, connection, concurrently: true)
+
+          adapter.refresh_materialized_view(
+            :tests,
+            cascade: true,
+            concurrently: true,
+          )
         end
 
         context "refreshing concurrently" do
