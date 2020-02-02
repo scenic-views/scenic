@@ -22,8 +22,12 @@ module Scenic
         StatementArguments.new([view, options_for_revert])
       end
 
+      def remove_version
+        StatementArguments.new([view, options_without_version])
+      end
+
       def to_a
-        @args.to_a
+        @args.to_a.dup.delete_if(&:empty?)
       end
 
       private
@@ -37,6 +41,10 @@ module Scenic
           revert_options[:version] = revert_to_version
           revert_options.delete(:revert_to_version)
         end
+      end
+
+      def options_without_version
+        options.except(:version)
       end
     end
   end

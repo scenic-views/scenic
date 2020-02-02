@@ -20,7 +20,8 @@ module Scenic
     end
 
     def invert_create_view(args)
-      [:drop_view, args]
+      drop_view_args = StatementArguments.new(args).remove_version.to_a
+      [:drop_view, drop_view_args]
     end
 
     def invert_drop_view(args)
