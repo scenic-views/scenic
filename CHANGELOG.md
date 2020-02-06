@@ -1,9 +1,9 @@
-# News
+# Changelog
 
 The noteworthy changes for each Scenic version are included here. For a complete
-changelog, see the [CHANGELOG] for each version via the version links.
+changelog, see the [commits] for each version via the version links.
 
-[CHANGELOG]: https://github.com/scenic-views/scenic/commits/master
+[commits]: https://github.com/scenic-views/scenic/commits/master
 
 ## [1.5.1] - February 10, 2019
 
