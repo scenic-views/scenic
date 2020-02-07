@@ -5,7 +5,7 @@ changelog, see the [commits] for each version via the version links.
 
 [commits]: https://github.com/scenic-views/scenic/commits/master
 
-## [1.5.2] - February 6, 2019
+## [1.5.2] - February 6, 2020
 
 ### Fixed
 
