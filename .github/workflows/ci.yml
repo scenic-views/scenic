@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: master
+  pull_request:
+    branches: "*"
+
+jobs:
+  build:
+    name: Ruby ${{ matrix.ruby }}, Rails ${{ matrix.rails }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby: ["2.7","2.4"]
+        rails: ["5.2", "6.0", "master"]
+        exclude:
+          - ruby: "2.4"
+            rails: "6.0"
+          - ruby: "2.4"
+            rails: "master"
+        include:
+          - rails: "master"
+            continue-on-error: true
+
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:11
+        ports:
+          - 5432:5432
+
+    env:
+      RAILS_VERSION: ${{ matrix.rails }}
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+      CI: "true"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install Ruby ${{ matrix.ruby }}
+        uses: ruby/setup-ruby@v1.14.1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+
+      - name: Install dependent libraries
+        run: sudo apt-get install libpq-dev
+
+      - name: Generate lockfile
+        run: bundle lock
+
+      - name: Cache dependencies
+        uses: actions/cache@v1
+        with:
+          path: vendor/bundle
+          key: bundle-${{ hashFiles('Gemfile.lock') }}
+
+      - name: Set up Scenic
+        run: bin/setup
+
+      - name: Run fast tests
+        run: bundle exec rake spec
+        continue-on-error: ${{ matrix.continue-on-error }}
+
+      - name: Run acceptance tests
+        run: bundle exec rake spec:acceptance
+        continue-on-error: ${{ matrix.continue-on-error }}

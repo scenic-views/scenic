@@ -2,7 +2,12 @@ development: &default
   adapter: postgresql
   database: dummy_development
   encoding: unicode
+  host: localhost
   pool: 5
+  <% if ENV.fetch("CI", false) %>
+  username: <%= ENV.fetch("POSTGRES_USER") %>
+  password: <%= ENV.fetch("POSTGRES_PASSWORD") %>
+  <% end %>
 
 test:
   <<: *default
