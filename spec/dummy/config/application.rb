@@ -11,5 +11,7 @@ module Dummy
     config.cache_classes = true
     config.eager_load = false
     config.active_support.deprecation = :stderr
+
+    config.i18n.fallbacks =[:en]
   end
 end
