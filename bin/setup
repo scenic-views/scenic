@@ -3,7 +3,7 @@
 set -e
 
 # CI-specific setup
-if [ -n "$CI" ]; then
+if [ -n "$GITHUB_ACTIONS" ]; then
   bundle config path vendor/bundle
   bundle config jobs 4
   bundle config retry 3
