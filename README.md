@@ -94,7 +94,7 @@ when some of those views may be materialized and take a long time to recreate.
 
 You can use `replace_view` to generate a CREATE OR REPLACE VIEW SQL statement.
 
-See postgresql documentation on how this works:
+See Postgres documentation on how this works:
 http://www.postgresql.org/docs/current/static/sql-createview.html
 
 To start replacing a view run the generator like for a regular change:
