@@ -44,7 +44,6 @@ jobs:
       RAILS_VERSION: ${{ matrix.rails }}
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "postgres"
-      CI: "true"
 
     steps:
       - name: Checkout
