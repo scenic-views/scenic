@@ -19,7 +19,7 @@ module Scenic
     end
 
     def path
-      File.join("db", "views", filename)
+      File.join(Scenic.views_path, filename)
     end
 
     def version

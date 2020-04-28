@@ -5,6 +5,14 @@ changelog, see the [commits] for each version via the version links.
 
 [commits]: https://github.com/scenic-views/scenic/commits/master
 
+## [Unreleased]
+
+Added
+
+* Add a configuration value for changing the default path for the views files
+
+[Unreleased]: https://github.com/scenic-views/scenic/compare/v1.5.2...master
+
 ## [1.5.2] - February 6, 2020
 
 ### Fixed

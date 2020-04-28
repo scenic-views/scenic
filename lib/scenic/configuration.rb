@@ -1,13 +1,26 @@
 module Scenic
   class Configuration
+    # Set the default path to store the views.
+    #
+    # Defaults to db/views on Rails root
+    DEFAULT_VIEWS_PATH = "db/views".freeze
+
     # The Scenic database adapter instance to use when executing SQL.
     #
     # Defaults to an instance of {Adapters::Postgres}
     # @return Scenic adapter
     attr_accessor :database
 
+    # The Scenic database adapter instance to use when executing SQL.
+    # The path where the views SQL files are stored
+    #
+    # Defaults to 'db/views'
+    # @return string
+    attr_accessor :views_path
+
     def initialize
       @database = Scenic::Adapters::Postgres.new
+      @views_path = DEFAULT_VIEWS_PATH
     end
   end
 

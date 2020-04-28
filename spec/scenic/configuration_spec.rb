@@ -20,6 +20,17 @@ module Scenic
       expect(Scenic.database).to eq adapter
     end
 
+    it "allows the views path to be set" do
+      path = "db/pg/views"
+
+      Scenic.configure do |config|
+        config.views_path = path
+      end
+
+      expect(Scenic.configuration.views_path).to eq path
+      expect(Scenic.views_path).to eq path
+    end
+
     def restore_default_config
       Scenic.configuration = Configuration.new
     end

@@ -54,4 +54,33 @@ describe Scenic::Generators::ViewGenerator, :generator do
       expect(migration).to contain(/create_view "non_public.searches"/)
     end
   end
+
+  context "for migrations using another view path" do
+    before do
+      Scenic.configure do |config|
+        config.views_path = "lib/dbms/views"
+      end
+    end
+
+    after { Scenic.configuration = Scenic::Configuration.new }
+
+    it "creates view files" do
+      view_definition = file("lib/dbms/views/searches_v01.sql")
+
+      run_generator ["search"]
+
+      expect(view_definition).to exist
+    end
+
+    it "updates an existing view" do
+      with_view_definition("searches", 1, "hello") do
+        view_definition = file("lib/dbms/views/searches_v02.sql")
+        allow(Dir).to receive(:entries).and_return(["searches_v01.sql"])
+
+        run_generator ["search"]
+
+        expect(view_definition).to exist
+      end
+    end
+  end
 end

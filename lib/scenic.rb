@@ -29,4 +29,12 @@ module Scenic
   def self.database
     configuration.database
   end
+
+  # The current path for the views files.
+  #
+  # This defaults to 'db/views', but can be overridden
+  # via {Configuration}.
+  def self.views_path
+    configuration.views_path
+  end
 end

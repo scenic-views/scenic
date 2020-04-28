@@ -206,6 +206,23 @@ def change
 end
 ```
 
+## Configuring Scenic
+
+Currently there's two things that can be set up on this gem:
+
+* `adapter` defines which adapter will be used to control the views on your database. By default we only provide and support for PostgreSQL, but you can set up other third-party adapters here
+
+* `views_path` defines where the view SQL files will be saved. The defalt is on `db/views` on your Rails path.
+
+To edit those values, create a `scenic.rb` file on your initialize directory and add the above code:
+
+```ruby
+Scenic.configure do |config|
+  config.database = MyDatabaseAdapter.new
+  config.views_path = 'my/path/to/view/files'
+end
+```
+
 ## FAQs
 
 **Why do I get an error when querying a view-backed model with `find`, `last`, or `first`?**
