@@ -1,4 +1,4 @@
-Copyright (c) 2014-2016 Derek Prior, Caleb Thompson, and thoughtbot.
+Copyright (c) 2014-2020 Derek Prior, Caleb Hearth, and thoughtbot.
 
 MIT License
 
