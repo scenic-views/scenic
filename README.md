@@ -257,6 +257,9 @@ meet your needs:
 * [scenic-sqlserver-adapter](https://github.com/ClickMechanic/scenic_sqlserver_adapter)
 * [scenic-oracle_adapter](https://github.com/cdinger/scenic-oracle_adapter)
 
+Please note that the maintainers of Scenic make no assertions about the
+quality or security of the above adapters.
+
 ## About
 
 Scenic is maintained by [Derek Prior], [Caleb Thompson], and you, our
