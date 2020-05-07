@@ -12,3 +12,4 @@ else
 end
 
 gem "rails", rails_constraint
+gem "sprockets", "< 4.0.0"
