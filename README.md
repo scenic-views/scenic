@@ -262,8 +262,8 @@ quality or security of the above adapters.
 
 ## About
 
-Scenic is maintained by [Derek Prior], [Caleb Thompson], and you, our
+Scenic is maintained by [Derek Prior], [Caleb Hearth], and you, our
 contributors.
 
 [Derek Prior]: http://prioritized.net
-[Caleb Thompson]: http://calebthompson.io
+[Caleb Hearth]: http://calebhearth.com
