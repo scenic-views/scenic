@@ -135,7 +135,7 @@ ActiveRecord or ARel queries. As far as ActiveRecord is concerned, a view is
 no different than a table.
 
 ```ruby
-class SearchResult < ActiveRecord::Base
+class SearchResult < ApplicationRecord
   belongs_to :searchable, polymorphic: true
 
   # this isn't strictly necessary, but it will prevent
@@ -218,7 +218,7 @@ You can get around these issues by setting the primary key column on your Rails
 model like so:
 
 ```ruby
-class People < ActiveRecord::Base
+class People < ApplicationRecord
   self.primary_key = :my_unique_identifier_field
 end
 ```
