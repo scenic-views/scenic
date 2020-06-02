@@ -46,7 +46,7 @@ module Scenic
 
       <<-DEFINITION
   create_view #{name.inspect}, #{materialized_option}sql_definition: <<-\SQL
-    #{definition.gsub("\\", "\\\\\\").indent(2)}
+    #{definition.gsub('\\', '\\\\\\').indent(2)}
   SQL
       DEFINITION
     end
