@@ -5,6 +5,30 @@ changelog, see the [commits] for each version via the version links.
 
 [commits]: https://github.com/scenic-views/scenic/commits/master
 
+## [1.5.4] - September 16, 2020
+
+[1.5.4]: https://github.com/scenic-views/scenic/compare/v1.5.3...v1.5.4
+
+### Fixed
+
+- Added missing changelog for v1.5.3.
+
+## [1.5.3] - September 15, 2020
+
+[1.5.3]: https://github.com/scenic-views/scenic/compare/v1.5.2...v1.5.3
+
+### Fixed
+
+- `scenic-oracle_enhanced_adapter` has been pulled from rubygems.
+  `scenic-oracle_adapter` is a current, maintained alternative.
+- Updated code snippets - since Rails 5.0, all models inherit from
+  ApplicationRecord (#302)
+- Update Caleb's last name
+
+### Added
+
+- Add Security Policy
+
 ## [1.5.2] - February 6, 2020
 
 ### Fixed
