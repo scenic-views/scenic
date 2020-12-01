@@ -136,7 +136,12 @@ module Scenic
       #   in use does not support materialized views.
       #
       # @return [void]
-      def create_materialized_view(name, sql_definition, no_data: false, raw: false)
+      def create_materialized_view(
+        name,
+        sql_definition,
+        no_data: false,
+        raw: false
+      )
         raise_unless_materialized_views_supported
 
         if raw

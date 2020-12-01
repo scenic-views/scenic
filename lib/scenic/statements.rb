@@ -22,7 +22,13 @@ module Scenic
     #     SELECT * FROM users WHERE users.active = 't'
     #   SQL
     #
-    def create_view(name, version: nil, sql_definition: nil, materialized: false, raw: false)
+    def create_view(
+      name,
+      version: nil,
+      sql_definition: nil,
+      materialized: false,
+      raw: false
+    )
       if version.present? && sql_definition.present?
         raise(
           ArgumentError,
@@ -41,7 +47,7 @@ module Scenic
           name,
           sql_definition,
           no_data: no_data(materialized),
-          raw: raw
+          raw: raw,
         )
       else
         Scenic.database.create_view(name, sql_definition, raw: raw)

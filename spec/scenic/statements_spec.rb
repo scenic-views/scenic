@@ -33,7 +33,11 @@ module Scenic
       it "creates a view from a text definition with raw option" do
         sql_definition = "a defintion"
 
-        connection.create_view(:views, sql_definition: sql_definition, raw: true)
+        connection.create_view(
+          :views,
+          sql_definition: sql_definition,
+          raw: true,
+        )
 
         expect(Scenic.database).to have_received(:create_view)
           .with(:views, sql_definition, raw: true)
@@ -95,8 +99,8 @@ module Scenic
         connection.create_view(
           :views,
           version: 1,
-          materialized: { no_data: true},
-          raw: true
+          materialized: { no_data: true },
+          raw: true,
         )
 
         expect(Scenic.database).to have_received(:create_materialized_view)

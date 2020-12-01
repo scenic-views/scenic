@@ -15,7 +15,11 @@ module Scenic
         it "successfully creates a view with raw input" do
           adapter = Postgres.new
 
-          adapter.create_view("greetings", "CREATE VIEW greetings AS SELECT text 'hi' AS greeting", raw: true)
+          adapter.create_view(
+            "greetings",
+            "CREATE VIEW greetings AS SELECT text 'hi' AS greeting",
+            raw: true,
+          )
 
           expect(adapter.views.map(&:name)).to include("greetings")
         end
@@ -62,7 +66,11 @@ module Scenic
         it "successfully creates a materialized view with raw input" do
           adapter = Postgres.new
 
-          adapter.create_view("greetings", "CREATE MATERIALIZED VIEW greetings AS SELECT text 'hi' AS greeting", raw: true)
+          adapter.create_view(
+            "greetings",
+            "CREATE MATERIALIZED VIEW greetings AS SELECT text 'hi' AS greet",
+            raw: true,
+          )
 
           expect(adapter.views.map(&:name)).to include("greetings")
         end
