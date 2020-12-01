@@ -195,6 +195,19 @@ you would need to refresh view B first, then right after refresh view A. If you
 would like this cascading refresh of materialized views, set `cascade: true`
 when you refresh your materialized view.
 
+## What if I need unfettered control?
+
+Scenic makes writing views easy by adding the necessary `CREATE VIEW…` syntax
+around your `SELECT` query. Most of the time this is great but it prevents you
+from splitting your view query into multiple statements.
+
+You can pass `raw: true` to `create_view`, doing so leaves you free (and
+responsible) to build set up your view creation as needed. An example of when
+this can be useful is when creating complex views that benefits from being
+abstracted into sub views. While this can be done by creating several Scenic
+view migrations it can make it more easy to maintain when all statements to a
+view reside in the same .sql file.
+
 ## I don't need this view anymore. Make it go away.
 
 Scenic gives you `drop_view` too:

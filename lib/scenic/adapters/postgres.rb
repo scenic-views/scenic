@@ -57,8 +57,12 @@ module Scenic
       # @param sql_definition The SQL schema for the view.
       #
       # @return [void]
-      def create_view(name, sql_definition)
-        execute "CREATE VIEW #{quote_table_name(name)} AS #{sql_definition};"
+      def create_view(name, sql_definition, raw: false)
+        if raw
+          execute(sql_definition)
+        else
+          execute "CREATE VIEW #{quote_table_name(name)} AS #{sql_definition};"
+        end
       end
 
       # Updates a view in the database.
@@ -132,14 +136,18 @@ module Scenic
       #   in use does not support materialized views.
       #
       # @return [void]
-      def create_materialized_view(name, sql_definition, no_data: false)
+      def create_materialized_view(name, sql_definition, no_data: false, raw: false)
         raise_unless_materialized_views_supported
 
-        execute <<-SQL
-  CREATE MATERIALIZED VIEW #{quote_table_name(name)} AS
-  #{sql_definition.rstrip.chomp(';')}
-  #{'WITH NO DATA' if no_data};
-        SQL
+        if raw
+          execute(sql_definition)
+        else
+          execute <<-SQL
+    CREATE MATERIALIZED VIEW #{quote_table_name(name)} AS
+    #{sql_definition.rstrip.chomp(';')}
+    #{'WITH NO DATA' if no_data};
+          SQL
+        end
       end
 
       # Updates a materialized view in the database.

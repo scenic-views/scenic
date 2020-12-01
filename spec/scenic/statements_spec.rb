@@ -18,7 +18,7 @@ module Scenic
         connection.create_view :views, version: version
 
         expect(Scenic.database).to have_received(:create_view)
-          .with(:views, definition_stub.to_sql)
+          .with(:views, definition_stub.to_sql, raw: false)
       end
 
       it "creates a view from a text definition" do
@@ -27,7 +27,16 @@ module Scenic
         connection.create_view(:views, sql_definition: sql_definition)
 
         expect(Scenic.database).to have_received(:create_view)
-          .with(:views, sql_definition)
+          .with(:views, sql_definition, raw: false)
+      end
+
+      it "creates a view from a text definition with raw option" do
+        sql_definition = "a defintion"
+
+        connection.create_view(:views, sql_definition: sql_definition, raw: true)
+
+        expect(Scenic.database).to have_received(:create_view)
+          .with(:views, sql_definition, raw: true)
       end
 
       it "creates version 1 of the view if neither version nor sql_defintion are provided" do
@@ -40,7 +49,7 @@ module Scenic
         connection.create_view :views
 
         expect(Scenic.database).to have_received(:create_view)
-          .with(:views, definition_stub.to_sql)
+          .with(:views, definition_stub.to_sql, raw: false)
       end
 
       it "raises an error if both version and sql_defintion are provided" do
@@ -58,7 +67,7 @@ module Scenic
         connection.create_view(:views, version: 1, materialized: true)
 
         expect(Scenic.database).to have_received(:create_materialized_view)
-          .with(:views, definition.to_sql, no_data: false)
+          .with(:views, definition.to_sql, no_data: false, raw: false)
       end
     end
 
@@ -74,7 +83,24 @@ module Scenic
         )
 
         expect(Scenic.database).to have_received(:create_materialized_view)
-          .with(:views, definition.to_sql, no_data: true)
+          .with(:views, definition.to_sql, no_data: true, raw: false)
+      end
+    end
+
+    describe "create_view :materialized with :raw" do
+      it "sends the create_materialized_view message, passing on raw option" do
+        definition = instance_double("Scenic::Definition", to_sql: "definition")
+        allow(Definition).to receive(:new).and_return(definition)
+
+        connection.create_view(
+          :views,
+          version: 1,
+          materialized: { no_data: true},
+          raw: true
+        )
+
+        expect(Scenic.database).to have_received(:create_materialized_view)
+          .with(:views, definition.to_sql, no_data: true, raw: true)
       end
     end
 

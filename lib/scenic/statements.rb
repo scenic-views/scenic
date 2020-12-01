@@ -22,7 +22,7 @@ module Scenic
     #     SELECT * FROM users WHERE users.active = 't'
     #   SQL
     #
-    def create_view(name, version: nil, sql_definition: nil, materialized: false)
+    def create_view(name, version: nil, sql_definition: nil, materialized: false, raw: false)
       if version.present? && sql_definition.present?
         raise(
           ArgumentError,
@@ -41,9 +41,10 @@ module Scenic
           name,
           sql_definition,
           no_data: no_data(materialized),
+          raw: raw
         )
       else
-        Scenic.database.create_view(name, sql_definition)
+        Scenic.database.create_view(name, sql_definition, raw: raw)
       end
     end
 
@@ -60,7 +61,7 @@ module Scenic
     # @example Drop a view, rolling back to version 3 on rollback
     #   drop_view(:users_who_recently_logged_in, revert_to_version: 3)
     #
-    def drop_view(name, revert_to_version: nil, materialized: false)
+    def drop_view(name, revert_to_version: nil, materialized: false, raw: nil)
       if materialized
         Scenic.database.drop_materialized_view(name)
       else
