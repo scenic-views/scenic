@@ -1,4 +1,5 @@
 require "rails"
+require "active_record"
 
 module Scenic
   # @api private
