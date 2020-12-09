@@ -1,3 +1,5 @@
+Bundler.require
+
 ENV["RAILS_ENV"] = "test"
 require "database_cleaner"
 

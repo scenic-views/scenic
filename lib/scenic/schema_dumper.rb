@@ -1,5 +1,3 @@
-require "rails"
-
 module Scenic
   # @api private
   module SchemaDumper

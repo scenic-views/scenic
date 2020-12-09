@@ -1,3 +1,6 @@
+require "rails"
+require "active_record"
+
 require "scenic/configuration"
 require "scenic/adapters/postgres"
 require "scenic/command_recorder"
