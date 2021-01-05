@@ -3,7 +3,7 @@ require "spec_helper"
 module Scenic
   describe Scenic::Statements do
     before do
-      adapter = instance_double("Scenic::Adapaters::Postgres").as_null_object
+      adapter = instance_double("Scenic::Adapters::Postgres").as_null_object
       allow(Scenic).to receive(:database).and_return(adapter)
     end
 
