@@ -2,12 +2,10 @@ development: &default
   adapter: postgresql
   database: dummy_development
   encoding: unicode
-  host: localhost
+  host: <%= ENV.fetch("POSTGRES_HOST", "localhost") %>
   pool: 5
-  <% if ENV.fetch("GITHUB_ACTIONS", false) %>
-  username: <%= ENV.fetch("POSTGRES_USER") %>
-  password: <%= ENV.fetch("POSTGRES_PASSWORD") %>
-  <% end %>
+  username: <%= ENV.fetch("POSTGRES_USER", "postgres") %>
+  password: <%= ENV.fetch("POSTGRES_PASSWORD", "") %>
 
 test:
   <<: *default

@@ -1,0 +1,21 @@
+services:
+  scenic:
+    build: .
+    volumes:
+      - .:/app
+    depends_on:
+      - postgres
+    networks:
+      default:
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+  postgres:
+    image: postgres
+    networks:
+      default:
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: dummy_test

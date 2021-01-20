@@ -17,6 +17,8 @@ agree to abide by our [code of conduct].
 6. CI will run the test suite on all configured versions of Ruby and Rails.
    Address any failures.
 
+you can also run it (step 2 and 3) localy with docker: `docker-compose run scenic rake`.
+
 [good commit message]: http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
 
 Others will give constructive feedback.  This is a time for discussion and
