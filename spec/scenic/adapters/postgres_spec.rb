@@ -79,6 +79,18 @@ module Scenic
         end
       end
 
+      describe "#rename_view" do
+        it "successfully drops a view" do
+          adapter = Postgres.new
+
+          adapter.create_view("greetings", "SELECT text 'hi' AS greeting")
+          adapter.rename_view("greetings", "renamed")
+
+          expect(adapter.views.map(&:name)).not_to include("greetings")
+          expect(adapter.views.map(&:name)).to include("renamed")
+        end
+      end
+
       describe "#drop_materialized_view" do
         it "successfully drops a materialized view" do
           adapter = Postgres.new
@@ -99,6 +111,51 @@ module Scenic
           err = Scenic::Adapters::Postgres::MaterializedViewsNotSupportedError
 
           expect { adapter.drop_materialized_view("greetings") }
+            .to raise_error err
+        end
+      end
+
+      describe "#rename_materialized_view" do
+        it "successfully renames a materialized view" do
+          adapter = Postgres.new
+
+          adapter.create_materialized_view(
+            "greetings",
+            "SELECT text 'hi' AS greeting",
+          )
+          adapter.rename_materialized_view("greetings", "renamed")
+
+          expect(adapter.views.map(&:name)).not_to include("greetings")
+          expect(adapter.views.map(&:name)).to include("renamed")
+        end
+
+        it "successfully renames materialized view indexes" do
+          adapter = Postgres.new
+
+          adapter.create_materialized_view(
+            "greetings",
+            "SELECT text 'hi' AS greeting",
+          )
+          ActiveRecord::Base.connection.add_index "greetings", "greeting"
+          adapter.rename_materialized_view(
+            "greetings",
+            "renamed",
+            rename_indexes: true,
+          )
+
+          connection = ActiveRecord::Base.connection
+          indexes = Postgres::Indexes.new(connection: connection)
+          index_names = indexes.on("renamed").map(&:index_name)
+          expect(index_names).to include("index_renamed_on_greeting")
+        end
+
+        it "raises an exception if the version of PostgreSQL is too old" do
+          connection = double("Connection", supports_materialized_views?: false)
+          connectable = double("Connectable", connection: connection)
+          adapter = Postgres.new(connectable)
+          err = Scenic::Adapters::Postgres::MaterializedViewsNotSupportedError
+
+          expect { adapter.rename_materialized_view("greetings", "renamed") }
             .to raise_error err
         end
       end

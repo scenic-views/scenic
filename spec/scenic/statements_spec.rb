@@ -192,6 +192,33 @@ module Scenic
       end
     end
 
+    describe "rename_view" do
+      it "rename the view in the database" do
+        connection.rename_view(:from, :to)
+
+        expect(Scenic.database).to have_received(:rename_view)
+          .with(:from, :to)
+      end
+
+      it "rename the materialized view in the database" do
+        connection.rename_view(:from, :to, materialized: true)
+
+        expect(Scenic.database).to have_received(:rename_materialized_view)
+          .with(:from, :to, rename_indexes: false)
+      end
+
+      it "rename the materialized view in the database and rename indexes" do
+        connection.rename_view(
+          :from,
+          :to,
+          materialized: { rename_indexes: true },
+        )
+
+        expect(Scenic.database).to have_received(:rename_materialized_view)
+          .with(:from, :to, rename_indexes: true)
+      end
+    end
+
     def connection
       Class.new { extend Statements }
     end

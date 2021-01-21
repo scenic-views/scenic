@@ -105,6 +105,28 @@ describe Scenic::CommandRecorder do
     end
   end
 
+  describe "#rename_view" do
+    it "records the created view" do
+      recorder.rename_view :from, :to
+
+      expect(recorder.commands).to eq [[:rename_view, [:from, :to], nil]]
+    end
+
+    it "reverts to drop_view when not passed a version" do
+      recorder.revert { recorder.rename_view :from, :to }
+
+      expect(recorder.commands).to eq [[:rename_view, [:to, :from]]]
+    end
+
+    it "reverts materialized views appropriately" do
+      recorder.revert { recorder.rename_view :from, :to, materialized: true }
+
+      expect(recorder.commands).to eq [
+        [:rename_view, [:to, :from, materialized: true]],
+      ]
+    end
+  end
+
   def recorder
     @recorder ||= ActiveRecord::Migration::CommandRecorder.new
   end
