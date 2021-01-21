@@ -146,6 +146,31 @@ module Scenic
       Scenic.database.replace_view(name, sql_definition)
     end
 
+    # Rename a database view by name.
+    #
+    # @param from_name [String, Symbol] The previous name of the database view.
+    # @param from_name [String, Symbol] The next name of the database view.
+    # @param materialized [Boolean, Hash] True if updating a materialized view.
+    #   Set to { rename_indexes: true } to rename materialized view indexes
+    #   by substituing in their name the previous view name
+    #   to the next view name. Defaults to false.
+    # @return The database response from executing the rename statement.
+    #
+    # @example Rename a view
+    #   drop_view(:engggggement_reports, :engagement_reports)
+    #
+    def rename_view(from_name, to_name, materialized: false)
+      if materialized
+        Scenic.database.rename_materialized_view(
+          from_name,
+          to_name,
+          rename_indexes: rename_indexes(materialized),
+        )
+      else
+        Scenic.database.rename_view(from_name, to_name)
+      end
+    end
+
     private
 
     def definition(name, version)
@@ -155,6 +180,14 @@ module Scenic
     def no_data(materialized)
       if materialized.is_a?(Hash)
         materialized.fetch(:no_data, false)
+      else
+        false
+      end
+    end
+
+    def rename_indexes(materialized)
+      if materialized.is_a?(Hash)
+        materialized.fetch(:rename_indexes, false)
       else
         false
       end

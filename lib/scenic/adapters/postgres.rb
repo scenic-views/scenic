@@ -118,6 +118,21 @@ module Scenic
         execute "DROP VIEW #{quote_table_name(name)};"
       end
 
+      # Renames a view in the database
+      #
+      # This is typically called in a migration via {Statements#rename_view}.
+      #
+      # @param from_name The previous name of the view to rename.
+      # @param to_name The next name of the view to rename.
+      #
+      # @return [void]
+      def rename_view(from_name, to_name)
+        execute <<~SQL
+          ALTER VIEW #{quote_table_name(from_name)}
+          RENAME TO #{quote_table_name(to_name)};
+        SQL
+      end
+
       # Creates a materialized view in the database
       #
       # @param name The name of the materialized view to create
@@ -183,6 +198,34 @@ module Scenic
         execute "DROP MATERIALIZED VIEW #{quote_table_name(name)};"
       end
 
+      # Renames a materialized view in the database
+      #
+      # This is typically called in a migration via {Statements#rename_view}.
+      #
+      # @param from_name The previous name of the materialized view to rename.
+      # @param to_name The next name of the materialized view to rename.
+      # @raise [MaterializedViewsNotSupportedError] if the version of Postgres
+      #   in use does not support materialized views.
+      #
+      # @return [void]
+      def rename_materialized_view(from_name, to_name, rename_indexes: false)
+        raise_unless_materialized_views_supported
+        execute <<~SQL
+          ALTER MATERIALIZED VIEW #{quote_table_name(from_name)}
+          RENAME TO #{quote_table_name(to_name)};
+        SQL
+
+        if rename_indexes
+          Indexes.new(connection: connection)
+            .on(to_name)
+            .map(&:index_name)
+            .select { |name| name.match?(from_name) }
+            .each do |name|
+              rename_index to_name, name, name.sub(from_name, to_name)
+            end
+        end
+      end
+
       # Refreshes a materialized view from its SQL schema.
       #
       # This is typically called from application code via {Scenic.database}.
@@ -225,7 +268,7 @@ module Scenic
       private
 
       attr_reader :connectable
-      delegate :execute, :quote_table_name, to: :connection
+      delegate :execute, :quote_table_name, :rename_index, to: :connection
 
       def connection
         Connection.new(connectable.connection)
