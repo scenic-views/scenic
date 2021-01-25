@@ -1,6 +1,8 @@
 require "rails/generators"
 require "rails/generators/active_record"
 require "generators/scenic/materializable"
+require "scenic/definition"
+require "scenic/definitions"
 
 module Scenic
   module Generators
@@ -11,8 +13,8 @@ module Scenic
       source_root File.expand_path("templates", __dir__)
 
       def create_views_directory
-        unless views_directory_path.exist?
-          empty_directory(views_directory_path)
+        unless Scenic.configuration.definitions_path.exist?
+          empty_directory(Scenic.configuration.definitions_path)
         end
       end
 
@@ -20,7 +22,7 @@ module Scenic
         if creating_new_view?
           create_file definition.path
         else
-          copy_file previous_definition.full_path, definition.full_path
+          copy_file previous_definition.path, definition.path
         end
       end
 
@@ -44,10 +46,7 @@ module Scenic
 
       no_tasks do
         def previous_version
-          @previous_version ||=
-            Dir.entries(views_directory_path)
-              .map { |name| version_regex.match(name).try(:[], "version").to_i }
-              .max
+          @previous_version ||= previous_definition.version
         end
 
         def version
@@ -79,16 +78,12 @@ module Scenic
         super.tr(".", "_")
       end
 
-      def views_directory_path
-        @views_directory_path ||= Rails.root.join("db", "views")
-      end
-
-      def version_regex
-        /\A#{plural_file_name}_v(?<version>\d+)\.sql\z/
+      def definitions
+        @definitions ||= Scenic::Definitions.new(plural_file_name)
       end
 
       def creating_new_view?
-        previous_version.zero?
+        definitions.none?
       end
 
       def definition
@@ -96,7 +91,7 @@ module Scenic
       end
 
       def previous_definition
-        Scenic::Definition.new(plural_file_name, previous_version)
+        definitions.max || Scenic::Definition.new(plural_file_name, 0)
       end
 
       def destroying?

@@ -11,4 +11,10 @@ RSpec.configure do |config|
     destination fake_rails_root
     prepare_destination
   end
+
+  config.before(:each) do
+    Scenic.configure do |configuration|
+      configuration.definitions_path = Rails.root.join("db", "views")
+    end
+  end
 end

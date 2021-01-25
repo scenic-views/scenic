@@ -30,6 +30,7 @@ describe Scenic::Generators::ViewGenerator, :generator do
       allow(Dir).to receive(:entries).and_return(["aired_episodes_v01.sql"])
 
       run_generator ["aired_episode", "--materialized"]
+
       migration = migration_file(
         "db/migrate/update_aired_episodes_to_version_2.rb",
       )

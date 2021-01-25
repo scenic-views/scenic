@@ -1,3 +1,5 @@
+require_relative "adapters/postgres"
+
 module Scenic
   class Configuration
     # The Scenic database adapter instance to use when executing SQL.
@@ -6,8 +8,15 @@ module Scenic
     # @return Scenic adapter
     attr_accessor :database
 
+    # The full path where is stored views definition sql files.
+    #
+    # Defaults to `Rails.root.join("db", "views")` an instance of {Pathname}
+    # @return the path
+    attr_accessor :definitions_path
+
     def initialize
-      @database = Scenic::Adapters::Postgres.new
+      self.database = Scenic::Adapters::Postgres.new
+      self.definitions_path = Rails.root.join("db", "views")
     end
   end
 
