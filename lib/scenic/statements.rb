@@ -1,4 +1,5 @@
-require_relative "./errors.rb"
+require_relative "./errors"
+require_relative "./definition"
 
 module Scenic
   # Methods that are made available in migrations for managing Scenic views.

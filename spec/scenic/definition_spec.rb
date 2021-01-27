@@ -23,7 +23,7 @@ module Scenic
 
     describe "path" do
       it "returns a sql file in db/views with padded version and view name" do
-        expected = "db/views/searches_v01.sql"
+        expected = Rails.root.join("db/views/searches_v01.sql")
 
         definition = Definition.new("searches", 1)
 
@@ -32,16 +32,9 @@ module Scenic
 
       it "handles schema qualified view names" do
         definition = Definition.new("non_public.searches", 1)
+        expected = Rails.root.join("db/views/non_public_searches_v01.sql")
 
-        expect(definition.path).to eq "db/views/non_public_searches_v01.sql"
-      end
-    end
-
-    describe "full_path" do
-      it "joins the path with Rails.root" do
-        definition = Definition.new("searches", 15)
-
-        expect(definition.full_path).to eq Rails.root.join(definition.path)
+        expect(definition.path).to eq expected
       end
     end
 
@@ -49,13 +42,13 @@ module Scenic
       it "pads the version number with 0" do
         definition = Definition.new(:_, 1)
 
-        expect(definition.version).to eq "01"
+        expect(definition.version).to eq 1
       end
 
       it "doesn't pad more than 2 characters" do
         definition = Definition.new(:_, 15)
 
-        expect(definition.version).to eq "15"
+        expect(definition.version).to eq 15
       end
     end
   end

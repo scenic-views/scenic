@@ -1,7 +1,9 @@
 module Scenic
   # @api private
   class Definition
-    attr_reader :name
+    include Comparable
+
+    attr_reader :name, :version
 
     def initialize(name, version)
       @name = name
@@ -9,29 +11,25 @@ module Scenic
     end
 
     def to_sql
-      File.read(full_path).tap do |content|
+      File.read(path).tap do |content|
         if content.empty?
           raise "Define view query in #{path} before migrating."
         end
       end
     end
 
-    def full_path
-      Rails.root.join(path)
-    end
-
     def path
-      File.join("db", "views", filename)
+      Scenic.configuration.definitions_path.join(filename)
     end
 
-    def version
-      @version.to_s.rjust(2, "0")
+    def <=>(other)
+      version <=> other.version
     end
 
     private
 
     def filename
-      "#{@name.to_s.tr('.', '_')}_v#{version}.sql"
+      "#{name.to_s.tr('.', '_')}_v#{version.to_s.rjust(2, '0')}.sql"
     end
   end
 end
