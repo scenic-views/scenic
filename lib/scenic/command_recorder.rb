@@ -28,13 +28,10 @@ module Scenic
     end
 
     def invert_rename_view(args)
-      options = args.extract_options!
-      old_name, new_name = args
-
-      args = [new_name, old_name]
-      args << options unless options.empty?
-
-      [:rename_view, args]
+      perform_scenic_inversion(
+        :rename_view,
+        StatementArguments.new(args).invert_names.to_a,
+      )
     end
 
     private

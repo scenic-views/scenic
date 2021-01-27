@@ -28,13 +28,13 @@ module Scenic::CommandRecorder
     end
 
     describe "#invert_version" do
-      it "returns object with version set to revert_to_version" do
+      it "returns object with version interverted with revert_to_version" do
         raw_args = [:meatballs, { version: 42, revert_to_version: 15 }]
 
         inverted_args = StatementArguments.new(raw_args).invert_version
 
         expect(inverted_args.version).to eq 15
-        expect(inverted_args.revert_to_version).to be nil
+        expect(inverted_args.revert_to_version).to be 42
       end
     end
   end

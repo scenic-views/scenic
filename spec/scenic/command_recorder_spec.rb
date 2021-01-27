@@ -64,7 +64,7 @@ describe Scenic::CommandRecorder do
 
     it "reverts to update_view with the specified revert_to_version" do
       args = [:users, { version: 2, revert_to_version: 1 }]
-      revert_args = [:users, { version: 1 }]
+      revert_args = [:users, { version: 1, revert_to_version: 2 }]
 
       recorder.revert { recorder.update_view(*args) }
 
@@ -90,7 +90,7 @@ describe Scenic::CommandRecorder do
 
     it "reverts to replace_view with the specified revert_to_version" do
       args = [:users, { version: 2, revert_to_version: 1 }]
-      revert_args = [:users, { version: 1 }]
+      revert_args = [:users, { version: 1, revert_to_version: 2 }]
 
       recorder.revert { recorder.replace_view(*args) }
 
@@ -107,23 +107,34 @@ describe Scenic::CommandRecorder do
 
   describe "#rename_view" do
     it "records the created view" do
-      recorder.rename_view :from, :to
+      recorder.rename_view :from, :to, version: 1, revert_to_version: 2
 
-      expect(recorder.commands).to eq [[:rename_view, [:from, :to], nil]]
+      expect(recorder.commands).to eq [[
+        :rename_view, [:from, :to, version: 1, revert_to_version: 2], nil
+      ]]
     end
 
     it "reverts to drop_view when not passed a version" do
-      recorder.revert { recorder.rename_view :from, :to }
+      recorder.revert do
+        recorder.rename_view :from, :to, version: 1, revert_to_version: 2
+      end
 
-      expect(recorder.commands).to eq [[:rename_view, [:to, :from]]]
+      expect(recorder.commands).to eq [[
+        :rename_view, [:to, :from, version: 2, revert_to_version: 1]
+      ]]
     end
 
     it "reverts materialized views appropriately" do
-      recorder.revert { recorder.rename_view :from, :to, materialized: true }
+      recorder.revert do
+        recorder.rename_view(
+          :from, :to, version: 1, revert_to_version: 2, materialized: true
+        )
+      end
 
-      expect(recorder.commands).to eq [
-        [:rename_view, [:to, :from, materialized: true]],
-      ]
+      expect(recorder.commands).to eq [[
+        :rename_view,
+        [:to, :from, version: 2, revert_to_version: 1, materialized: true],
+      ]]
     end
   end
 
