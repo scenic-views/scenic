@@ -33,6 +33,7 @@ module Scenic
             "db/migrate/create_#{plural_file_name}.rb",
           )
         else
+          version = definition.version
           migration_template(
             "db/migrate/update_view.erb",
             "db/migrate/update_#{plural_file_name}_to_version_#{version}.rb",
@@ -45,19 +46,11 @@ module Scenic
       end
 
       no_tasks do
-        def previous_version
-          @previous_version ||= previous_definition.version
-        end
-
-        def version
-          @version ||= destroying? ? previous_version : previous_version.next
-        end
-
         def migration_class_name
           if creating_new_view?
             "Create#{class_name.tr('.', '').pluralize}"
           else
-            "Update#{class_name.pluralize}ToVersion#{version}"
+            "Update#{class_name.pluralize}ToVersion#{definition.version}"
           end
         end
 
@@ -87,6 +80,8 @@ module Scenic
       end
 
       def definition
+        previous_version = previous_definition.version
+        version = destroying? ? previous_version : previous_version.next
         Scenic::Definition.new(plural_file_name, version)
       end
 
@@ -115,7 +110,7 @@ module Scenic
       end
 
       def destroying_initial_view?
-        destroying? && version == 1
+        destroying? && definition.version == 1
       end
     end
   end
