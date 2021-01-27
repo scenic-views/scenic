@@ -54,7 +54,7 @@ describe "Reverting scenic schema statements", :db do
 
   def migration_class
     if Rails::VERSION::MAJOR >= 5
-      ::ActiveRecord::Migration[5.0]
+      ::ActiveRecord::Migration[::ActiveRecord::Migration.current_version]
     else
       ::ActiveRecord::Migration
     end

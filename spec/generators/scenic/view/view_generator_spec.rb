@@ -38,6 +38,19 @@ describe Scenic::Generators::ViewGenerator, :generator do
     end
   end
 
+  it "use 'rename_view' to the migration if view is materialized" do
+    with_view_definition("searches", 1, "hello") do
+      allow(Dir).to receive(:entries).and_return(["searches_v01.sql"])
+
+      run_generator ["new_search", "--rename", "search"]
+
+      migration = migration_file(
+        "db/migrate/update_new_searches_to_version_1.rb",
+      )
+      expect(migration).to contain "rename_view :searches, :new_searches,"
+    end
+  end
+
   context "for views created in a schema other than 'public'" do
     it "creates a view definition" do
       view_definition = file("db/views/non_public_searches_v01.sql")

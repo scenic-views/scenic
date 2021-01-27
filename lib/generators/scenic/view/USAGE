@@ -7,6 +7,7 @@ Description:
 
   To create a materialized view, pass the '--materialized' option.
   To create a materialized view with NO DATA, pass '--no-data' option.
+  To rename a view, pass '--rename actual_view_name' option.
 
 Examples:
     rails generate scenic:view searches

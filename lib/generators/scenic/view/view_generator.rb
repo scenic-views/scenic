@@ -12,6 +12,12 @@ module Scenic
       include Scenic::Generators::Materializable
       source_root File.expand_path("templates", __dir__)
 
+      class_option :rename,
+        type: :string,
+        required: false,
+        banner: "PREVIOUS_VIEW_NAME",
+        desc: "rename from previous view name"
+
       def create_views_directory
         unless Scenic.configuration.definitions_path.exist?
           empty_directory(Scenic.configuration.definitions_path)
@@ -71,34 +77,57 @@ module Scenic
         super.tr(".", "_")
       end
 
+      def previous_file_name
+        (options[:rename] || singular_name).tr(".", "_")
+      end
+
+      def previous_plural_name
+        (options[:rename] || singular_name).pluralize
+      end
+
+      def previous_plural_file_name
+        previous_file_name.pluralize
+      end
+
       def definitions
-        @definitions ||= Scenic::Definitions.new(plural_file_name)
+        @definitions ||= Scenic::Definitions.new(
+          plural_file_name,
+        )
+      end
+
+      def previous_definitions
+        @previous_definitions ||= Scenic::Definitions.new(
+          previous_plural_file_name,
+        )
       end
 
       def creating_new_view?
-        definitions.none?
+        previous_definitions.none?
       end
 
       def definition
-        previous_version = previous_definition.version
-        version = destroying? ? previous_version : previous_version.next
-        Scenic::Definition.new(plural_file_name, version)
+        @definition ||= Scenic::Definition.new(
+          plural_file_name,
+          (definitions.max.try(:version) || 0)
+            .public_send(destroying? ? :itself : :next),
+        )
       end
 
       def previous_definition
-        definitions.max || Scenic::Definition.new(plural_file_name, 0)
+        @previous_definition ||= previous_definitions.max ||
+          Scenic::Definition.new(previous_plural_file_name, 0)
       end
 
       def destroying?
         behavior == :revoke
       end
 
-      def formatted_plural_name
-        if plural_name.include?(".")
-          "\"#{plural_name}\""
-        else
-          ":#{plural_name}"
-        end
+      def renaming?
+        options[:rename]
+      end
+
+      def format_view_name(name)
+        name.include?(".") ? "\"#{name}\"" : ":#{name}"
       end
 
       def create_view_options

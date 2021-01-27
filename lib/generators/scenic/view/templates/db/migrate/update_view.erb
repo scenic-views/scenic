@@ -1,14 +1,14 @@
 class <%= migration_class_name %> < <%= activerecord_migration_class %>
   def change
-  <%- if materialized? -%>
-    update_view <%= formatted_plural_name %>,
-      version: <%= definition.version %>,
-      revert_to_version: <%= previous_definition.version %>,
-      materialized: <%= no_data? ? "{ no_data: true }" : true %>
+  <%- if renaming? -%>
+    rename_view <%= format_view_name(previous_plural_name) %>, <%= format_view_name(plural_name) %>,
   <%- else -%>
-    update_view <%= formatted_plural_name %>,
-      version: <%= definition.version %>, 
-      revert_to_version: <%= previous_definition.version %>
+    update_view <%= format_view_name(plural_name) %>,
+  <%- end -%>
+      version: <%= definition.version %>,
+      revert_to_version: <%= previous_definition.version %><%- if materialized? -%>,<%- end -%>
+  <%- if materialized? -%>
+      materialized: <%= no_data? ? "{ no_data: true }" : true %>
   <%- end -%>
   end
 end

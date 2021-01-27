@@ -1,5 +1,5 @@
 class <%= migration_class_name %> < <%= activerecord_migration_class %>
   def change
-    create_view <%= formatted_plural_name %><%= create_view_options %>
+    create_view <%= format_view_name(plural_name) %><%= create_view_options %>
   end
 end
