@@ -5,6 +5,13 @@ changelog, see the [commits] for each version via the version links.
 
 [commits]: https://github.com/scenic-views/scenic/commits/master
 
+## next
+
+### Added
+
+- `rename_view` allow to rename a view. Generators have been updated to
+  accept a `--rename` option.
+
 ## [1.5.4] - September 16, 2020
 
 [1.5.4]: https://github.com/scenic-views/scenic/compare/v1.5.3...v1.5.4

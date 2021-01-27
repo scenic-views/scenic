@@ -195,6 +195,50 @@ you would need to refresh view B first, then right after refresh view A. If you
 would like this cascading refresh of materialized views, set `cascade: true`
 when you refresh your materialized view.
 
+## I made a mistake and I need to rename a view?
+
+Run the view generator as following:
+
+```sh
+$ rails generate scenic:view results --rename search_results
+      create  db/views/results_v01.sql
+      create  db/migrate/[TIMESTAMP]_update_results_to_version_2.rb
+```
+
+Now, `db/views/results_v01.sql` sould be identical to 
+`db/views/search_results_v01.sql`, you will need to edit this file if you rename
+another views in this migration that is in this definition, so just rename it
+too accordingly ;-)
+The migration should look something like:
+
+```ruby
+class UpdateResultsToVersion2 < ActiveRecord::Migration
+  def change
+    rename_view :search_results, :results, version: 2, revert_to_version: 1
+  end
+end
+```
+
+## Need to change materialized view without downtime?
+
+As `replace_view` cannot be used on materialized views, you will have to follow
+these steps:
+
+1. Create a new materialized view 
+   `rails generate scenic:view table_name_next --no-data`
+2. Deploy and apply this migration
+3. Refresh the view within a task or in the Rails console
+   `Scenic.database.refresh_materialized_view(:table_name_nexts, concurrently: false)`
+4. Use that view by removing the previous and renaming the next one in a single
+   migration `rails generate scenic:view table_name --rename table_name_next`
+   and edit the migration too 
+   ```ruby
+   def change
+     drop_view :table_names, revert_to_version: 1
+     rename_view :table_name_nexts, :table_names, version: 1, revert_to_version: 1
+   end
+   ```
+
 ## I don't need this view anymore. Make it go away.
 
 Scenic gives you `drop_view` too:
