@@ -1,3 +1,5 @@
+require_relative "./errors.rb"
+
 module Scenic
   # Methods that are made available in migrations for managing Scenic views.
   module Statements
@@ -34,16 +36,16 @@ module Scenic
         version = 1
       end
 
-      sql_definition ||= definition(name, version)
+      sql_definition ||= definition(name, version).to_sql
 
       if materialized
-        Scenic.database.create_materialized_view(
+        database.create_materialized_view(
           name,
           sql_definition,
           no_data: no_data(materialized),
         )
       else
-        Scenic.database.create_view(name, sql_definition)
+        database.create_view(name, sql_definition)
       end
     end
 
@@ -62,9 +64,9 @@ module Scenic
     #
     def drop_view(name, revert_to_version: nil, materialized: false)
       if materialized
-        Scenic.database.drop_materialized_view(name)
+        database.drop_materialized_view(name)
       else
-        Scenic.database.drop_view(name)
+        database.drop_view(name)
       end
     end
 
@@ -103,16 +105,16 @@ module Scenic
         )
       end
 
-      sql_definition ||= definition(name, version)
+      sql_definition ||= definition(name, version).to_sql
 
       if materialized
-        Scenic.database.update_materialized_view(
+        database.update_materialized_view(
           name,
           sql_definition,
           no_data: no_data(materialized),
         )
       else
-        Scenic.database.update_view(name, sql_definition)
+        database.update_view(name, sql_definition)
       end
     end
 
@@ -141,15 +143,18 @@ module Scenic
         raise ArgumentError, "Cannot replace materialized views"
       end
 
-      sql_definition = definition(name, version)
+      sql_definition = definition(name, version).to_sql
 
-      Scenic.database.replace_view(name, sql_definition)
+      database.replace_view(name, sql_definition)
     end
 
     # Rename a database view by name.
     #
     # @param from_name [String, Symbol] The previous name of the database view.
-    # @param from_name [String, Symbol] The next name of the database view.
+    # @param to_name [String, Symbol] The next name of the database view.
+    # @param version [Fixnum] The version number of the view `to_name`.
+    # @param revert_to_version [Fixnum] The version number
+    #   of the view `from_name` to rollback to on `rake db rollback`
     # @param materialized [Boolean, Hash] True if updating a materialized view.
     #   Set to { rename_indexes: true } to rename materialized view indexes
     #   by substituing in their name the previous view name
@@ -159,22 +164,39 @@ module Scenic
     # @example Rename a view
     #   drop_view(:engggggement_reports, :engagement_reports)
     #
-    def rename_view(from_name, to_name, materialized: false)
-      if materialized
-        Scenic.database.rename_materialized_view(
-          from_name,
-          to_name,
-          rename_indexes: rename_indexes(materialized),
-        )
-      else
-        Scenic.database.rename_view(from_name, to_name)
+    def rename_view(
+      from_name, to_name,
+      version: nil, revert_to_version: nil, materialized: false
+    )
+      if version.blank?
+        raise ArgumentError, "version is required"
       end
+
+      result = if materialized
+                 database.rename_materialized_view(
+                   from_name,
+                   to_name,
+                   rename_indexes: rename_indexes(materialized),
+                 )
+               else
+                 database.rename_view(from_name, to_name)
+               end
+
+      view_definition = definition(to_name, version)
+      unless database.view_with_similar_definition?(view_definition)
+        database_sql = database.normalize_view_sql(to_name)
+        raise StoredDefinitionError.new(view_definition, database_sql)
+      end
+
+      result
     end
 
     private
 
+    delegate :database, to: :Scenic
+
     def definition(name, version)
-      Scenic::Definition.new(name, version).to_sql
+      Scenic::Definition.new(name, version)
     end
 
     def no_data(materialized)

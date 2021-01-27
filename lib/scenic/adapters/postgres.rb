@@ -265,10 +265,53 @@ module Scenic
         end
       end
 
+      # Returns a normalize a SQL query
+      #
+      # Used to compare two queries.
+      #
+      # @param name [String] SQL `SELECT` query.
+      #
+      # @return [String]
+      def normalize_sql(sql_definition)
+        temporary_view_name = "temp_view_for_decompilation"
+        view_name = quote_table_name(temporary_view_name)
+        transaction do
+          execute "CREATE TEMPORARY VIEW #{view_name} AS #{sql_definition};"
+          normalize_view_sql(temporary_view_name)
+        end
+      end
+
+      # Returns a normalize the SQL definition of a view
+      #
+      # Used to compare two queries.
+      #
+      # @param name [String] view name.
+      #
+      # @return [String]
+      def normalize_view_sql(name)
+        select_value("SELECT pg_get_viewdef(to_regclass(#{quote(name)}))")
+          .try(:strip)
+      end
+
+      # Compare the SQL definition of the view stored in the database
+      #   with the definition used to create the migrations.
+      #
+      # @param definition [Scenic::Definition] view definition to compare
+      #   with the database.
+      #
+      # @return [Boolean]
+      def view_with_similar_definition?(definition)
+        normalize_view_sql(definition.name) == normalize_sql(definition.to_sql)
+      end
+
       private
 
       attr_reader :connectable
-      delegate :execute, :quote_table_name, :rename_index, to: :connection
+      delegate(
+        :execute, :quote, :quote_table_name, :rename_index,
+        :select_value, :transaction,
+        to: :connection
+      )
 
       def connection
         Connection.new(connectable.connection)

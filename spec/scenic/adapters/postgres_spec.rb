@@ -261,6 +261,90 @@ module Scenic
           end
         end
       end
+
+      describe "#normalize_sql" do
+        it "returns scenic view objects for plain old views" do
+          adapter = Postgres.new
+          expect(adapter.normalize_sql("SELECT text 'Elliot' AS name"))
+            .to eq("SELECT 'Elliot'::text AS name;")
+        end
+      end
+      describe "#normalize_sql" do
+        it "returns scenic view objects for plain old views" do
+          adapter = Postgres.new
+          ActiveRecord::Base.connection.execute <<-SQL
+            CREATE VIEW children AS SELECT text 'Elliot' AS name
+          SQL
+
+          expect(adapter.normalize_view_sql("children"))
+            .to eq("SELECT 'Elliot'::text AS name;")
+        end
+
+        it "returns scenic view objects for materialized views" do
+          adapter = Postgres.new
+          ActiveRecord::Base.connection.execute <<-SQL
+            CREATE MATERIALIZED VIEW children AS SELECT text 'Elliot' AS name
+          SQL
+
+          expect(adapter.normalize_view_sql("children"))
+            .to eq("SELECT 'Elliot'::text AS name;")
+        end
+      end
+
+      describe "#view_with_similar_definition?" do
+        context "when the view has a similar definition" do
+          it "returns true" do
+            adapter = Postgres.new
+            ActiveRecord::Base.connection.execute <<~SQL
+              CREATE VIEW greetings AS SELECT text 'hi' AS greeting
+            SQL
+
+            sql_defintion = <<~SQL
+              SELECT text 'hi'
+              AS greeting
+            SQL
+            definition = instance_double(
+              "Scenic::Definition",
+              name: "greetings", to_sql: sql_defintion,
+            )
+
+            expect(
+              adapter.view_with_similar_definition?(definition),
+            ).to be(true)
+          end
+        end
+        context "when the view doesn't exists on the database" do
+          it "returns false" do
+            adapter = Postgres.new
+
+            definition = instance_double(
+              "Scenic::Definition",
+              name: "greetings", to_sql: "SELECT text 'hi' AS greeting",
+            )
+
+            expect(
+              adapter.view_with_similar_definition?(definition),
+            ).to be(false)
+          end
+        end
+        context "when the view has a different definition" do
+          it "returns false" do
+            adapter = Postgres.new
+            ActiveRecord::Base.connection.execute <<~SQL
+              CREATE VIEW greetings AS SELECT text 'hi' AS hello
+            SQL
+
+            definition = instance_double(
+              "Scenic::Definition",
+              name: "greetings", to_sql: "SELECT text 'hi' AS greeting",
+            )
+
+            expect(
+              adapter.view_with_similar_definition?(definition),
+            ).to be(false)
+          end
+        end
+      end
     end
   end
 end

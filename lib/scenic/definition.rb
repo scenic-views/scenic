@@ -1,6 +1,8 @@
 module Scenic
   # @api private
   class Definition
+    attr_reader :name
+
     def initialize(name, version)
       @name = name
       @version = version.to_i

@@ -194,14 +194,17 @@ module Scenic
 
     describe "rename_view" do
       it "rename the view in the database" do
-        connection.rename_view(:from, :to)
+        connection.rename_view(:from, :to, version: 1)
 
         expect(Scenic.database).to have_received(:rename_view)
           .with(:from, :to)
       end
 
       it "rename the materialized view in the database" do
-        connection.rename_view(:from, :to, materialized: true)
+        connection.rename_view(
+          :from, :to,
+          version: 1, materialized: true
+        )
 
         expect(Scenic.database).to have_received(:rename_materialized_view)
           .with(:from, :to, rename_indexes: false)
@@ -209,13 +212,28 @@ module Scenic
 
       it "rename the materialized view in the database and rename indexes" do
         connection.rename_view(
-          :from,
-          :to,
-          materialized: { rename_indexes: true },
+          :from, :to,
+          version: 1, materialized: { rename_indexes: true }
         )
 
         expect(Scenic.database).to have_received(:rename_materialized_view)
           .with(:from, :to, rename_indexes: true)
+      end
+
+      it "raises an error if not supplied a version" do
+        expect { connection.rename_view(:from, :to) }
+          .to raise_error(ArgumentError, /version is required/)
+      end
+
+      it "raises an error if view in database is not similar to definition" do
+        adapter = instance_double(
+          "Scenic::Adapters::Postgres",
+          "view_with_similar_definition?" => false,
+        ).as_null_object
+        allow(Scenic).to receive(:database).and_return(adapter)
+
+        expect { connection.rename_view(:from, :to, version: 1) }
+          .to raise_error(StoredDefinitionError)
       end
     end
 
