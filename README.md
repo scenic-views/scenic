@@ -228,7 +228,8 @@ these steps:
 
 1. Create a new materialized view
    `rails generate scenic:view table_name_next --materialized --no-data`
-   , you can also edit the migration to add indexes on the view.
+   that will take improvement of your future view `table_name`, you can also edit
+   the migration to add indexes on the new view.
 2. Deploy and apply this migration
 3. Refresh the view within a task or in the Rails console
    `Scenic.database.refresh_materialized_view(:table_name_nexts, concurrently: false)`

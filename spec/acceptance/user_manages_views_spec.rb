@@ -55,6 +55,35 @@ describe "User manages views" do
     successfully "rails destroy scenic:model search_results --materialized"
   end
 
+  it "handle replacing materialized views" do
+    successfully "rails generate scenic:model greeting --materialized"
+    write_definition "greetings_v01", "SELECT text 'hi' AS hello"
+
+    successfully "rake db:migrate"
+    verify_result "Greeting.take.hello", "hi"
+
+    successfully "rails generate scenic:view greeting_next --materialized"
+    write_definition "greeting_nexts_v01", "SELECT text 'welcome' AS hello"
+
+    successfully "rake db:migrate"
+    verify_result "Greeting.take.hello", "hi"
+
+    successfully "rails runner 'Scenic.database.refresh_materialized_view(:greeting_nexts)'"
+
+    successfully "rails generate scenic:view greeting --materialized --rename greeting_next"
+    verify_identical_view_definitions "greeting_nexts_v01", "greetings_v02"
+    insert_into_migration("update_greetings_to_version_2", after: "def change\n") do
+      "    drop_view :greetings, revert_to_version: 1, materialized: true\n"
+    end
+
+    successfully "rake db:migrate"
+    verify_result "Greeting.take.hello", "welcome"
+
+    successfully "rake db:rollback"
+    successfully "rake db:rollback"
+    successfully "rails destroy scenic:model greeting"
+  end
+
   def successfully(command)
     `RAILS_ENV=test #{command}`
     expect($CHILD_STATUS.exitstatus).to eq(0), "'#{command}' was unsuccessful"
@@ -84,5 +113,21 @@ describe "User manages views" do
   def verify_schema_contains(statement)
     expect(File.readlines("db/schema.rb").grep(/#{statement}/))
       .not_to be_empty, "Schema does not contain '#{statement}'"
+  end
+
+  def insert_into_migration(name, before: nil, after: nil)
+    unless before.nil? ^ after.nil?
+      raise ArgumentError, "before or after need to be present"
+    end
+
+    p Dir.glob("db/migrate/[0-9]*_#{name}.rb")
+    filename = Dir.glob("db/migrate/[0-9]*_#{name}.rb").first
+
+    content = File.read(filename).gsub(
+      /#{before || after}/,
+      (!after.nil? ? '\0' : "") + yield + (!before.nil? ? '\0' : ""),
+    )
+
+    File.write(filename, content)
   end
 end

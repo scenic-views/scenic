@@ -225,7 +225,7 @@ module Scenic
           .to raise_error(ArgumentError, /version is required/)
       end
 
-      it "raises an error if the view in the database is not similar to definition" do
+      it "raises an error if the definition is different from the database" do
         adapter = instance_double(
           "Scenic::Adapters::Postgres",
           "view_with_similar_definition?" => false,
