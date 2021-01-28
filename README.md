@@ -209,7 +209,7 @@ Now, `db/views/results_v01.sql` sould be identical to
 `db/views/search_results_v01.sql`, you will need to edit this file if you rename
 another views in this migration that is in this definition, so just rename it
 too accordingly ;-)
-The migration should look something like:
+The migration should look something like this:
 
 ```ruby
 class UpdateResultsToVersion2 < ActiveRecord::Migration
@@ -219,7 +219,7 @@ class UpdateResultsToVersion2 < ActiveRecord::Migration
 end
 ```
 
-## Need to change materialized view without downtime?
+## Need to change a materialized view without downtime?
 
 As `replace_view` cannot be used on materialized views, you will have to follow
 these steps:

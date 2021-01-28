@@ -32,7 +32,7 @@ module Scenic
 
       it "handles schema qualified view names" do
         definition = Definition.new("non_public.searches", 1)
-        expected = Rails.root.join("db/views/non_public_searches_v01.sql")
+        expected = Rails.root.join("db", "views", "non_public_searches_v01.sql")
 
         expect(definition.path).to eq expected
       end

@@ -220,12 +220,12 @@ module Scenic
           .with(:from, :to, rename_indexes: true)
       end
 
-      it "raises an error if not supplied a version" do
+      it "raises an error if no version supplied" do
         expect { connection.rename_view(:from, :to) }
           .to raise_error(ArgumentError, /version is required/)
       end
 
-      it "raises an error if view in database is not similar to definition" do
+      it "raises an error if the view in the database is not similar to definition" do
         adapter = instance_double(
           "Scenic::Adapters::Postgres",
           "view_with_similar_definition?" => false,

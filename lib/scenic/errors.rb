@@ -1,6 +1,6 @@
 module Scenic
   # Raised when a view definition in the database is different
-  # from the definition used to create migrations.
+  # from the definition used to create the migrations.
   class StoredDefinitionError < StandardError
     # Returns a new instance of StoredDefinitionError.
     #

@@ -265,7 +265,7 @@ module Scenic
         end
       end
 
-      # Returns a normalize a SQL query
+      # Returns a normalized SQL query
       #
       # Used to compare two queries.
       #
@@ -281,7 +281,7 @@ module Scenic
         end
       end
 
-      # Returns a normalize the SQL definition of a view
+      # Returns a normalized SQL definition of a view
       #
       # Used to compare two queries.
       #

@@ -8,7 +8,7 @@ module Scenic
     # @return Scenic adapter
     attr_accessor :database
 
-    # The full path where is stored views definition sql files.
+    # The full path for files containing SQL definitions.
     #
     # Defaults to `Rails.root.join("db", "views")` an instance of {Pathname}
     # @return the path
