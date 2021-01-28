@@ -214,7 +214,9 @@ The migration should look something like this:
 ```ruby
 class UpdateResultsToVersion2 < ActiveRecord::Migration
   def change
-    rename_view :search_results, :results, version: 2, revert_to_version: 1
+    rename_view :search_results, :results,
+      version: 2,
+      revert_to_version: 1
   end
 end
 ```
@@ -224,20 +226,29 @@ end
 As `replace_view` cannot be used on materialized views, you will have to follow
 these steps:
 
-1. Create a new materialized view 
-   `rails generate scenic:view table_name_next --no-data`
+1. Create a new materialized view
+   `rails generate scenic:view table_name_next --materialized --no-data`
+   , you can also edit the migration to add indexes on the view.
 2. Deploy and apply this migration
 3. Refresh the view within a task or in the Rails console
    `Scenic.database.refresh_materialized_view(:table_name_nexts, concurrently: false)`
 4. Use that view by removing the previous and renaming the next one in a single
-   migration `rails generate scenic:view table_name --rename table_name_next`
-   and edit the migration too 
+   migration 
+   `rails generate scenic:view table_name --materialized --rename table_name_next`
+   and edit the migration too.
    ```ruby
    def change
-     drop_view :table_names, revert_to_version: 1
-     rename_view :table_name_nexts, :table_names, version: 1, revert_to_version: 1
+     drop_view :table_names,
+       revert_to_version: 1,
+       materialized: true
+     rename_view :table_name_nexts, :table_names,
+       version: 1,
+       revert_to_version: 1,
+       materialized: { rename_indexes: true }
    end
    ```
+   `{ rename_indexes: true }` allow to replace `table_name_next` by `table_name`
+   in their name.
 
 ## I don't need this view anymore. Make it go away.
 
