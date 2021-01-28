@@ -4,17 +4,23 @@ require "ammeter/rspec/generator/matchers.rb"
 require "ammeter/init"
 
 RSpec.configure do |config|
-  config.before(:example, :generator) do
-    fake_rails_root = File.expand_path("../../tmp", __dir__)
-    allow(Rails).to receive(:root).and_return(Pathname.new(fake_rails_root))
+  rails_root = Rails.root
+  fake_rails_root = Pathname.new(File.expand_path("../../tmp", __dir__))
 
-    destination fake_rails_root
+  config.before(:example, :generator) do
+    allow(Rails).to receive(:root).and_return(fake_rails_root)
+
+    destination fake_rails_root.to_s
     prepare_destination
+
+    Scenic.configure do |configuration|
+      configuration.definitions_path = fake_rails_root.join("db", "views")
+    end
   end
 
-  config.before(:each) do
+  config.after(:example, :generator) do
     Scenic.configure do |configuration|
-      configuration.definitions_path = Rails.root.join("db", "views")
+      configuration.definitions_path = rails_root.join("db", "views")
     end
   end
 end
