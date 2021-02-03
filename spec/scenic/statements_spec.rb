@@ -175,15 +175,25 @@ module Scenic
           .with(:name, definition.to_sql)
       end
 
-      it "fails to replace the materialized view in the database" do
+      it "replace the materialized view in the database" do
         definition = instance_double("Definition", to_sql: "definition")
         allow(Definition).to receive(:new)
-          .with(:name, 3)
+          .with(:to_name, 3)
           .and_return(definition)
 
-        expect do
-          connection.replace_view(:name, version: 3, materialized: true)
-        end.to raise_error(ArgumentError, /Cannot replace materialized views/)
+        connection.replace_view(:name, :to_name, version: 3, materialized: true)
+        expect(Scenic.database).to have_received(:replace_materialized_view)
+          .with(:name, :to_name)
+      end
+
+      it "raise an error if replace the materialized view without new name" do
+        definition = instance_double("Definition", to_sql: "definition")
+        allow(Definition).to receive(:new)
+          .with(:to, 3)
+          .and_return(definition)
+
+        expect { connection.replace_view(:to, version: 3, materialized: true) }
+          .to raise_error(ArgumentError, /to_name is required/)
       end
 
       it "raises an error if not supplied a version" do

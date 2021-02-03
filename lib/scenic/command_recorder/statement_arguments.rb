@@ -15,6 +15,10 @@ module Scenic
         options[:version]
       end
 
+      def materialized?
+        options[:materialized]
+      end
+
       def revert_to_version
         options[:revert_to_version]
       end

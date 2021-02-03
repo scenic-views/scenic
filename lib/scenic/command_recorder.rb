@@ -24,7 +24,18 @@ module Scenic
     end
 
     def invert_replace_view(args)
-      perform_scenic_inversion(:replace_view, args)
+      if StatementArguments.new(args).materialized?
+        raise ActiveRecord::IrreversibleMigration, <<~MSG
+          This migration uses replace_view for materialized view,
+          which is not automatically reversible due to indexes moving
+          and renaming.
+          To make the migration reversible you can either:
+          1. Define #up and #down methods in place of the #change method.
+          2. Use the #reversible method to define reversible behavior.
+        MSG
+      else
+        perform_scenic_inversion(:replace_view, args)
+      end
     end
 
     def invert_rename_view(args)

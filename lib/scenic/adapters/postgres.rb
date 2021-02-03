@@ -184,6 +184,28 @@ module Scenic
         end
       end
 
+      # Replaces a materialized view by another.
+      #
+      # Most of the time this method is used as a second step after having
+      # created the materialized view and refreshing it in a previous release.
+      #
+      # This is typically called in a migration via {Statements#replace_view}.
+      #
+      # @param from_name The previous name of the materialized view to rename.
+      # @param to_name The next name of the materialized view to rename.
+      # @raise [MaterializedViewsNotSupportedError] if the version of Postgres
+      #   in use does not support materialized views.
+      #
+      # @return [void]
+      def replace_materialized_view(from_name, to_name)
+        raise_unless_materialized_views_supported
+
+        IndexReapplication.new(connection: connection).on(to_name) do
+          drop_materialized_view(to_name)
+          rename_materialized_view(from_name, to_name, rename_indexes: true)
+        end
+      end
+
       # Drops a materialized view in the database
       #
       # This is typically called in a migration via {Statements#update_view}.
@@ -204,6 +226,9 @@ module Scenic
       #
       # @param from_name The previous name of the materialized view to rename.
       # @param to_name The next name of the materialized view to rename.
+      # @param rename_indexes [Boolean] rename materialized view indexes
+      #   by substituing in their name the previous view name
+      #   to the next view name. Defaults to false.
       # @raise [MaterializedViewsNotSupportedError] if the version of Postgres
       #   in use does not support materialized views.
       #

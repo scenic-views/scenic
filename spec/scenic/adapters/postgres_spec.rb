@@ -91,6 +91,27 @@ module Scenic
         end
       end
 
+      describe "#replace_materialized_view" do
+        it "successfully replaces a view" do
+          adapter = Postgres.new
+
+          adapter.create_materialized_view(
+            "greetings", "SELECT text 'hi' AS greeting"
+          )
+          adapter.create_materialized_view(
+            "greetings_next", "SELECT text 'hello' AS greeting"
+          )
+
+          from_view = adapter.views.find { |view| view.name == "greetings" }
+          expect(from_view.definition).to eql "SELECT 'hi'::text AS greeting;"
+
+          adapter.replace_materialized_view("greetings_next", "greetings")
+
+          to_view = adapter.views.find { |view| view.name == "greetings" }
+          expect(to_view.definition).to eql "SELECT 'hello'::text AS greeting;"
+        end
+      end
+
       describe "#drop_materialized_view" do
         it "successfully drops a materialized view" do
           adapter = Postgres.new

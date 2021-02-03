@@ -126,27 +126,37 @@ module Scenic
     #
     # Does not work with materialized views due to lack of database support.
     #
-    # @param name [String, Symbol] The name of the database view.
+    # @param from_name [String, Symbol] The name of the database view.
+    # @param to_name [String, Symbol] The next name of the database
+    #   materialized view.
     # @param version [Fixnum] The version number of the view.
     # @param revert_to_version [Fixnum] The version number to rollback to on
     #   `rake db rollback`
+    # @param materialized [Boolean] True if updating a materialized view.
     # @return The database response from executing the create statement.
     #
     # @example
     #   replace_view :engagement_reports, version: 3, revert_to_version: 2
     #
-    def replace_view(name, version: nil, revert_to_version: nil, materialized: false)
+    def replace_view(
+      from_name, to_name = nil,
+      version: nil, revert_to_version: nil, materialized: false
+    )
       if version.blank?
         raise ArgumentError, "version is required"
       end
 
       if materialized
-        raise ArgumentError, "Cannot replace materialized views"
+        if to_name.blank?
+          raise ArgumentError, "to_name is required for materialized view"
+        end
+        result = database.replace_materialized_view(from_name, to_name)
+        raise_unless_similar_definition(to_name, version)
+        result
+      else
+        sql_definition = definition(from_name, version).to_sql
+        database.replace_view(from_name, sql_definition)
       end
-
-      sql_definition = definition(name, version).to_sql
-
-      database.replace_view(name, sql_definition)
     end
 
     # Rename a database view by name.
@@ -183,11 +193,7 @@ module Scenic
                  database.rename_view(from_name, to_name)
                end
 
-      view_definition = definition(to_name, version)
-      unless database.view_with_similar_definition?(view_definition)
-        database_sql = database.normalize_view_sql(to_name)
-        raise StoredDefinitionError.new(view_definition, database_sql)
-      end
+      raise_unless_similar_definition(to_name, version)
 
       result
     end
@@ -213,6 +219,14 @@ module Scenic
         materialized.fetch(:rename_indexes, false)
       else
         false
+      end
+    end
+
+    def raise_unless_similar_definition(name, version)
+      view_definition = definition(name, version)
+      unless database.view_with_similar_definition?(view_definition)
+        database_sql = database.normalize_view_sql(name)
+        raise StoredDefinitionError.new(view_definition, database_sql)
       end
     end
   end
