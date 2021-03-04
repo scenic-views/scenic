@@ -12,9 +12,11 @@ module Scenic
     # @param sql_definition [String] The SQL query for the view schema. An error
     #   will be raised if `sql_definition` and `version` are both set,
     #   as they are mutually exclusive.
-    # @param materialized [Boolean, Hash] Set to true to create a materialized
-    #   view. Set to { no_data: true } to create materialized view without
-    #   loading data. Defaults to false.
+    # @param materialized [Boolean, Hash] Default: false.
+    #   Set to true to create a materialized view.
+    #   Set to { no_data: true } to not populate the view.
+    #   Set to { copy_indexes_from: "other_view_name" } to copy indexes from
+    #     that view. Useful when used as a first step before `replace_view`.
     # @return The database response from executing the create statement.
     #
     # @example Create from `db/views/searches_v02.sql`
@@ -44,6 +46,7 @@ module Scenic
           name,
           sql_definition,
           no_data: no_data(materialized),
+          copy_indexes_from: copy_indexes_from(materialized),
         )
       else
         database.create_view(name, sql_definition)
@@ -209,6 +212,14 @@ module Scenic
     def no_data(materialized)
       if materialized.is_a?(Hash)
         materialized.fetch(:no_data, false)
+      else
+        false
+      end
+    end
+
+    def copy_indexes_from(materialized)
+      if materialized.is_a?(Hash)
+        materialized.fetch(:copy_indexes_from, false)
       else
         false
       end

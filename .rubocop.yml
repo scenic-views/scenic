@@ -65,7 +65,6 @@ Style/BlockDelimiters:
 Style/CollectionMethods:
   Enabled: true
   PreferredMethods:
-    find: find
     inject: reduce
     collect: map
     find_all: select

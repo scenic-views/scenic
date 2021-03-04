@@ -140,6 +140,9 @@ module Scenic
       # @param no_data [Boolean] Default: false. Set to true to create
       #   materialized view without running the associated query. You will need
       #   to perform a non-concurrent refresh to populate with data.
+      # @param copy_indexes_from [String] Default: false. Name of another view
+      #   to copy indexes from. Useful when used as a first step before
+      #   `replace_materialized_view`.
       #
       # This is typically called in a migration via {Statements#create_view}.
       #
@@ -147,14 +150,21 @@ module Scenic
       #   in use does not support materialized views.
       #
       # @return [void]
-      def create_materialized_view(name, sql_definition, no_data: false)
+      def create_materialized_view(
+        name, sql_definition,
+        no_data: false, copy_indexes_from: false
+      )
         raise_unless_materialized_views_supported
 
-        execute <<-SQL
-  CREATE MATERIALIZED VIEW #{quote_table_name(name)} AS
-  #{sql_definition.rstrip.chomp(';')}
-  #{'WITH NO DATA' if no_data};
+        execute <<~SQL
+          CREATE MATERIALIZED VIEW #{quote_table_name(name)} AS
+          #{sql_definition.rstrip.chomp(';')}
+          #{'WITH NO DATA' if no_data};
         SQL
+        if copy_indexes_from
+          IndexReapplication.new(connection: connection)
+            .on(name, from: copy_indexes_from) {}
+        end
       end
 
       # Updates a materialized view in the database.
@@ -200,10 +210,8 @@ module Scenic
       def replace_materialized_view(from_name, to_name)
         raise_unless_materialized_views_supported
 
-        IndexReapplication.new(connection: connection).on(to_name) do
-          drop_materialized_view(to_name)
-          rename_materialized_view(from_name, to_name, rename_indexes: true)
-        end
+        drop_materialized_view(to_name)
+        rename_materialized_view(from_name, to_name, rename_indexes: true)
       end
 
       # Drops a materialized view in the database
@@ -246,7 +254,9 @@ module Scenic
             .map(&:index_name)
             .select { |name| name.match?(from_name) }
             .each do |name|
-              rename_index to_name, name, name.sub(from_name, to_name)
+              connection.rename_index(
+                to_name, name, name.sub(from_name, to_name)
+              )
             end
         end
       end
@@ -333,8 +343,7 @@ module Scenic
 
       attr_reader :connectable
       delegate(
-        :execute, :quote, :quote_table_name, :rename_index,
-        :select_value, :transaction,
+        :execute, :quote, :quote_table_name, :select_value, :transaction,
         to: :connection
       )
 

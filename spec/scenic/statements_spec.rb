@@ -58,7 +58,12 @@ module Scenic
         connection.create_view(:views, version: 1, materialized: true)
 
         expect(Scenic.database).to have_received(:create_materialized_view)
-          .with(:views, definition.to_sql, no_data: false)
+          .with(
+            :views,
+            definition.to_sql,
+            no_data: false,
+            copy_indexes_from: false,
+          )
       end
     end
 
@@ -74,7 +79,52 @@ module Scenic
         )
 
         expect(Scenic.database).to have_received(:create_materialized_view)
-          .with(:views, definition.to_sql, no_data: true)
+          .with(
+            :views, definition.to_sql,
+            no_data: true, copy_indexes_from: false
+          )
+      end
+    end
+
+    describe "create_view :materialized and copy indexes" do
+      it "sends the create_materialized_view message" do
+        definition = instance_double("Scenic::Definition", to_sql: "definition")
+        allow(Definition).to receive(:new).and_return(definition)
+
+        connection.create_view(
+          :views,
+          version: 1,
+          materialized: { copy_indexes_from: :other_views },
+        )
+
+        expect(Scenic.database).to have_received(:create_materialized_view)
+          .with(
+            :views,
+            definition.to_sql,
+            no_data: false,
+            copy_indexes_from: :other_views,
+          )
+      end
+    end
+
+    describe "create_view :materialized with :no_data and copy indexes" do
+      it "sends the create_materialized_view message" do
+        definition = instance_double("Scenic::Definition", to_sql: "definition")
+        allow(Definition).to receive(:new).and_return(definition)
+
+        connection.create_view(
+          :views,
+          version: 1,
+          materialized: { no_data: true, copy_indexes_from: :other_views },
+        )
+
+        expect(Scenic.database).to have_received(:create_materialized_view)
+          .with(
+            :views,
+            definition.to_sql,
+            no_data: true,
+            copy_indexes_from: :other_views,
+          )
       end
     end
 

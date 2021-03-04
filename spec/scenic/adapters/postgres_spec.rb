@@ -41,6 +41,26 @@ module Scenic
           expect(view.materialized).to eq true
         end
 
+        it "copy indexes from another view" do
+          adapter = Postgres.new
+          connection = ActiveRecord::Base.connection
+
+          adapter.create_materialized_view(
+            "greetings",
+            "SELECT text 'hi' AS greeting; \n",
+          )
+          connection.add_index :greetings, :greeting
+          adapter.create_materialized_view(
+            "greetings_nexts",
+            "SELECT text 'hello' AS greeting; \n",
+            copy_indexes_from: :greetings,
+          )
+
+          indexes = Postgres::Indexes.new(connection: connection)
+          index_names = indexes.on("greetings_nexts").map(&:index_name)
+          expect(index_names).to include("index_greetings_nexts_on_greeting")
+        end
+
         it "raises an exception if the version of PostgreSQL is too old" do
           connection = double("Connection", supports_materialized_views?: false)
           connectable = double("Connectable", connection: connection)
@@ -152,12 +172,13 @@ module Scenic
 
         it "successfully renames materialized view indexes" do
           adapter = Postgres.new
+          connection = ActiveRecord::Base.connection
 
           adapter.create_materialized_view(
             "greetings",
             "SELECT text 'hi' AS greeting",
           )
-          ActiveRecord::Base.connection.add_index "greetings", "greeting"
+          connection.add_index :greetings, :greeting
           adapter.rename_materialized_view(
             "greetings",
             "renamed",

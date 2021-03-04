@@ -228,19 +228,28 @@ populate the next version of the view in a previous release. So you will have
 to follow these steps:
 
 1. Create a new materialized view
-   `rails generate scenic:view table_name_next --materialized --no-data`
-   that will take improvement of your future view `table_name`, you can 
-   copy-paste the content of the last version of `table_name` as a starter.
+   `rails generate scenic:view table_names_next --materialized --no-data`
+   that will take improvement of your future view `table_namse`. you can
+   copy-paste the content of the last version of `table_names` as a starter
+   and you can also add the option `copy_index_from: :table_names` to easily add
+   all indexes of `table_names`.
+   ```ruby
+   def change
+     create_view :table_names_nexts,
+       version: 1,
+       materialized: { no_data: true, copy_index_from: :table_names }
+   end
+   ```
 2. Deploy and apply this migration
 3. Refresh the view within a task or in the Rails console
-   `Scenic.database.refresh_materialized_view(:table_name_nexts, concurrently: false)`
+   `Scenic.database.refresh_materialized_view(:table_names_nexts, concurrently: false)`
 4. Use that view by removing the previous and renaming the next one in a single
    migration 
-   `rails generate scenic:view table_name --materialized --rename table_name_next`
+   `rails generate scenic:view table_names --materialized --rename table_names_next`
    and edit the migration to change `rename_view` by `replace_view`:
    ```ruby
    def change
-     replace_view :table_name_nexts, :table_names,
+     replace_view :table_names_nexts, :table_names,
        version: 1,
        revert_to_version: 1,
        materialized: true
@@ -248,14 +257,15 @@ to follow these steps:
    ```
 
 `replace_view` will internaly do:
-1. store indexes of `table_names`
-2. remove `table_names`
-3. rename `table_names_next` to `table_names`
-4. ensure that the definition on the database is the same as the one in 
-   `db/views` folder
-5. rename indexes by replacing `table_names_next` by `table_names` in 
-   their names
-6. applied valid stored indexes on the new version of `table_names`
+```ruby
+drop_view(:table_names, revert_to_version: 1, materialized: true)
+rename_view(
+  :table_names_nexts, :table_names,
+  version: 1, revert_to_version: 1, materialized: { rename_indexes: true }
+)
+```
+So you can use this last version if you need to perform some operations between
+the drop and the rename.
 
 ## I don't need this view anymore. Make it go away.
 
