@@ -58,7 +58,7 @@ module Scenic
 
           Scenic::Index.new(
             object_name: to,
-            index_name: index.index_name.sub(from.to_s, to.to_s),
+            index_name: index.index_name.to_s.sub(from.to_s, to.to_s),
             definition: index.definition.sub(
               /(\w*)#{from}(\w*) ON (\w+\.)?#{from}/,
               "\\1#{to}\\2 ON \\3#{to}",

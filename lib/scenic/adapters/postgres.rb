@@ -255,7 +255,7 @@ module Scenic
             .select { |name| name.match?(from_name) }
             .each do |name|
               connection.rename_index(
-                to_name, name, name.sub(from_name, to_name)
+                to_name, name, name.to_s.sub(from_name.to_s, to_name.to_s)
               )
             end
         end

@@ -231,13 +231,13 @@ to follow these steps:
    `rails generate scenic:view table_names_next --materialized --no-data`
    that will take improvement of your future view `table_namse`. you can
    copy-paste the content of the last version of `table_names` as a starter
-   and you can also add the option `copy_index_from: :table_names` to easily add
+   and you can also add the option `copy_indexes_from: :table_names` to easily add
    all indexes of `table_names`.
    ```ruby
    def change
      create_view :table_names_nexts,
        version: 1,
-       materialized: { no_data: true, copy_index_from: :table_names }
+       materialized: { no_data: true, copy_indexes_from: :table_names }
    end
    ```
 2. Deploy and apply this migration
