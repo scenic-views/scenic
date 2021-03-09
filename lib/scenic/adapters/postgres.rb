@@ -308,11 +308,13 @@ module Scenic
       #
       # @return [String]
       def normalize_sql(sql_definition)
-        temporary_view_name = "temp_view_for_decompilation"
+        temporary_view_name = "temp_view_for_normalization"
         view_name = quote_table_name(temporary_view_name)
         transaction do
           execute "CREATE TEMPORARY VIEW #{view_name} AS #{sql_definition};"
-          normalize_view_sql(temporary_view_name)
+          view = normalize_view_sql(temporary_view_name)
+          execute "DROP VIEW IF EXISTS #{view_name};"
+          view
         end
       end
 

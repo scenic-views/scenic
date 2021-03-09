@@ -310,6 +310,15 @@ module Scenic
           expect(adapter.normalize_sql("SELECT text 'Elliot' AS name"))
             .to eq("SELECT 'Elliot'::text AS name;")
         end
+        it "allow to normalize multiple queries on the same transaction" do
+          adapter = Postgres.new
+          ActiveRecord::Base.connection.transaction do
+            expect do
+              adapter.normalize_sql("SELECT text 'Elliot' AS name")
+              adapter.normalize_sql("SELECT text 'John' AS first_name")
+            end.to_not raise_error
+          end
+        end
       end
       describe "#normalize_sql" do
         it "returns scenic view objects for plain old views" do
