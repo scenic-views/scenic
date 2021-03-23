@@ -55,13 +55,14 @@ module Scenic
 
         def change_index_object_name(from, to, index)
           return index if from == to
+          index_name = index.index_name.to_s.sub(from.to_s, to.to_s)
 
           Scenic::Index.new(
             object_name: to,
-            index_name: index.index_name.to_s.sub(from.to_s, to.to_s),
+            index_name: index_name,
             definition: index.definition.sub(
-              /(\w*)#{from}(\w*) ON (\w+\.)?#{from}/,
-              "\\1#{to}\\2 ON \\3#{to}",
+              /#{index.index_name} ON (\w+\.)?#{from}/,
+              "#{index_name} ON \\1#{to}",
             ),
           )
         end
