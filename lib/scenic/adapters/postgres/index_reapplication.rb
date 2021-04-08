@@ -13,7 +13,7 @@ module Scenic
         # @param connection [Connection] The connection to execute SQL against.
         # @param speaker [#say] (ActiveRecord::Migration) The object used for
         #   logging the results of reapplying indexes.
-        def initialize(connection:, speaker: ActiveRecord::Migration)
+        def initialize(connection:, speaker: ActiveRecord::Migration.new)
           @connection = connection
           @speaker = speaker
         end
