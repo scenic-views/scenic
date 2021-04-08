@@ -15,7 +15,7 @@ module Scenic
 
       dumpable_views_in_database.each do |view|
         stream.puts(view.to_schema)
-        indexes(view.name, stream)
+        indexes(view.unscoped_name, stream)
       end
     end
 
