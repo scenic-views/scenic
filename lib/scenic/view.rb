@@ -42,7 +42,7 @@ module Scenic
 
     # @api private
     def unscoped_name
-      name.split('.').last
+      name.split(".").last
     end
 
     # @api private
