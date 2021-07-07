@@ -13,13 +13,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ruby: ["2.7","2.4"]
+        ruby: ["3.0", "2.7", "2.4"]
         rails: ["5.2", "6.0", "master"]
         exclude:
           - ruby: "2.4"
             rails: "6.0"
           - ruby: "2.4"
             rails: "master"
+          - ruby: "3.0"
+            rails: "5.2"
         include:
           - rails: "master"
             continue-on-error: true
