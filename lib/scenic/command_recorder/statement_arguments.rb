@@ -36,15 +36,25 @@ module Scenic
         @options ||= @args[1] || {}
       end
 
-      def options_for_revert
-        options.clone.tap do |revert_options|
-          revert_options[:version] = revert_to_version
-          revert_options.delete(:revert_to_version)
+      def keyword_hash(hash)
+        if Hash.respond_to? :ruby2_keywords_hash
+          Hash.ruby2_keywords_hash(hash)
+        else
+          hash
         end
       end
 
+      def options_for_revert
+        opts = options.clone.tap do |revert_options|
+          revert_options[:version] = revert_to_version
+          revert_options.delete(:revert_to_version)
+        end
+
+        keyword_hash(opts)
+      end
+
       def options_without_version
-        options.except(:version)
+        keyword_hash(options.except(:version))
       end
     end
   end
