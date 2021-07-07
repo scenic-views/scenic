@@ -6,18 +6,22 @@ module Scenic
     def create_view(*args)
       record(:create_view, args)
     end
+    ruby2_keywords :create_view if respond_to?(:ruby2_keywords, true)
 
     def drop_view(*args)
       record(:drop_view, args)
     end
+    ruby2_keywords :drop_view if respond_to?(:ruby2_keywords, true)
 
     def update_view(*args)
       record(:update_view, args)
     end
+    ruby2_keywords :update_view if respond_to?(:ruby2_keywords, true)
 
     def replace_view(*args)
       record(:replace_view, args)
     end
+    ruby2_keywords :replace_view if respond_to?(:ruby2_keywords, true)
 
     def invert_create_view(args)
       drop_view_args = StatementArguments.new(args).remove_version.to_a
