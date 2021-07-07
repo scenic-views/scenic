@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ruby: ["2.7","2.4"]
+        ruby: ["3.0", "2.7", "2.6", "2.4"]
         rails: ["5.2", "6.0", "master"]
         exclude:
           - ruby: "2.4"
