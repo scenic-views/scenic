@@ -50,18 +50,22 @@ module Scenic
     private
 
     def dumpable_views_in_database
-      return @ordered_dumpable_views_in_database if @ordered_dumpable_views_in_database
+      if @ordered_dumpable_views_in_database
+        return @ordered_dumpable_views_in_database
+      end
 
       existing_views = Scenic.database.views.reject do |view|
         ignored?(view.name)
       end
 
-      @ordered_dumpable_views_in_database = tsorted_views(existing_views.map(&:name)).map do |view_name|
-        existing_views.find { |ev| ev.name == view_name }
-      end.compact
+      @ordered_dumpable_views_in_database =
+        tsorted_views(existing_views.map(&:name)).map do |view_name|
+          existing_views.find { |ev| ev.name == view_name }
+        end.compact
     end
 
-    # When dumping the views, their order must be topologically sorted to take into account dependencies
+    # When dumping the views, their order must be topologically
+    # sorted to take into account dependencies
     def tsorted_views(views_names)
       views_hash = TSortableHash.new
 
@@ -75,7 +79,8 @@ module Scenic
         views_names.delete(dependent)
       end
 
-      # after dependencies, there might be some views left that don't have any dependencies
+      # after dependencies, there might be some views left
+      # that don't have any dependencies
       views_names.sort.each { |v| views_hash[v] = [] }
 
       views_hash.tsort
