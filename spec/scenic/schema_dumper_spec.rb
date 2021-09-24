@@ -45,7 +45,8 @@ describe Scenic::SchemaDumper, :db do
 
   it "dumps a create_view for a materialized view in the database" do
     view_definition = "SELECT 'needle'::text AS haystack"
-    Search.connection.create_view :searches, materialized: true, sql_definition: view_definition
+    Search.connection.create_view :searches,
+      materialized: true, sql_definition: view_definition
 
     expect(output).to include 'create_view "searches", materialized: true, sql_definition: <<-SQL'
     expect(output).to include view_definition
@@ -66,11 +67,11 @@ describe Scenic::SchemaDumper, :db do
       stream = StringIO.new
 
       ActiveRecord::SchemaDumper.dump(Search.connection, stream)
+
       views = stream.string.lines.grep(/create_view/).map do |view_line|
         view_line.match('create_view "(?<name>.*)"')[:name]
       end
       expect(views).to eq(%w[scenic.bananas scenic.apples])
-
     end
 
     before(:each) do
@@ -112,12 +113,13 @@ describe Scenic::SchemaDumper, :db do
   context "with views using unexpected characters in name" do
     it "dumps a create_view for a view in the database" do
       view_definition = "SELECT 'needle'::text AS haystack"
-      Search.connection.create_view '"search in a haystack"', sql_definition: view_definition
+      Search.connection.create_view '"search in a haystack"',
+        sql_definition: view_definition
 
       expect(output).to include 'create_view "\"search in a haystack\"",'
       expect(output).to include view_definition
 
-      Search.connection.drop_view :'"search in a haystack"'
+      Search.connection.drop_view :"\"search in a haystack\""
 
       silence_stream($stdout) { eval(output) } # standard:disable Security/Eval
 
@@ -129,7 +131,7 @@ describe Scenic::SchemaDumper, :db do
     it "dumps a create_view for a view in the database" do
       view_definition = "SELECT 'needle'::text AS haystack"
       Search.connection.execute(
-        "CREATE SCHEMA scenic; SET search_path TO scenic, public",
+        "CREATE SCHEMA scenic; SET search_path TO scenic, public"
       )
       Search.connection.create_view 'scenic."search in a haystack"',
         sql_definition: view_definition
@@ -137,7 +139,7 @@ describe Scenic::SchemaDumper, :db do
       expect(output).to include 'create_view "scenic.\"search in a haystack\"",'
       expect(output).to include view_definition
 
-      Search.connection.drop_view :'scenic."search in a haystack"'
+      Search.connection.drop_view :"scenic.\"search in a haystack\""
 
       silence_stream($stdout) { eval(output) } # standard:disable Security/Eval
 
@@ -148,11 +150,11 @@ describe Scenic::SchemaDumper, :db do
   context "with views ordered by name" do
     it "sorts views without dependencies" do
       Search.connection.create_view "cucumber_needles",
-        sql_definition: "SELECT 'kukumbas'::text as needle"
+        sql_definition: "SELECT 'kukumbas'::text AS needle"
       Search.connection.create_view "vip_needles",
-        sql_definition: "SELECT 'vip'::text as needle"
+        sql_definition: "SELECT 'vip'::text AS needle"
       Search.connection.create_view "none_needles",
-        sql_definition: "SELECT 'none_needles'::text as needle"
+        sql_definition: "SELECT 'none_needles'::text AS needle"
 
       # Same here, no dependencies among existing views, all views are sorted
       sorted_views = %w[cucumber_needles vip_needles none_needles].sort
@@ -162,15 +164,15 @@ describe Scenic::SchemaDumper, :db do
 
     it "sorts according to dependencies" do
       Search.connection.create_table(:tasks) { |t| t.integer :performer_id }
-      Search.connection.create_table(:notes) { |t|
+      Search.connection.create_table(:notes) do |t|
         t.text :title
         t.integer :author_id
-      }
+      end
       Search.connection.create_table(:users) { |t| t.text :nickname }
-      Search.connection.create_table(:roles) { |t|
+      Search.connection.create_table(:roles) do |t|
         t.text :name
         t.integer :user_id
-      }
+      end
 
       Search.connection.create_view "recent_tasks", sql_definition: <<-SQL
         SELECT id, performer_id FROM tasks WHERE id > 42
@@ -186,26 +188,26 @@ describe Scenic::SchemaDumper, :db do
       Search.connection.create_view "angry_zombies", sql_definition: <<-SQL
         SELECT
           users.nickname,
-          recent_tasks.id AS task_id,
-          nirvana_notes.title AS talk
+            recent_tasks.id AS task_id,
+            nirvana_notes.title AS talk
         FROM users
         JOIN roles ON roles.user_id = users.id
         JOIN nirvana_notes ON nirvana_notes.author_id = roles.id
         JOIN recent_tasks ON recent_tasks.performer_id = roles.id
       SQL
       Search.connection.create_view "doctor_zombies", sql_definition: <<-SQL
-        SELECT id FROM old_roles WHERE name LIKE '%Dr%'
+        SELECT id FROM old_roles WHERE name LIKE '%dr%'
       SQL
       Search.connection.create_view "xenomorphs", sql_definition: <<-SQL
         SELECT id, name FROM roles WHERE name = 'xeno'
       SQL
       Search.connection.create_view "important_messages", sql_definition: <<-SQL
-        SELECT id, title FROM notes WHERE title LIKE '%IMPORTANT%'
+        SELECT id, title FROM notes WHERE title LIKE '%important%'
       SQL
 
-      # Converted with https://github.com/ggerganov/dot-to-ascii
+      # converted with https://github.com/ggerganov/dot-to-ascii
       # digraph {
-      #   rankdir = "RL";
+      #   rankdir = "bt";
       #   xenomorphs;
       #   important_messages;
       #   doctor_zombies -> old_roles;
@@ -214,21 +216,33 @@ describe Scenic::SchemaDumper, :db do
       #   angry_zombies -> recent_tasks;
       # }
       #
-      #                                                                +--------------------+
-      #                                                                |    recent_tasks    |
-      #                                                                +--------------------+
-      #                                                                  ^
-      #                                                                  |
-      #                                                                  |
-      # +----------------+     +-----------+     +---------------+     +--------------------+
-      # | doctor_zombies | --> | old_roles | <-- | nirvana_notes | <-- |    angry_zombies   |
-      # +----------------+     +-----------+     +---------------+     +--------------------+
-      #                                                                +--------------------+
-      #                                                                | important_messages |
-      #                                                                +--------------------+
-      #                                                                +--------------------+
-      #                                                                |     xenomorphs     |
-      #                                                                +--------------------+
+      # +--------------------+
+      # |   doctor_zombies   |
+      # +--------------------+
+      #   |
+      #   |
+      #   v
+      # +--------------------+
+      # |     old_roles      |
+      # +--------------------+
+      #   ^
+      #   |
+      #   |
+      # +--------------------+
+      # |   nirvana_notes    |
+      # +--------------------+
+      #   ^
+      #   |
+      #   |
+      # +--------------------+     +--------------+
+      # |   angry_zombies    | --> | recent_tasks |
+      # +--------------------+     +--------------+
+      # +--------------------+
+      # | important_messages |
+      # +--------------------+
+      # +--------------------+
+      # |     xenomorphs     |
+      # +--------------------+
       expect(views_in_output_order).to eq(%w[
         old_roles
         nirvana_notes
