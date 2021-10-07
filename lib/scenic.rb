@@ -29,4 +29,12 @@ module Scenic
   def self.database
     configuration.database
   end
+
+  # The path where Scenic looks up its views
+  #
+  # This default to {Rails.root} but can be overridden
+  # via {Configuration}.
+  def self.root_path
+    configuration.root_path
+  end
 end

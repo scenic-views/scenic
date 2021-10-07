@@ -260,6 +260,16 @@ meet your needs:
 Please note that the maintainers of Scenic make no assertions about the
 quality or security of the above adapters.
 
+**Can I use Scenic in Rails engines?**
+
+Yes, just update the path where Scenic looks up its views in its configuration:
+
+```ruby
+Scenic.configure do |config|
+  config.root_path = MyEngine.root
+end
+```
+
 ## About
 
 Scenic is maintained by [Derek Prior], [Caleb Hearth], and you, our

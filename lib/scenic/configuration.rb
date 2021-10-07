@@ -4,10 +4,11 @@ module Scenic
     #
     # Defaults to an instance of {Adapters::Postgres}
     # @return Scenic adapter
-    attr_accessor :database
+    attr_accessor :database, :root_path
 
     def initialize
       @database = Scenic::Adapters::Postgres.new
+      @root_path = Rails.root
     end
   end
 
@@ -29,6 +30,7 @@ module Scenic
   # ```
   # Scenic.configure do |config|
   #   config.database = Scenic::Adapters::Postgres.new
+  #   config.root_path = MyEngine.root
   # end
   # ```
   def self.configure

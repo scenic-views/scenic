@@ -15,7 +15,7 @@ module Scenic
     end
 
     def full_path
-      Rails.root.join(path)
+      Pathname.new(Scenic.root_path).join(path)
     end
 
     def path

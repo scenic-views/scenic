@@ -6,7 +6,9 @@ require "ammeter/init"
 RSpec.configure do |config|
   config.before(:example, :generator) do
     fake_rails_root = File.expand_path("../../tmp", __dir__)
-    allow(Rails).to receive(:root).and_return(Pathname.new(fake_rails_root))
+    fake_rails_root_pathname = Pathname.new(fake_rails_root)
+    allow(Rails).to receive(:root).and_return(fake_rails_root_pathname)
+    allow(Scenic).to receive(:root_path).and_return(fake_rails_root_pathname)
 
     destination fake_rails_root
     prepare_destination
