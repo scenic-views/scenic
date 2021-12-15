@@ -41,11 +41,15 @@ module Scenic
     end
 
     # @api private
+    def unscoped_name
+      name.split(".").last
+    end
+
+    # @api private
     def to_schema
       materialized_option = materialized ? "materialized: true, " : ""
-
       <<-DEFINITION
-  create_view #{name.inspect}, #{materialized_option}sql_definition: <<-\SQL
+  create_view #{unscoped_name.inspect}, #{materialized_option}sql_definition: <<-\SQL
     #{definition.indent(2)}
   SQL
       DEFINITION
