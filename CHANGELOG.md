@@ -5,6 +5,15 @@ changelog, see the [commits] for each version via the version links.
 
 [commits]: https://github.com/scenic-views/scenic/commits/master
 
+## [1.5.5] - December 15, 2021
+
+### Fixed
+
+- Fixed an issue reverting migrations under Ruby 3
+- Fixed an issue in index reapplication where sometimes `say` was undefined
+
+[1.5.5]: https://github.com/scenic-views/scenic/compare/v1.5.4...v1.5.5
+
 ## [1.5.4] - September 16, 2020
 
 [1.5.4]: https://github.com/scenic-views/scenic/compare/v1.5.3...v1.5.4
