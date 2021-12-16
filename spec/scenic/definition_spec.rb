@@ -35,6 +35,14 @@ module Scenic
 
         expect(definition.path).to eq "db/views/non_public_searches_v01.sql"
       end
+
+      it "handles active record view prefix and suffixing" do
+        with_affixed_tables(prefix: "foo_", suffix: "_bar") do
+          definition = Definition.new("foo_searches_bar", 1)
+
+          expect(definition.path).to eq "db/views/searches_v01.sql"
+        end
+      end
     end
 
     describe "full_path" do

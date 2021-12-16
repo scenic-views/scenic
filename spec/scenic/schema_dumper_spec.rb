@@ -55,6 +55,20 @@ describe Scenic::SchemaDumper, :db do
     end
   end
 
+  it "handles active record table name prefixes and suffixes" do
+    with_affixed_tables(prefix: "a_", suffix: "_z") do
+      view_definition = "SELECT 'needle'::text AS haystack"
+      Search.connection.create_view :a_searches_z, sql_definition: view_definition
+      stream = StringIO.new
+
+      ActiveRecord::SchemaDumper.dump(Search.connection, stream)
+
+      output = stream.string
+
+      expect(output).to include 'create_view "searches"'
+    end
+  end
+
   it "ignores tables internal to Rails" do
     view_definition = "SELECT 'needle'::text AS haystack"
     Search.connection.create_view :searches, sql_definition: view_definition
