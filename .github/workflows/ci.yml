@@ -14,7 +14,7 @@ jobs:
       fail-fast: false
       matrix:
         ruby: ["2.7", "3.0"]
-        rails: ["6.0", "6.1", "master"]
+        rails: ["6.1", "7.0", "master"]
         continue-on-error: [false]
 
     runs-on: ubuntu-latest
