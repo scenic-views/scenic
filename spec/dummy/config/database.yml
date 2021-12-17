@@ -4,7 +4,7 @@ development: &default
   encoding: unicode
   host: localhost
   pool: 5
-  <% if ENV.fetch("GITHUB_ACTIONS", false) %>
+  <% if ENV.fetch("GITHUB_ACTIONS", false) || ENV.fetch("CODESPACES", false) %>
   username: <%= ENV.fetch("POSTGRES_USER") %>
   password: <%= ENV.fetch("POSTGRES_PASSWORD") %>
   <% end %>

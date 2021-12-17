@@ -1,0 +1,11 @@
+{
+  "name": "Scenic Development",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspace",
+  "settings": { },
+  "extensions": ["rebornix.Ruby"],
+  "postCreateCommand": "bin/setup",
+  "remoteUser": "vscode",
+  "features": { "github-cli": "latest" }
+}
