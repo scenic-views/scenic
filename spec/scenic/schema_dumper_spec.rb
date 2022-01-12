@@ -95,7 +95,7 @@ describe Scenic::SchemaDumper, :db do
     output = stream.string
 
     expect(output).to include 'create_view "searches"'
-    expect(output).not_to include "ar_internal_metadata"
+    expect(output).not_to include "pg_stat_statements_info"
     expect(output).not_to include "schema_migrations"
   end
 

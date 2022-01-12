@@ -34,6 +34,7 @@ module Scenic
             WHERE
               c.relkind IN ('m', 'v')
               AND c.relname NOT IN (SELECT extname FROM pg_extension)
+              AND c.relname != 'pg_stat_statements_info'
               AND n.nspname = ANY (current_schemas(false))
             ORDER BY c.oid
           SQL
