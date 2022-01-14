@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ruby: ["2.7", "3.0"]
+        ruby: ["2.7", "3.0", "3.1"]
         rails: ["6.1", "7.0", "master"]
         continue-on-error: [false]
 
@@ -43,7 +43,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Install Ruby ${{ matrix.ruby }}
-        uses: ruby/setup-ruby@v1.61.1
+        uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
 
