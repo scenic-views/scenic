@@ -5,6 +5,22 @@ changelog, see the [commits] for each version via the version links.
 
 [commits]: https://github.com/scenic-views/scenic/commits/master
 
+## [1.6.0] - February 13, 2021
+
+### Fixed
+
+* Exclude pg_stat_statements_info (#349) 76bface
+
+  *Caleb Hearth*
+
+* Fix serialization of views with backslashes c625d1b
+
+  *Ben Sheldon*
+
+* Handle ActiveRecord table name prefix and suffix b1544dc
+
+  *Derek Prior*
+
 ## [1.5.5] - December 15, 2021
 
 ### Fixed
