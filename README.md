@@ -76,7 +76,7 @@ Here's where Scenic really shines. Run that same view generator once more:
 ```sh
 $ rails generate scenic:view search_results
       create  db/views/search_results_v02.sql
-      create  db/migrate/[TIMESTAMP]_update_search_results_to_version_2.rb
+      create  db/migrate/[TIMESTAMP]_update_search_results_to_version2.rb
 ```
 
 Scenic detected that we already had an existing `search_results` view at version
@@ -102,7 +102,7 @@ To start replacing a view run the generator like for a regular change:
 ```sh
 $ rails generate scenic:view search_results
       create  db/views/search_results_v02.sql
-      create  db/migrate/[TIMESTAMP]_update_search_results_to_version_2.rb
+      create  db/migrate/[TIMESTAMP]_update_search_results_to_version2.rb
 ```
 
 Now, edit the migration. It should look something like:

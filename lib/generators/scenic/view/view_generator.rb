@@ -33,7 +33,7 @@ module Scenic
         else
           migration_template(
             "db/migrate/update_view.erb",
-            "db/migrate/update_#{plural_file_name}_to_version_#{version}.rb",
+            "db/migrate/update_#{plural_file_name}_to_version#{version}.rb",
           )
         end
       end

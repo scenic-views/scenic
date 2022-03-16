@@ -17,4 +17,4 @@ Examples:
     rails generate scenic:view searches
 
       create: db/views/searches_v02.sql
-      create: db/migrate/20140804191158_update_searches_to_version_2.rb
+      create: db/migrate/20140804191158_update_searches_to_version2.rb
