@@ -1,5 +1,6 @@
 require "rails/generators"
 require "rails/generators/rails/model/model_generator"
+require "scenic"
 require "generators/scenic/view/view_generator"
 require "generators/scenic/materializable"
 

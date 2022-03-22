@@ -1,5 +1,6 @@
 require "rails/generators"
 require "rails/generators/active_record"
+require "scenic"
 require "generators/scenic/materializable"
 
 module Scenic
