@@ -37,10 +37,19 @@ module Scenic
         source  = File.expand_path(find_in_source_paths(source.to_s))
         context = instance_eval("binding", __FILE__, __LINE__)
 
-        erb = if ERB.instance_method(:initialize).parameters.assoc(:key) # Ruby 2.6+
-          ERB.new(::File.binread(source), trim_mode: "-", eoutvar: "@output_buffer")
+        if ERB.instance_method(:initialize).parameters.assoc(:key) # Ruby 2.6+
+          erb = ERB.new(
+            ::File.binread(source),
+            trim_mode: "-",
+            eoutvar: "@output_buffer",
+          )
         else
-          ERB.new(::File.binread(source), nil, "-", "@output_buffer")
+          erb = ERB.new(
+            ::File.binread(source),
+            nil,
+            "-",
+            "@output_buffer",
+          )
         end
 
         erb.result(context)
