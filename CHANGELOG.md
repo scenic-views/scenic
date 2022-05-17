@@ -7,6 +7,8 @@ changelog, see the [commits] for each version via the version links.
 
 ## [1.6.0] - February 13, 2021
 
+[1.6.0]: https://github.com/scenic-views/scenic/compare/v1.5.5...v1.6.0
+
 ### Fixed
 
 * Exclude pg_stat_statements_info (#349) 76bface
