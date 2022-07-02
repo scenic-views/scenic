@@ -52,6 +52,46 @@ module Scenic
         end
       end
 
+      describe "#update_materialized_view" do
+        it "handles views with custom schemas" do
+          adapter = Postgres.new
+          connection = ActiveRecord::Base.connection
+          previous_search_path = connection.select_value("SHOW search_path")
+
+          begin
+            connection.execute <<-SQL
+              CREATE SCHEMA scenic;
+              SET search_path TO scenic, public;
+            SQL
+
+            adapter.create_materialized_view(
+              "scenic.greetings",
+              "SELECT text 'hi' AS greeting",
+            )
+            connection.add_index("scenic.greetings", :greeting,
+              name: "index_greetings_on_greeting", unique: true)
+
+            silence_stream(STDOUT) do
+              adapter.update_materialized_view(
+                "scenic.greetings",
+                "SELECT text 'hello' AS greeting",
+              )
+            end
+
+            view = adapter.views.first
+            expect(view.name).to eq("scenic.greetings")
+            expect(view.materialized).to eq true
+
+            index = connection.indexes("scenic.greetings").first
+            expect(index.columns).to eq(["greeting"])
+            expect(index.unique).to eq true
+          ensure
+            connection.drop_schema("scenic")
+            connection.execute("SET search_path TO #{previous_search_path}")
+          end
+        end
+      end
+
       describe "#replace_view" do
         it "successfully replaces a view" do
           adapter = Postgres.new
@@ -186,21 +226,28 @@ module Scenic
         context "with views in non public schemas" do
           it "returns also the non public views" do
             adapter = Postgres.new
+            connection = ActiveRecord::Base.connection
+            previous_search_path = connection.select_value("SHOW search_path")
 
-            ActiveRecord::Base.connection.execute <<-SQL
-              CREATE VIEW parents AS SELECT text 'Joe' AS name
-            SQL
+            begin
+              connection.execute <<-SQL
+                CREATE VIEW parents AS SELECT text 'Joe' AS name
+              SQL
 
-            ActiveRecord::Base.connection.execute <<-SQL
-              CREATE SCHEMA scenic;
-              CREATE VIEW scenic.parents AS SELECT text 'Maarten' AS name;
-              SET search_path TO scenic, public;
-            SQL
+              connection.execute <<-SQL
+                CREATE SCHEMA scenic;
+                CREATE VIEW scenic.parents AS SELECT text 'Maarten' AS name;
+                SET search_path TO scenic, public;
+              SQL
 
-            expect(adapter.views.map(&:name)).to eq [
-              "parents",
-              "scenic.parents",
-            ]
+              expect(adapter.views.map(&:name)).to eq [
+                "parents",
+                "scenic.parents",
+              ]
+            ensure
+              connection.drop_schema("scenic")
+              connection.execute("SET search_path TO #{previous_search_path}")
+            end
           end
         end
       end
