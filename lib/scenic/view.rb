@@ -26,7 +26,7 @@ module Scenic
     #
     # @param name [String] The name of the view.
     # @param definition [String] The SQL for the query that defines the view.
-    # @param materialized [String] `true` if the view is materialized.
+    # @param materialized [Boolean] `true` if the view is materialized.
     def initialize(name:, definition:, materialized:)
       @name = name
       @definition = definition
