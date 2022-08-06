@@ -7,7 +7,7 @@ module Scenic
     end
 
     def to_sql
-      File.read(full_path).tap do |content|
+      ERB.new(File.read(full_path)).result.tap do |content|
         if content.empty?
           raise "Define view query in #{path} before migrating."
         end
