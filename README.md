@@ -92,30 +92,18 @@ a new version of it.
 This is not desirable when you have complicated hierarchies of views, especially
 when some of those views may be materialized and take a long time to recreate.
 
-You can use `replace_view` to generate a CREATE OR REPLACE VIEW SQL statement.
-
-See Postgres documentation on how this works:
-http://www.postgresql.org/docs/current/static/sql-createview.html
-
-To start replacing a view run the generator like for a regular change:
+You can use `replace_view` to generate a CREATE OR REPLACE VIEW SQL statement instead by adding the `--replace_view` option to the generate command:
 
 ```sh
-$ rails generate scenic:view search_results
+$ rails generate scenic:view search_results --replace_view
       create  db/views/search_results_v02.sql
       create  db/migrate/[TIMESTAMP]_update_search_results_to_version_2.rb
 ```
 
-Now, edit the migration. It should look something like:
+See Postgres documentation on how this works:
+http://www.postgresql.org/docs/current/static/sql-createview.html
 
-```ruby
-class UpdateSearchResultsToVersion2 < ActiveRecord::Migration
-  def change
-    update_view :search_results, version: 2, revert_to_version: 1
-  end
-end
-```
-
-Update it to use replace view:
+The migration will look something like this:
 
 ```ruby
 class UpdateSearchResultsToVersion2 < ActiveRecord::Migration
@@ -125,7 +113,7 @@ class UpdateSearchResultsToVersion2 < ActiveRecord::Migration
 end
 ```
 
-Now you can run the migration like normal.
+You can run the migration and the view will be replaced instead.
 
 ## Can I use this view to back a model?
 
