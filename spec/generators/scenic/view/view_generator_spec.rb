@@ -37,6 +37,18 @@ describe Scenic::Generators::ViewGenerator, :generator do
     end
   end
 
+  it "uses 'replace_view' instead of 'update_view' if replace flag is set" do
+    with_view_definition("aired_episodes", 1, "hello") do
+      allow(Dir).to receive(:entries).and_return(["aired_episodes_v01.sql"])
+
+      run_generator ["aired_episode", "--replace_view"]
+      migration = migration_file(
+        "db/migrate/update_aired_episodes_to_version_2.rb",
+      )
+      expect(migration).to contain "replace_view"
+    end
+  end
+
   context "for views created in a schema other than 'public'" do
     it "creates a view definition" do
       view_definition = file("db/views/non_public_searches_v01.sql")
