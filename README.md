@@ -240,15 +240,20 @@ accommodate adapter gems.
 We are aware of the following existing adapter libraries for Scenic which may
 meet your needs:
 
-* [scenic_sqlite_adapter](https://github.com/pdebelak/scenic_sqlite_adapter)
-* [scenic-mysql_adapter](https://github.com/EmpaticoOrg/scenic-mysql_adapter)
-* [scenic-sqlserver-adapter](https://github.com/ClickMechanic/scenic_sqlserver_adapter)
-* [scenic-oracle_adapter](https://github.com/cdinger/scenic-oracle_adapter)
+* [`scenic_sqlite_adapter`](<https://github.com/pdebelak/scenic_sqlite_adapter>)
+* [`scenic-mysql_adapter`](<https://github.com/EmpaticoOrg/scenic-mysql_adapter>)
+* [`scenic-sqlserver-adapter`](<https://github.com/ClickMechanic/scenic_sqlserver_adapter>)
+* [`scenic-oracle_adapter`](<https://github.com/cdinger/scenic-oracle_adapter>)
 
 Please note that the maintainers of Scenic make no assertions about the
 quality or security of the above adapters.
 
 ## About
+
+Scenic is used by some popular open source Rails apps:
+[Mastodon](<https://github.com/mastodon/mastodon/>),
+[Code.org](<https://github.com/code-dot-org/code-dot-org>), and
+[Lobste.rs](<https://github.com/lobsters/lobsters/>).
 
 Scenic is maintained by [Derek Prior], [Caleb Hearth], and you, our
 contributors.
