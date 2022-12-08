@@ -41,7 +41,7 @@ describe Scenic::Generators::ViewGenerator, :generator do
     with_view_definition("aired_episodes", 1, "hello") do
       allow(Dir).to receive(:entries).and_return(["aired_episodes_v01.sql"])
 
-      run_generator ["aired_episode", "--replace_view"]
+      run_generator ["aired_episode", "--replace"]
       migration = migration_file(
         "db/migrate/update_aired_episodes_to_version_2.rb",
       )
