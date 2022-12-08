@@ -92,10 +92,11 @@ a new version of it.
 This is not desirable when you have complicated hierarchies of views, especially
 when some of those views may be materialized and take a long time to recreate.
 
-You can use `replace_view` to generate a CREATE OR REPLACE VIEW SQL statement instead by adding the `--replace_view` option to the generate command:
+You can use `replace_view` to generate a CREATE OR REPLACE VIEW SQL statement
+instead by adding the `--replace` option to the generate command:
 
 ```sh
-$ rails generate scenic:view search_results --replace_view
+$ rails generate scenic:view search_results --replace
       create  db/views/search_results_v02.sql
       create  db/migrate/[TIMESTAMP]_update_search_results_to_version_2.rb
 ```
