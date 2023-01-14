@@ -3,7 +3,7 @@ module Scenic
   class Definition
     def initialize(name, version)
       @name = name.to_s
-      @version = version.to_i
+      @version = version
     end
 
     def to_sql
@@ -23,7 +23,8 @@ module Scenic
     end
 
     def version
-      @version.to_s.rjust(2, "0")
+      @version = latest_version if @version == :latest
+      @version.to_i.to_s.rjust(2, "0")
     end
 
     private
@@ -32,6 +33,11 @@ module Scenic
 
     def filename
       "#{UnaffixedName.for(name).tr('.', '_')}_v#{version}.sql"
+    end
+
+    def latest_version
+      Dir.glob(Rails.root.join('db', 'views', "#{name}*.sql")).sort.last =~ /#{name}_v(\d*).sql/i
+      $1
     end
   end
 end

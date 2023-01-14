@@ -7,6 +7,9 @@ require "support/generator_spec_setup"
 require "support/view_definition_helpers"
 
 RSpec.configure do |config|
+  config.filter_run focus: true
+  config.run_all_when_everything_filtered = true
+
   config.order = "random"
   config.include ViewDefinitionHelpers
   config.include RailsConfigurationHelpers

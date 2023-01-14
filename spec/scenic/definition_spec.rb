@@ -65,6 +65,16 @@ module Scenic
 
         expect(definition.version).to eq "15"
       end
+
+      it "returns latest version" do
+        with_view_definition 'a_versioned_file', 1, "Select 1 from somethings" do
+          with_view_definition 'a_versioned_file', 5, "Select * from somethings" do
+            definition = Definition.new('a_versioned_file', :latest)
+
+            expect(definition.version).to eq "05"
+          end
+        end
+      end
     end
   end
 end
