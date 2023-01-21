@@ -249,6 +249,11 @@ meet your needs:
 Please note that the maintainers of Scenic make no assertions about the
 quality or security of the above adapters.
 
+**Related projects**
+
+- [`fx`](<https://github.com/teoljungberg/fx>) Versioned database functions and
+  triggers for Rails
+
 ## About
 
 Scenic is used by some popular open source Rails apps:
