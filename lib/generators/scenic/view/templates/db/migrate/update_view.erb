@@ -1,6 +1,6 @@
 class <%= migration_class_name %> < <%= activerecord_migration_class %>
   def change
-  <% method_name = replace_view? ? 'replace_view' : 'update_view' %>
+  <%- method_name = replace_view? ? 'replace_view' : 'update_view' -%>
   <%- if materialized? -%>
     <%= method_name %> <%= formatted_plural_name %>,
       version: <%= version %>,
