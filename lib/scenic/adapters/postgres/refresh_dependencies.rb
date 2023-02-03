@@ -2,25 +2,29 @@ module Scenic
   module Adapters
     class Postgres
       class RefreshDependencies
-        def self.call(name, adapter, connection)
-          new(name, adapter, connection).call
+        def self.call(name, adapter, connection, concurrently: false)
+          new(name, adapter, connection, concurrently: concurrently).call
         end
 
-        def initialize(name, adapter, connection)
+        def initialize(name, adapter, connection, concurrently:)
           @name = name
           @adapter = adapter
           @connection = connection
+          @concurrently = concurrently
         end
 
         def call
           dependencies.each do |dependency|
-            adapter.refresh_materialized_view(dependency)
+            adapter.refresh_materialized_view(
+              dependency,
+              concurrently: concurrently,
+            )
           end
         end
 
         private
 
-        attr_reader :name, :adapter, :connection
+        attr_reader :name, :adapter, :connection, :concurrently
 
         class DependencyParser
           def initialize(raw_dependencies, view_to_refresh)

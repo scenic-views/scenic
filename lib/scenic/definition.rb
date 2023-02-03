@@ -2,7 +2,7 @@ module Scenic
   # @api private
   class Definition
     def initialize(name, version, root_path: Rails.root)
-      @name = name
+      @name = name.to_s
       @version = version.to_i
       @root_path = root_path.is_a?(String) ? Pathname.new(root_path) : root_path
     end
@@ -29,8 +29,10 @@ module Scenic
 
     private
 
+    attr_reader :name
+
     def filename
-      "#{@name}_v#{version}.sql"
+      "#{UnaffixedName.for(name).tr('.', '_')}_v#{version}.sql"
     end
   end
 end

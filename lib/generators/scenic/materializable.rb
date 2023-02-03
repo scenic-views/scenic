@@ -15,12 +15,21 @@ module Scenic
           required: false,
           desc: "Adds WITH NO DATA when materialized view creates/updates",
           default: false
+        class_option :replace,
+          type: :boolean,
+          required: false,
+          desc: "Uses replace_view instead of update_view",
+          default: false
       end
 
       private
 
       def materialized?
         options[:materialized]
+      end
+
+      def replace_view?
+        options[:replace]
       end
 
       def no_data?

@@ -1,9 +1,79 @@
-# News
+# Changelog
 
 The noteworthy changes for each Scenic version are included here. For a complete
-changelog, see the [CHANGELOG] for each version via the version links.
+changelog, see the [commits] for each version via the version links.
 
-[CHANGELOG]: https://github.com/scenic-views/scenic/commits/master
+[commits]: https://github.com/scenic-views/scenic/commits/master
+
+## [1.7.0] - December 8, 2022
+
+[1.7.0]: https://github.com/scenic-views/scenic/compare/v1.6.0...v1.7.0
+
+### Added
+
+* Added the `--replace` CLI flag to generate a migration that uses the
+  `replace_view` schema statement - *Dan Hixon*
+
+### Fixed
+
+* Fixed deprecation notice from newer versions of ERB when using scenic
+  generators - *Ali Ismayilov*
+
+## [1.6.0] - February 13, 2022
+
+[1.6.0]: https://github.com/scenic-views/scenic/compare/v1.5.5...v1.6.0
+
+### Fixed
+
+* Exclude pg_stat_statements_info (#349) 76bface - *Caleb Hearth*
+* Fix serialization of views with backslashes c625d1b - *Ben Sheldon*
+* Handle ActiveRecord table name prefix and suffix b1544dc - *Derek Prior*
+
+## [1.5.5] - December 15, 2021
+
+### Fixed
+
+- Fixed an issue reverting migrations under Ruby 3
+- Fixed an issue in index reapplication where sometimes `say` was undefined
+
+[1.5.5]: https://github.com/scenic-views/scenic/compare/v1.5.4...v1.5.5
+
+## [1.5.4] - September 16, 2020
+
+[1.5.4]: https://github.com/scenic-views/scenic/compare/v1.5.3...v1.5.4
+
+### Fixed
+
+- Added missing changelog for v1.5.3.
+
+## [1.5.3] - September 15, 2020
+
+[1.5.3]: https://github.com/scenic-views/scenic/compare/v1.5.2...v1.5.3
+
+### Fixed
+
+- `scenic-oracle_enhanced_adapter` has been pulled from rubygems.
+  `scenic-oracle_adapter` is a current, maintained alternative.
+- Updated code snippets - since Rails 5.0, all models inherit from
+  ApplicationRecord (#302)
+- Update Caleb's last name
+
+### Added
+
+- Add Security Policy
+
+## [1.5.2] - February 6, 2020
+
+### Fixed
+
+- The schema statement `create_view` is now reversible when passed a `version`
+  argument.
+- Calling `refresh_materialized_view` with both `concurrently` and `cascade` set
+  to `true` now correctly cascades the concurrent refresh to dependent views.
+- File generation and lookup now operates correctly for schema-qualified names
+  like `warehouse.archived_posts`.
+
+[1.5.2]: https://github.com/scenic-views/scenic/compare/v1.5.1...v1.5.2
 
 ## [1.5.1] - February 10, 2019
 

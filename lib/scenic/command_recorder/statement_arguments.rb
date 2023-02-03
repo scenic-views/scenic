@@ -22,8 +22,12 @@ module Scenic
         StatementArguments.new([view, options_for_revert])
       end
 
+      def remove_version
+        StatementArguments.new([view, options_without_version])
+      end
+
       def to_a
-        @args.to_a
+        @args.to_a.dup.delete_if(&:empty?)
       end
 
       private
@@ -32,11 +36,25 @@ module Scenic
         @options ||= @args[1] || {}
       end
 
+      def keyword_hash(hash)
+        if Hash.respond_to? :ruby2_keywords_hash
+          Hash.ruby2_keywords_hash(hash)
+        else
+          hash
+        end
+      end
+
       def options_for_revert
-        options.clone.tap do |revert_options|
+        opts = options.clone.tap do |revert_options|
           revert_options[:version] = revert_to_version
           revert_options.delete(:revert_to_version)
         end
+
+        keyword_hash(opts)
+      end
+
+      def options_without_version
+        keyword_hash(options.except(:version))
       end
     end
   end

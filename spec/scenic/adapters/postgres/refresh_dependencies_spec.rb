@@ -33,19 +33,24 @@ module Scenic
           )
 
           expect(adapter).to receive(:refresh_materialized_view)
-            .with("public.first").ordered
+            .with("public.first", concurrently: true).ordered
           expect(adapter).to receive(:refresh_materialized_view)
-            .with("public.second").ordered
+            .with("public.second", concurrently: true).ordered
           expect(adapter).to receive(:refresh_materialized_view)
-            .with("public.third").ordered
+            .with("public.third", concurrently: true).ordered
           expect(adapter).to receive(:refresh_materialized_view)
-            .with("public.fourth_1").ordered
+            .with("public.fourth_1", concurrently: true).ordered
           expect(adapter).to receive(:refresh_materialized_view)
-            .with("public.x_fourth").ordered
+            .with("public.x_fourth", concurrently: true).ordered
         end
 
         it "refreshes in the right order when called without namespace" do
-          described_class.call(:fourth, adapter, ActiveRecord::Base.connection)
+          described_class.call(
+            :fourth,
+            adapter,
+            ActiveRecord::Base.connection,
+            concurrently: true,
+          )
         end
 
         it "refreshes in the right order when called with namespace" do
@@ -53,6 +58,7 @@ module Scenic
             "public.fourth",
             adapter,
             ActiveRecord::Base.connection,
+            concurrently: true,
           )
         end
       end

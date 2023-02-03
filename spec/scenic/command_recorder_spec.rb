@@ -8,10 +8,24 @@ describe Scenic::CommandRecorder do
       expect(recorder.commands).to eq [[:create_view, [:greetings], nil]]
     end
 
-    it "reverts to drop_view" do
+    it "reverts to drop_view when not passed a version" do
       recorder.revert { recorder.create_view :greetings }
 
       expect(recorder.commands).to eq [[:drop_view, [:greetings]]]
+    end
+
+    it "reverts to drop_view when passed a version" do
+      recorder.revert { recorder.create_view :greetings, version: 2 }
+
+      expect(recorder.commands).to eq [[:drop_view, [:greetings]]]
+    end
+
+    it "reverts materialized views appropriately" do
+      recorder.revert { recorder.create_view :greetings, materialized: true }
+
+      expect(recorder.commands).to eq [
+        [:drop_view, [:greetings, materialized: true]],
+      ]
     end
   end
 

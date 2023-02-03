@@ -26,7 +26,7 @@ module Scenic
     #
     # @param name [String] The name of the view.
     # @param definition [String] The SQL for the query that defines the view.
-    # @param materialized [String] `true` if the view is materialized.
+    # @param materialized [Boolean] `true` if the view is materialized.
     def initialize(name:, definition:, materialized:)
       @name = name
       @definition = definition
@@ -45,10 +45,14 @@ module Scenic
       materialized_option = materialized ? "materialized: true, " : ""
 
       <<-DEFINITION
-  create_view #{name.inspect}, #{materialized_option}sql_definition: <<-\SQL
-    #{definition.indent(2)}
+  create_view #{UnaffixedName.for(name).inspect}, #{materialized_option}sql_definition: <<-\SQL
+    #{escaped_definition.indent(2)}
   SQL
       DEFINITION
+    end
+
+    def escaped_definition
+      definition.gsub("\\", "\\\\\\")
     end
   end
 end

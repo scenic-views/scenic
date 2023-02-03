@@ -5,8 +5,8 @@ require "scenic/version"
 Gem::Specification.new do |spec|
   spec.name          = "scenic"
   spec.version       = Scenic::VERSION
-  spec.authors       = ["Derek Prior", "Caleb Thompson"]
-  spec.email         = ["derekprior@gmail.com", "caleb@calebthompson.io"]
+  spec.authors       = ["Derek Prior", "Caleb Hearth"]
+  spec.email         = ["derekprior@gmail.com", "caleb@calebhearth.com"]
   spec.summary       = "Support for database views in Rails migrations"
   spec.description   = <<-DESCRIPTION
     Adds methods to ActiveRecord::Migration to create and manage database views
@@ -19,7 +19,6 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^spec/})
   spec.require_paths = ["lib"]
 
-  spec.add_development_dependency "appraisal"
   spec.add_development_dependency "bundler", ">= 1.5"
   spec.add_development_dependency "database_cleaner"
   spec.add_development_dependency "rake"

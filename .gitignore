@@ -17,3 +17,4 @@ test/version_tmp
 tmp
 gemfiles/*.lock
 .DS_Store
+.ruby-version

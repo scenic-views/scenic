@@ -2,12 +2,17 @@
 
 set -e
 
+# CI-specific setup
+if [ -n "$GITHUB_ACTIONS" ]; then
+  bundle config path vendor/bundle
+  bundle config jobs 4
+  bundle config retry 3
+  git config --global user.name 'GitHub Actions'
+  git config --global user.email 'github-actions@example.com'
+fi
+
 gem install bundler --conservative
 bundle check || bundle install
-
-if [ -z "$CI" ]; then
-  bundle exec appraisal install
-fi
 
 bundle exec rake dummy:db:drop
 bundle exec rake dummy:db:create
