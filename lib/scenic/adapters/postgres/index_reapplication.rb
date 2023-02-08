@@ -56,7 +56,7 @@ module Scenic
           yield
           connection.execute("RELEASE SAVEPOINT #{name}")
           true
-        rescue
+        rescue StandardError
           connection.execute("ROLLBACK TO SAVEPOINT #{name}")
           false
         end

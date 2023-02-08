@@ -18,7 +18,7 @@ module Scenic
         connection.create_view :views, version: version
 
         expect(Scenic.database).to have_received(:create_view)
-          .with(:views, definition_stub.to_sql)
+          .with(:views, definition_stub.to_sql, if_not_exists: false)
       end
 
       it "creates a view from a text definition" do
@@ -27,7 +27,7 @@ module Scenic
         connection.create_view(:views, sql_definition: sql_definition)
 
         expect(Scenic.database).to have_received(:create_view)
-          .with(:views, sql_definition)
+          .with(:views, sql_definition, if_not_exists: false)
       end
 
       it "creates version 1 of the view if neither version nor sql_defintion are provided" do
@@ -40,7 +40,7 @@ module Scenic
         connection.create_view :views
 
         expect(Scenic.database).to have_received(:create_view)
-          .with(:views, definition_stub.to_sql)
+          .with(:views, definition_stub.to_sql, if_not_exists: false)
       end
 
       it "raises an error if both version and sql_defintion are provided" do
@@ -58,7 +58,7 @@ module Scenic
         connection.create_view(:views, version: 1, materialized: true)
 
         expect(Scenic.database).to have_received(:create_materialized_view)
-          .with(:views, definition.to_sql, no_data: false)
+          .with(:views, definition.to_sql, no_data: false, if_not_exists: false)
       end
     end
 
@@ -74,7 +74,20 @@ module Scenic
         )
 
         expect(Scenic.database).to have_received(:create_materialized_view)
-          .with(:views, definition.to_sql, no_data: true)
+          .with(:views, definition.to_sql, no_data: true, if_not_exists: false)
+      end
+    end
+
+    describe "create_view :materialized with :if_not_exists" do
+      it "sends the create_materialized_view message with if not exists" do
+        definition = instance_double("Scenic::Definition", to_sql: "definition")
+        allow(Definition).to receive(:new).and_return(definition)
+
+        connection.create_view(:views, version: 1, materialized: true,
+                                       if_not_exists: true)
+
+        expect(Scenic.database).to have_received(:create_materialized_view)
+          .with(:views, definition.to_sql, no_data: false, if_not_exists: true)
       end
     end
 
@@ -82,7 +95,15 @@ module Scenic
       it "removes a view from the database" do
         connection.drop_view :name
 
-        expect(Scenic.database).to have_received(:drop_view).with(:name)
+        expect(Scenic.database)
+          .to have_received(:drop_view).with(:name, if_exists: false)
+      end
+
+      it "removes a view from the database if it exists" do
+        connection.drop_view :name, if_exists: true
+
+        expect(Scenic.database).to have_received(:drop_view)
+          .with(:name, if_exists: true)
       end
     end
 
@@ -91,6 +112,13 @@ module Scenic
         connection.drop_view :name, materialized: true
 
         expect(Scenic.database).to have_received(:drop_materialized_view)
+      end
+
+      it "removes a materialized view from the database if it exists" do
+        connection.drop_view :name, materialized: true, if_exists: true
+
+        expect(Scenic.database).to have_received(:drop_materialized_view)
+          .with(:name, if_exists: true)
       end
     end
 

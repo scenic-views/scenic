@@ -11,6 +11,27 @@ module Scenic
 
           expect(adapter.views.map(&:name)).to include("greetings")
         end
+
+        it "successfully creates a view with :if_not_exists if view " \
+           "does not exist" do
+          adapter = Postgres.new
+
+          adapter.create_view("greetings", "SELECT text 'hi' AS greeting",
+            if_not_exists: true)
+
+          expect(adapter.views.map(&:name)).to include("greetings")
+        end
+
+        it "does not raise an error with :if_not_exists if view exists" do
+          adapter = Postgres.new
+
+          adapter.create_view("greetings", "SELECT text 'hi' AS greeting")
+          expect {
+            adapter.create_view("greetings", "SELECT text 'hi' AS greeting",
+              if_not_exists: true)
+          }
+            .not_to raise_error
+        end
       end
 
       describe "#create_materialized_view" do
@@ -77,6 +98,23 @@ module Scenic
 
           expect(adapter.views.map(&:name)).not_to include("greetings")
         end
+
+        it "successfully drops with :if_exists if view exists" do
+          adapter = Postgres.new
+
+          adapter.create_view("greetings", "SELECT text 'hi' AS greeting")
+          adapter.drop_view("greetings", if_exists: true)
+
+          expect(adapter.views.map(&:name)).not_to include("greetings")
+        end
+
+        it "does not raise error with :if_exists if view does not exist" do
+          adapter = Postgres.new
+
+          expect {
+            adapter.drop_view("greetings", if_exists: true)
+          }.not_to raise_error
+        end
       end
 
       describe "#drop_materialized_view" do
@@ -90,6 +128,27 @@ module Scenic
           adapter.drop_materialized_view("greetings")
 
           expect(adapter.views.map(&:name)).not_to include("greetings")
+        end
+
+        it "successfully drops with :if_exists if view exists" do
+          adapter = Postgres.new
+
+          adapter.create_materialized_view(
+            "greetings",
+            "SELECT text 'hi' AS greeting",
+          )
+          adapter.drop_materialized_view("greetings", if_exists: true)
+
+          expect(adapter.views.map(&:name)).not_to include("greetings")
+        end
+
+        it "does not raise error with :if_exists if view does not exist" do
+          adapter = Postgres.new
+
+          expect {
+            adapter.drop_materialized_view("greetings",
+              if_exists: true)
+          }.not_to raise_error
         end
 
         it "raises an exception if the version of PostgreSQL is too old" do

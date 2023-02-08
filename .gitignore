@@ -18,3 +18,4 @@ tmp
 gemfiles/*.lock
 .DS_Store
 .ruby-version
+.ruby-gemset

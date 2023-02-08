@@ -12,6 +12,8 @@ module Scenic
     # @param materialized [Boolean, Hash] Set to true to create a materialized
     #   view. Set to { no_data: true } to create materialized view without
     #   loading data. Defaults to false.
+    # @param if_not_exists [Boolean] Set to true to only create the view if it
+    #   does not already exist. Defaults to false.
     # @return The database response from executing the create statement.
     #
     # @example Create from `db/views/searches_v02.sql`
@@ -22,7 +24,8 @@ module Scenic
     #     SELECT * FROM users WHERE users.active = 't'
     #   SQL
     #
-    def create_view(name, version: nil, sql_definition: nil, materialized: false)
+    def create_view(name, version: nil, sql_definition: nil,
+      materialized: false, if_not_exists: false)
       if version.present? && sql_definition.present?
         raise(
           ArgumentError,
@@ -41,9 +44,11 @@ module Scenic
           name,
           sql_definition,
           no_data: no_data(materialized),
+          if_not_exists: if_not_exists,
         )
       else
-        Scenic.database.create_view(name, sql_definition)
+        Scenic.database.create_view(name, sql_definition,
+          if_not_exists: if_not_exists)
       end
     end
 
@@ -55,18 +60,23 @@ module Scenic
     #   `version` argument to {#create_view}.
     # @param materialized [Boolean] Set to true if dropping a meterialized view.
     #   defaults to false.
+    # @param if_exists [Boolean] Set to true to only drop the view if itexists.
+    #   Defaults to false.
     # @return The database response from executing the drop statement.
     #
     # @example Drop a view, rolling back to version 3 on rollback
     #   drop_view(:users_who_recently_logged_in, revert_to_version: 3)
     #
-    def drop_view(name, revert_to_version: nil, materialized: false)
+    # rubocop:disable Lint/UnusedMethodArgument
+    def drop_view(name, revert_to_version: nil, materialized: false,
+      if_exists: false)
       if materialized
-        Scenic.database.drop_materialized_view(name)
+        Scenic.database.drop_materialized_view(name, if_exists: if_exists)
       else
-        Scenic.database.drop_view(name)
+        Scenic.database.drop_view(name, if_exists: if_exists)
       end
     end
+    # rubocop:enable Lint/UnusedMethodArgument
 
     # Update a database view to a new version.
     #
