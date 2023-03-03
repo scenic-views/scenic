@@ -12,3 +12,6 @@ development: &default
 test:
   <<: *default
   database: dummy_test
+#  set custom paths for scenic views
+#  scenic_views_paths:
+#    - '/db/views/postges'

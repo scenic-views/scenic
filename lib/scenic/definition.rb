@@ -19,7 +19,18 @@ module Scenic
     end
 
     def path
-      File.join("db", "views", filename)
+      default_view_path = File.join("db", "views")
+      view_filename = filename
+      custom_paths = ActiveRecord::Base.connection_config[:scenic_views_paths]
+      view_paths = Array(custom_paths)
+      view_paths = [default_view_path] if view_paths.empty?
+
+      full_view_path = nil
+      view_paths.each do |path|
+        full_view_path = File.join(path, view_filename)
+        break if File.exist?(full_view_path)
+      end
+      full_view_path
     end
 
     def version
