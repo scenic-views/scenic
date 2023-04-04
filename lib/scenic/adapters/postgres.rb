@@ -155,15 +155,16 @@ module Scenic
       # @param no_data [Boolean] Default: false. Set to true to create
       #   materialized view without running the associated query. You will need
       #   to perform a non-concurrent refresh to populate with data.
-      # @param side_by_side [Boolean] Default: false. Set to true to create the new
-      #   version under a different name and atomically swap them, limiting downtime
-      #   at the cost of doubling disk usage
+      # @param side_by_side [Boolean] Default: false. Set to true to create the
+      #   new version under a different name and atomically swap them, limiting
+      #   downtime at the cost of doubling disk usage
       #
       # @raise [MaterializedViewsNotSupportedError] if the version of Postgres
       #   in use does not support materialized views.
       #
       # @return [void]
-      def update_materialized_view(name, sql_definition, no_data: false, side_by_side: false)
+      def update_materialized_view(name, sql_definition, no_data: false,
+                                   side_by_side: false)
         raise_unless_materialized_views_supported
 
         IndexReapplication.new(connection: connection).on(name) do
@@ -206,7 +207,8 @@ module Scenic
       # @return [void]
       def rename_materialized_view(name, new_name)
         raise_unless_materialized_views_supported
-        execute "ALTER MATERIALIZED VIEW #{quote_table_name(name)} RENAME TO #{quote_table_name(new_name)};"
+        execute "ALTER MATERIALIZED VIEW #{quote_table_name(name)}"\
+                "RENAME TO #{quote_table_name(new_name)};"
       end
 
       # Refreshes a materialized view from its SQL schema.

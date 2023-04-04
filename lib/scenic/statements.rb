@@ -111,7 +111,7 @@ module Scenic
           name,
           sql_definition,
           no_data: hash_value_or_boolean(materialized, :no_data),
-          side_by_side: hash_value_or_boolean(materialized, :side_by_side)
+          side_by_side: hash_value_or_boolean(materialized, :side_by_side),
         )
       else
         Scenic.database.update_view(name, sql_definition)

@@ -144,7 +144,7 @@ module Scenic
           .with(:name, definition.to_sql, no_data: true, side_by_side: false)
       end
 
-      it "updates the materialized view in the database with side-by-side mode" do
+      it "updates the materialized view with side-by-side mode" do
         definition = instance_double("Definition", to_sql: "definition")
         allow(Definition).to receive(:new)
           .with(:name, 3)
