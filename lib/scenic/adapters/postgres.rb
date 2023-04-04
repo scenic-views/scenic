@@ -163,8 +163,9 @@ module Scenic
       #   in use does not support materialized views.
       #
       # @return [void]
-      def update_materialized_view(name, sql_definition, no_data: false,
-                                   side_by_side: false)
+      def update_materialized_view(
+        name, sql_definition, no_data: false, side_by_side: false
+      )
         raise_unless_materialized_views_supported
 
         IndexReapplication.new(connection: connection).on(name) do
