@@ -40,7 +40,7 @@ module Scenic
         Scenic.database.create_materialized_view(
           name,
           sql_definition,
-          no_data: no_data(materialized),
+          no_data: hash_value_or_boolean(materialized, :no_data),
         )
       else
         Scenic.database.create_view(name, sql_definition)
@@ -82,7 +82,8 @@ module Scenic
     #   `rake db rollback`
     # @param materialized [Boolean, Hash] True if updating a materialized view.
     #   Set to { no_data: true } to update materialized view without loading
-    #   data. Defaults to false.
+    #   data. Set to { side_by_side: true} to update materialized view with
+    #   fewer locks but more disk usage. Defaults to false.
     # @return The database response from executing the create statement.
     #
     # @example
@@ -109,7 +110,8 @@ module Scenic
         Scenic.database.update_materialized_view(
           name,
           sql_definition,
-          no_data: no_data(materialized),
+          no_data: hash_value_or_boolean(materialized, :no_data),
+          side_by_side: hash_value_or_boolean(materialized, :side_by_side)
         )
       else
         Scenic.database.update_view(name, sql_definition)
@@ -152,9 +154,9 @@ module Scenic
       Scenic::Definition.new(name, version).to_sql
     end
 
-    def no_data(materialized)
-      if materialized.is_a?(Hash)
-        materialized.fetch(:no_data, false)
+    def hash_value_or_boolean(value, key)
+      if value.is_a? Hash
+        value.fetch(key, false)
       else
         false
       end
