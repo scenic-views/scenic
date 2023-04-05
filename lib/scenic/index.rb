@@ -59,7 +59,7 @@ module Scenic
         object_name: object_name,
         index_name: @index_name,
         schema_name: @schema_name,
-        definition: tweaked_definition
+        definition: tweaked_definition,
       )
     end
   end
