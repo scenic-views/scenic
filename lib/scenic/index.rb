@@ -53,7 +53,7 @@ module Scenic
       unless @definition.start_with? old_prefix
         raise "Unhandled index definition: '#{@definition}' (expected to start with '#{old_prefix}'"
       end
-      tweaked_definition = new_prefix + @definition.slice((old_prefix.size)..)
+      tweaked_definition = new_prefix + @definition.slice((old_prefix.size)..(@definition.size))
       self.class.new(
         object_name: object_name,
         index_name: @index_name,
