@@ -51,9 +51,10 @@ module Scenic
       old_prefix = "#{type} #{@index_name} ON #{@schema_name}.#{@object_name}"
       new_prefix = "#{type} #{@index_name} ON #{@schema_name}.#{object_name}"
       unless @definition.start_with? old_prefix
-        raise "Unhandled index definition: '#{@definition}' (expected to start with '#{old_prefix}'"
+        raise "Unhandled index definition: '#{@definition}'"
       end
-      tweaked_definition = new_prefix + @definition.slice((old_prefix.size)..(@definition.size))
+      suffix = @definition.slice((old_prefix.size)..(@definition.size))
+      tweaked_definition = new_prefix + suffix
       self.class.new(
         object_name: object_name,
         index_name: @index_name,
