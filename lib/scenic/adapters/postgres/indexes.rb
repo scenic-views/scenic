@@ -27,6 +27,7 @@ module Scenic
             SELECT
               t.relname as object_name,
               i.relname as index_name,
+              n.nspname as schema_name,
               pg_get_indexdef(d.indexrelid) AS definition
             FROM pg_class t
             INNER JOIN pg_index d ON t.oid = d.indrelid
@@ -45,6 +46,7 @@ module Scenic
             object_name: result["object_name"],
             index_name: result["index_name"],
             definition: result["definition"],
+            schema_name: result["schema_name"],
           )
         end
       end

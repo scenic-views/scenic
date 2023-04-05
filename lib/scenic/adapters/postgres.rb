@@ -168,16 +168,20 @@ module Scenic
       )
         raise_unless_materialized_views_supported
 
-        IndexReapplication.new(connection: connection).on(name) do
-          if side_by_side
-            session_id = Time.now.to_i
-            new_name = "#{name}_new_#{session_id}"
-            old_name = "#{name}_drop_#{session_id}"
+        if side_by_side
+          session_id = Time.now.to_i
+          new_name = "#{name}_new_#{session_id}"
+          old_name = "#{name}_drop_#{session_id}"
+          IndexReapplication.new(connection: connection).on_side_by_side(
+            name, new_name, session_id
+          ) do
             create_materialized_view(new_name, sql_definition, no_data: no_data)
-            rename_materialized_view(name, old_name)
-            rename_materialized_view(new_name, name)
-            drop_materialized_view(old_name)
-          else
+          end
+          rename_materialized_view(name, old_name)
+          rename_materialized_view(new_name, name)
+          drop_materialized_view(old_name)
+        else
+          IndexReapplication.new(connection: connection).on(name) do
             drop_materialized_view(name)
             create_materialized_view(name, sql_definition, no_data: no_data)
           end
@@ -208,7 +212,7 @@ module Scenic
       # @return [void]
       def rename_materialized_view(name, new_name)
         raise_unless_materialized_views_supported
-        execute "ALTER MATERIALIZED VIEW #{quote_table_name(name)}"\
+        execute "ALTER MATERIALIZED VIEW #{quote_table_name(name)} "\
                 "RENAME TO #{quote_table_name(new_name)};"
       end
 
