@@ -22,7 +22,7 @@ module Scenic
       default_view_path = File.join("db", "views")
       view_filename = filename
       # in version7 of ActiveRecord was removed ActiveRecord::Base.connection_config
-      custom_paths = if ActiveRecord::VERSION.MAJOR < 7
+      custom_paths = if ActiveRecord::VERSION::MAJOR < 7
                        ActiveRecord::Base.connection_config[:scenic_views_paths]
                      else
                        ActiveRecord::Base.connection_db_config.configuration_hash[:scenic_views_paths]
