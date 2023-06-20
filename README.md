@@ -87,15 +87,15 @@ schema in the new definition and run the `update_view` migration.
 ## What if I want to change a view without dropping it?
 
 The `update_view` statement used by default will drop your view then create a
-new version of it. This may not desirable when you have complicated hierarchies
-of dependent views.
+new version of it. This may not be desirable when you have complicated
+hierarchies of dependent views.
 
-Scenic offers a `replace_view` schema statement which will result in a `CREATE
-OR REPLACE VIEW` SQL statement which will replace any non-materialized view in
-place, retaining all dependencies.
+Scenic offers a `replace_view` schema statement, resulting in a `CREATE OR
+REPLACE VIEW` SQL query which will update the supplied view in place, retaining
+all dependencies. Materialized views cannot be replaced in this fashion.
 
 You can generate a migration that uses the `replace_view` schema statement by
-passing the `--replace` option to the `scenic:view` generator.
+passing the `--replace` option to the `scenic:view` generator:
 
 ```sh
 $ rails generate scenic:view search_results --replace
