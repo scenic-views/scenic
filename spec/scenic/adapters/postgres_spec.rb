@@ -204,6 +204,40 @@ module Scenic
           end
         end
       end
+
+      describe "#populated?" do
+        it "returns false if a materialized view is not populated" do
+          adapter = Postgres.new
+
+          ActiveRecord::Base.connection.execute <<-SQL
+            CREATE MATERIALIZED VIEW greetings AS
+            SELECT text 'hi' AS greeting
+            WITH NO DATA
+          SQL
+
+          expect(adapter.populated?("greetings")).to be false
+        end
+
+        it "returns true if a materialized view is populated" do
+          adapter = Postgres.new
+
+          ActiveRecord::Base.connection.execute <<-SQL
+            CREATE MATERIALIZED VIEW greetings AS
+            SELECT text 'hi' AS greeting
+          SQL
+
+          expect(adapter.populated?("greetings")).to be true
+        end
+
+        it "raises an exception if the version of PostgreSQL is too old" do
+          connection = double("Connection", supports_materialized_views?: false)
+          connectable = double("Connectable", connection: connection)
+          adapter = Postgres.new(connectable)
+          err = Scenic::Adapters::Postgres::MaterializedViewsNotSupportedError
+
+          expect { adapter.populated?("greetings") }.to raise_error err
+        end
+      end
     end
   end
 end
