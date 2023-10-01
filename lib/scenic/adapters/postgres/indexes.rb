@@ -23,6 +23,7 @@ module Scenic
         delegate :quote_table_name, to: :connection
 
         def indexes_on(name)
+          schema, table = extract_schema_and_table(name.to_s)
           connection.execute(<<-SQL)
             SELECT
               t.relname as object_name,
@@ -34,8 +35,8 @@ module Scenic
             LEFT JOIN pg_namespace n ON n.oid = i.relnamespace
             WHERE i.relkind = 'i'
               AND d.indisprimary = 'f'
-              AND t.relname = '#{name}'
-              AND n.nspname = ANY (current_schemas(false))
+              AND t.relname = #{connection.quote(table)}
+              AND n.nspname = #{schema ? connection.quote(schema) : 'ANY (current_schemas(false))'}
             ORDER BY i.relname
           SQL
         end
@@ -46,6 +47,15 @@ module Scenic
             index_name: result["index_name"],
             definition: result["definition"],
           )
+        end
+
+        def extract_schema_and_table(string)
+          schema, table = string.scan(/[^".]+|"[^"]*"/)
+          if table.nil?
+            table = schema
+            schema = nil
+          end
+          [schema, table]
         end
       end
     end
