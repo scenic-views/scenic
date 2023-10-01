@@ -20,6 +20,7 @@ module Scenic
         private
 
         attr_reader :connection
+
         delegate :quote_table_name, to: :connection
 
         def indexes_on(name)

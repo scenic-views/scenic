@@ -55,9 +55,15 @@ module Scenic
       #
       # @param name The name of the view to create
       # @param sql_definition The SQL schema for the view.
+      # @param if_not_exists [Boolean] Default: false. Set to true to create
+      #   view only if it does not exist.
       #
       # @return [void]
-      def create_view(name, sql_definition)
+      def create_view(name, sql_definition, if_not_exists: false)
+        if if_not_exists && views.any? { |view| view.name == name }
+          return
+        end
+
         execute "CREATE VIEW #{quote_table_name(name)} AS #{sql_definition};"
       end
 
@@ -112,10 +118,13 @@ module Scenic
       # This is typically called in a migration via {Statements#drop_view}.
       #
       # @param name The name of the view to drop
+      # @param if_exists [Boolean] Default: false. Set to true to drop
+      #   view only if it exists.
       #
       # @return [void]
-      def drop_view(name)
-        execute "DROP VIEW #{quote_table_name(name)};"
+      def drop_view(name, if_exists: false)
+        definition_if_exists = if_exists ? "IF EXISTS " : ""
+        execute "DROP VIEW #{definition_if_exists}#{quote_table_name(name)};"
       end
 
       # Creates a materialized view in the database
@@ -125,6 +134,8 @@ module Scenic
       # @param no_data [Boolean] Default: false. Set to true to create
       #   materialized view without running the associated query. You will need
       #   to perform a non-concurrent refresh to populate with data.
+      # @param if_not_exists [Boolean] Default: false. Set to true to create
+      #   materialized view only if it does not exist.
       #
       # This is typically called in a migration via {Statements#create_view}.
       #
@@ -132,11 +143,13 @@ module Scenic
       #   in use does not support materialized views.
       #
       # @return [void]
-      def create_materialized_view(name, sql_definition, no_data: false)
+      def create_materialized_view(name, sql_definition, no_data: false,
+        if_not_exists: false)
         raise_unless_materialized_views_supported
 
+        definition_if_not_exists = if_not_exists ? "IF NOT EXISTS " : ""
         execute <<-SQL
-  CREATE MATERIALIZED VIEW #{quote_table_name(name)} AS
+  CREATE MATERIALIZED VIEW #{definition_if_not_exists}#{quote_table_name(name)} AS
   #{sql_definition.rstrip.chomp(';')}
   #{'WITH NO DATA' if no_data};
         SQL
@@ -174,13 +187,17 @@ module Scenic
       # This is typically called in a migration via {Statements#update_view}.
       #
       # @param name The name of the materialized view to drop.
+      # @param if_exists [Boolean] Default: false. Set to true to drop
+      #   materialized view only if it exists.
       # @raise [MaterializedViewsNotSupportedError] if the version of Postgres
       #   in use does not support materialized views.
       #
       # @return [void]
-      def drop_materialized_view(name)
+      def drop_materialized_view(name, if_exists: false)
         raise_unless_materialized_views_supported
-        execute "DROP MATERIALIZED VIEW #{quote_table_name(name)};"
+        definition_if_exists = if_exists ? "IF EXISTS " : ""
+        execute "DROP MATERIALIZED VIEW #{definition_if_exists}" \
+          "#{quote_table_name(name)};"
       end
 
       # Refreshes a materialized view from its SQL schema.
@@ -248,6 +265,7 @@ module Scenic
       private
 
       attr_reader :connectable
+
       delegate :execute, :quote_table_name, to: :connection
 
       def connection
