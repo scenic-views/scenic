@@ -28,7 +28,8 @@ module Scenic
               c.relname as viewname,
               pg_get_viewdef(c.oid) AS definition,
               c.relkind AS kind,
-              n.nspname AS namespace
+              n.nspname AS namespace,
+              current_schema() AS current_schema
             FROM pg_class c
               LEFT JOIN pg_namespace n ON n.oid = c.relnamespace
             WHERE
@@ -41,7 +42,7 @@ module Scenic
         end
 
         def to_scenic_view(result)
-          namespace, viewname = result.values_at "namespace", "viewname"
+          namespace, viewname, current_schema = result.values_at "namespace", "viewname", "current_schema"
 
           namespaced_viewname = if namespace != current_schema
             "#{pg_identifier(namespace)}.#{pg_identifier(viewname)}"
@@ -54,10 +55,6 @@ module Scenic
             definition: result["definition"].strip,
             materialized: result["kind"] == "m"
           )
-        end
-
-        def current_schema
-          @current_schema ||= connection.execute("SELECT CURRENT_SCHEMA()").first["current_schema"]
         end
 
         def pg_identifier(name)
