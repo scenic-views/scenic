@@ -43,7 +43,7 @@ module Scenic
         def to_scenic_view(result)
           namespace, viewname = result.values_at "namespace", "viewname"
 
-          namespaced_viewname = if namespace != "public"
+          namespaced_viewname = if namespace != current_schema
             "#{pg_identifier(namespace)}.#{pg_identifier(viewname)}"
           else
             pg_identifier(viewname)
@@ -54,6 +54,10 @@ module Scenic
             definition: result["definition"].strip,
             materialized: result["kind"] == "m"
           )
+        end
+
+        def current_schema
+          @current_schema ||= connection.execute("SELECT CURRENT_SCHEMA()").first["current_schema"]
         end
 
         def pg_identifier(name)
