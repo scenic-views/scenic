@@ -17,7 +17,7 @@ module Scenic
           dependencies.each do |dependency|
             adapter.refresh_materialized_view(
               dependency,
-              concurrently: concurrently,
+              concurrently: concurrently
             )
           end
         end
@@ -103,8 +103,8 @@ module Scenic
           ORDER BY class_for_rewrite.relname;
         SQL
 
-        private_constant "DependencyParser"
-        private_constant "DEPENDENCY_SQL"
+        private_constant :DependencyParser
+        private_constant :DEPENDENCY_SQL
 
         def dependencies
           raw_dependency_info = connection.select_rows(DEPENDENCY_SQL)

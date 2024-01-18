@@ -9,7 +9,7 @@ module Scenic
             base_response = double("response from base connection")
             base_connection = double(
               "Connection",
-              supports_materialized_views?: base_response,
+              supports_materialized_views?: base_response
             )
 
             connection = Postgres::Connection.new(base_connection)

@@ -26,7 +26,7 @@ module Scenic
       if version.present? && sql_definition.present?
         raise(
           ArgumentError,
-          "sql_definition and version cannot both be set",
+          "sql_definition and version cannot both be set"
         )
       end
 
@@ -40,7 +40,7 @@ module Scenic
         Scenic.database.create_materialized_view(
           name,
           sql_definition,
-          no_data: no_data(materialized),
+          no_data: no_data(materialized)
         )
       else
         Scenic.database.create_view(name, sql_definition)
@@ -92,14 +92,14 @@ module Scenic
       if version.blank? && sql_definition.blank?
         raise(
           ArgumentError,
-          "sql_definition or version must be specified",
+          "sql_definition or version must be specified"
         )
       end
 
       if version.present? && sql_definition.present?
         raise(
           ArgumentError,
-          "sql_definition and version cannot both be set",
+          "sql_definition and version cannot both be set"
         )
       end
 
@@ -109,7 +109,7 @@ module Scenic
         Scenic.database.update_materialized_view(
           name,
           sql_definition,
-          no_data: no_data(materialized),
+          no_data: no_data(materialized)
         )
       else
         Scenic.database.update_view(name, sql_definition)

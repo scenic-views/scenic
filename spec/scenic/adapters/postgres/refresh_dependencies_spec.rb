@@ -9,27 +9,27 @@ module Scenic
         before do
           adapter.create_materialized_view(
             "first",
-            "SELECT text 'hi' AS greeting",
+            "SELECT text 'hi' AS greeting"
           )
           adapter.create_materialized_view(
             "second",
-            "SELECT * FROM first",
+            "SELECT * FROM first"
           )
           adapter.create_materialized_view(
             "third",
-            "SELECT * FROM first UNION SELECT * FROM second",
+            "SELECT * FROM first UNION SELECT * FROM second"
           )
           adapter.create_materialized_view(
             "fourth_1",
-            "SELECT * FROM third",
+            "SELECT * FROM third"
           )
           adapter.create_materialized_view(
             "x_fourth",
-            "SELECT * FROM fourth_1",
+            "SELECT * FROM fourth_1"
           )
           adapter.create_materialized_view(
             "fourth",
-            "SELECT * FROM fourth_1 UNION SELECT * FROM x_fourth",
+            "SELECT * FROM fourth_1 UNION SELECT * FROM x_fourth"
           )
 
           expect(adapter).to receive(:refresh_materialized_view)
@@ -49,7 +49,7 @@ module Scenic
             :fourth,
             adapter,
             ActiveRecord::Base.connection,
-            concurrently: true,
+            concurrently: true
           )
         end
 
@@ -58,7 +58,7 @@ module Scenic
             "public.fourth",
             adapter,
             ActiveRecord::Base.connection,
-            concurrently: true,
+            concurrently: true
           )
         end
       end
@@ -69,7 +69,7 @@ module Scenic
 
           adapter.create_materialized_view(
             "first",
-            "SELECT text 'hi' AS greeting",
+            "SELECT text 'hi' AS greeting"
           )
 
           expect {

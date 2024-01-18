@@ -44,7 +44,7 @@ module Scenic
           Scenic::Index.new(
             object_name: result["object_name"],
             index_name: result["index_name"],
-            definition: result["definition"],
+            definition: result["definition"]
           )
         end
       end

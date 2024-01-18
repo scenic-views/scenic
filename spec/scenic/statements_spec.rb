@@ -70,7 +70,7 @@ module Scenic
         connection.create_view(
           :views,
           version: 1,
-          materialized: { no_data: true },
+          materialized: {no_data: true}
         )
 
         expect(Scenic.database).to have_received(:create_materialized_view)
@@ -137,7 +137,7 @@ module Scenic
         connection.update_view(
           :name,
           version: 3,
-          materialized: { no_data: true },
+          materialized: {no_data: true}
         )
 
         expect(Scenic.database).to have_received(:update_materialized_view)
@@ -147,7 +147,7 @@ module Scenic
       it "raises an error if not supplied a version or sql_defintion" do
         expect { connection.update_view :views }.to raise_error(
           ArgumentError,
-          /sql_definition or version must be specified/,
+          /sql_definition or version must be specified/
         )
       end
 
@@ -156,7 +156,7 @@ module Scenic
           connection.update_view(
             :views,
             version: 1,
-            sql_definition: "a defintion",
+            sql_definition: "a defintion"
           )
         end.to raise_error ArgumentError, /cannot both be set/
       end
