@@ -137,8 +137,8 @@ module Scenic
 
         execute <<-SQL
   CREATE MATERIALIZED VIEW #{quote_table_name(name)} AS
-  #{sql_definition.rstrip.chomp(';')}
-  #{'WITH NO DATA' if no_data};
+  #{sql_definition.rstrip.chomp(";")}
+  #{"WITH NO DATA" if no_data};
         SQL
       end
 
@@ -271,7 +271,7 @@ module Scenic
           name,
           self,
           connection,
-          concurrently: concurrently,
+          concurrently: concurrently
         )
       end
     end

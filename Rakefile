@@ -26,4 +26,4 @@ RSpec::Core::RakeTask.new("spec:acceptance") do |task|
 end
 
 desc "Run the specs and acceptance tests"
-task default: %w(spec spec:acceptance)
+task default: %w[spec spec:acceptance]

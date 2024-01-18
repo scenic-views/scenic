@@ -19,7 +19,7 @@ module Scenic
 
           adapter.create_materialized_view(
             "greetings",
-            "SELECT text 'hi' AS greeting",
+            "SELECT text 'hi' AS greeting"
           )
 
           view = adapter.views.first
@@ -33,7 +33,7 @@ module Scenic
           adapter.create_materialized_view(
             "greetings",
             "SELECT text 'hi' AS greeting; \n",
-            no_data: true,
+            no_data: true
           )
 
           view = adapter.views.first
@@ -85,7 +85,7 @@ module Scenic
 
           adapter.create_materialized_view(
             "greetings",
-            "SELECT text 'hi' AS greeting",
+            "SELECT text 'hi' AS greeting"
           )
           adapter.drop_materialized_view("greetings")
 
@@ -125,7 +125,7 @@ module Scenic
           adapter.refresh_materialized_view(
             :tests,
             cascade: true,
-            concurrently: true,
+            concurrently: true
           )
         end
 
@@ -179,7 +179,7 @@ module Scenic
             "parents",
             "children",
             "people",
-            "people_with_names",
+            "people_with_names"
           ]
         end
 
@@ -199,7 +199,7 @@ module Scenic
 
             expect(adapter.views.map(&:name)).to eq [
               "parents",
-              "scenic.parents",
+              "scenic.parents"
             ]
           end
         end

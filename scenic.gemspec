@@ -3,20 +3,19 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require "scenic/version"
 
 Gem::Specification.new do |spec|
-  spec.name          = "scenic"
-  spec.version       = Scenic::VERSION
-  spec.authors       = ["Derek Prior", "Caleb Hearth"]
-  spec.email         = ["derekprior@gmail.com", "caleb@calebhearth.com"]
-  spec.summary       = "Support for database views in Rails migrations"
-  spec.description   = <<-DESCRIPTION
+  spec.name = "scenic"
+  spec.version = Scenic::VERSION
+  spec.authors = ["Derek Prior", "Caleb Hearth"]
+  spec.email = ["derekprior@gmail.com", "caleb@calebhearth.com"]
+  spec.summary = "Support for database views in Rails migrations"
+  spec.description = <<-DESCRIPTION
     Adds methods to ActiveRecord::Migration to create and manage database views
     in Rails
   DESCRIPTION
-  spec.homepage      = "https://github.com/scenic-views/scenic"
-  spec.license       = "MIT"
+  spec.homepage = "https://github.com/scenic-views/scenic"
+  spec.license = "MIT"
 
-  spec.files         = `git ls-files -z`.split("\x0")
-  spec.test_files    = spec.files.grep(%r{^spec/})
+  spec.files = `git ls-files -z`.split("\x0")
   spec.require_paths = ["lib"]
 
   spec.add_development_dependency "bundler", ">= 1.5"
@@ -28,6 +27,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "ammeter", ">= 1.1.3"
   spec.add_development_dependency "yard"
   spec.add_development_dependency "redcarpet"
+  spec.add_development_dependency "standard"
 
   spec.add_dependency "activerecord", ">= 4.0.0"
   spec.add_dependency "railties", ">= 4.0.0"

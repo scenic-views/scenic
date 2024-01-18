@@ -7,6 +7,23 @@ on:
     branches: "*"
 
 jobs:
+  standard:
+    name: Lint with Standard
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Run standardrb
+        uses: standardrb/standard-ruby-action@f533e61f461ccb766b2d9c235abf59be02aea793
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    permissions:
+      checks: write
+      contents: read
+
   build:
     name: Ruby ${{ matrix.ruby }}, Rails ${{ matrix.rails }}
 
