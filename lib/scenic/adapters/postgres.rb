@@ -255,6 +255,29 @@ module Scenic
         end
       end
 
+      # True if supplied relation name is populated. Useful for checking the
+      # state of materialized views which may error if created `WITH NO DATA`
+      # and used before they are refreshed. True for all other relation types.
+      #
+      # @param name The name of the relation
+      #
+      # @raise [MaterializedViewsNotSupportedError] if the version of Postgres
+      #   in use does not support materialized views.
+      #
+      # @return [boolean]
+      def populated?(name)
+        raise_unless_materialized_views_supported
+
+        sql = "SELECT relispopulated FROM pg_class WHERE relname = '#{name}'"
+        relations = execute(sql)
+
+        if relations.count.positive?
+          relations.first["relispopulated"].in?(["t", true])
+        else
+          false
+        end
+      end
+
       private
 
       attr_reader :connectable
