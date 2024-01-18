@@ -22,6 +22,8 @@ module Scenic
     # The methods are documented here for insight into specifics of how Scenic
     # integrates with Postgres and the responsibilities of {Adapters}.
     class Postgres
+      MAX_IDENTIFIER_LENGTH = 63
+
       # Creates an instance of the Scenic Postgres adapter.
       #
       # This is the default adapter for Scenic. Configuring it via
@@ -137,8 +139,8 @@ module Scenic
 
         execute <<-SQL
   CREATE MATERIALIZED VIEW #{quote_table_name(name)} AS
-  #{sql_definition.rstrip.chomp(';')}
-  #{'WITH NO DATA' if no_data};
+  #{sql_definition.rstrip.chomp(";")}
+  #{"WITH NO DATA" if no_data};
         SQL
       end
 
@@ -157,21 +159,19 @@ module Scenic
       #   to perform a non-concurrent refresh to populate with data.
       # @param side_by_side [Boolean] Default: false. Set to true to create the
       #   new version under a different name and atomically swap them, limiting
-      #   downtime at the cost of doubling disk usage
+      #   the time that a view is inaccessible at the cost of doubling disk usage
       #
       # @raise [MaterializedViewsNotSupportedError] if the version of Postgres
       #   in use does not support materialized views.
       #
       # @return [void]
-      def update_materialized_view(
-        name, sql_definition, no_data: false, side_by_side: false
-      )
+      def update_materialized_view(name, sql_definition, no_data: false, side_by_side: false)
         raise_unless_materialized_views_supported
 
         if side_by_side
           session_id = Time.now.to_i
-          new_name = "#{name}_new_#{session_id}"
-          old_name = "#{name}_drop_#{session_id}"
+          new_name = generate_name name, "new_#{session_id}"
+          drop_name = generate_name name, "drop_#{session_id}"
           IndexReapplication.new(connection: connection).on_side_by_side(
             name, new_name, session_id
           ) do
@@ -212,7 +212,7 @@ module Scenic
       # @return [void]
       def rename_materialized_view(name, new_name)
         raise_unless_materialized_views_supported
-        execute "ALTER MATERIALIZED VIEW #{quote_table_name(name)} "\
+        execute "ALTER MATERIALIZED VIEW #{quote_table_name(name)} " \
                 "RENAME TO #{quote_table_name(new_name)};"
       end
 
@@ -304,8 +304,18 @@ module Scenic
           name,
           self,
           connection,
-          concurrently: concurrently,
+          concurrently: concurrently
         )
+      end
+
+      def generate_name(base, suffix)
+        candidate = "#{base}_#{suffix}"
+        if candidate.size <= MAX_IDENTIFIER_LENGTH
+          candidate
+        else
+          digest_length = MAX_IDENTIFIER_LENGTH - suffix.size - 1
+          "#{Digest::SHA256.hexdigest(base)[0...digest_length]}_#{suffix}"
+        end
       end
     end
   end
