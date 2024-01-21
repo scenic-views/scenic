@@ -69,6 +69,22 @@ describe Scenic::SchemaDumper, :db do
 
       Search.connection.drop_view :"scenic.searches"
     end
+
+    it "sorts dependency order when views exist in a non-public schema" do
+      Search.connection.execute("CREATE SCHEMA IF NOT EXISTS scenic; SET search_path TO public, scenic")
+      Search.connection.execute("CREATE VIEW scenic.apples AS SELECT 1;")
+      Search.connection.execute("CREATE VIEW scenic.bananas AS SELECT 2;")
+      Search.connection.execute("CREATE OR REPLACE VIEW scenic.apples AS SELECT * FROM scenic.bananas;")
+      stream = StringIO.new
+
+      ActiveRecord::SchemaDumper.dump(Search.connection, stream)
+      views = stream.string.lines.grep(/create_view/).map do |view_line|
+        view_line.match('create_view "(?<name>.*)"')[:name]
+      end
+      expect(views).to eq(%w[scenic.bananas scenic.apples])
+
+      Search.connection.execute("DROP SCHEMA IF EXISTS scenic CASCADE; SET search_path TO public")
+    end
   end
 
   it "handles active record table name prefixes and suffixes" do
