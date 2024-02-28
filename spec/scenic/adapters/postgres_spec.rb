@@ -229,6 +229,18 @@ module Scenic
           expect(adapter.populated?("greetings")).to be true
         end
 
+        it "strips out the schema from table_name" do
+          adapter = Postgres.new
+
+          ActiveRecord::Base.connection.execute <<-SQL
+            CREATE MATERIALIZED VIEW greetings AS
+            SELECT text 'hi' AS greeting
+            WITH NO DATA
+          SQL
+
+          expect(adapter.populated?("public.greetings")).to be false
+        end
+
         it "raises an exception if the version of PostgreSQL is too old" do
           connection = double("Connection", supports_materialized_views?: false)
           connectable = double("Connectable", connection: connection)
