@@ -12,10 +12,24 @@ module Scenic
         version = 15
         definition_stub = instance_double("Definition", to_sql: "foo")
         allow(Definition).to receive(:new)
-          .with(:views, version)
+          .with(:views, version, root_path: Rails.root)
           .and_return(definition_stub)
 
         connection.create_view :views, version: version
+
+        expect(Scenic.database).to have_received(:create_view)
+          .with(:views, definition_stub.to_sql)
+      end
+
+      it "creates a view from a file and alternate root_path" do
+        version = 15
+        root_path = Pathname.new("component/engine/test/dummy")
+        definition_stub = instance_double("Definition", to_sql: "foo")
+        allow(Definition).to receive(:new)
+          .with(:views, version, root_path: root_path)
+          .and_return(definition_stub)
+
+        connection.create_view :views, version: version, root_path: root_path
 
         expect(Scenic.database).to have_received(:create_view)
           .with(:views, definition_stub.to_sql)
@@ -34,7 +48,7 @@ module Scenic
         version = 1
         definition_stub = instance_double("Definition", to_sql: "foo")
         allow(Definition).to receive(:new)
-          .with(:views, version)
+          .with(:views, version, root_path: Rails.root)
           .and_return(definition_stub)
 
         connection.create_view :views
@@ -98,10 +112,23 @@ module Scenic
       it "updates the view in the database" do
         definition = instance_double("Definition", to_sql: "definition")
         allow(Definition).to receive(:new)
-          .with(:name, 3)
+          .with(:name, 3, root_path: Rails.root)
           .and_return(definition)
 
         connection.update_view(:name, version: 3)
+
+        expect(Scenic.database).to have_received(:update_view)
+          .with(:name, definition.to_sql)
+      end
+
+      it "updates the view in the database with an alternate path" do
+        root_path = Pathname.new("component/engine/test/dummy")
+        definition = instance_double("Definition", to_sql: "definition")
+        allow(Definition).to receive(:new)
+          .with(:name, 3, root_path: root_path)
+          .and_return(definition)
+
+        connection.update_view(:name, version: 3, root_path: root_path)
 
         expect(Scenic.database).to have_received(:update_view)
           .with(:name, definition.to_sql)
@@ -119,7 +146,7 @@ module Scenic
       it "updates the materialized view in the database" do
         definition = instance_double("Definition", to_sql: "definition")
         allow(Definition).to receive(:new)
-          .with(:name, 3)
+          .with(:name, 3, root_path: Rails.root)
           .and_return(definition)
 
         connection.update_view(:name, version: 3, materialized: true)
@@ -131,7 +158,7 @@ module Scenic
       it "updates the materialized view in the database with NO DATA" do
         definition = instance_double("Definition", to_sql: "definition")
         allow(Definition).to receive(:new)
-          .with(:name, 3)
+          .with(:name, 3, root_path: Rails.root)
           .and_return(definition)
 
         connection.update_view(
@@ -166,10 +193,23 @@ module Scenic
       it "replaces the view in the database" do
         definition = instance_double("Definition", to_sql: "definition")
         allow(Definition).to receive(:new)
-          .with(:name, 3)
+          .with(:name, 3, root_path: Rails.root)
           .and_return(definition)
 
         connection.replace_view(:name, version: 3)
+
+        expect(Scenic.database).to have_received(:replace_view)
+          .with(:name, definition.to_sql)
+      end
+
+      it "replaces the view in the database with an alternate path" do
+        root_path = Pathname.new("component/engine/test/dummy")
+        definition = instance_double("Definition", to_sql: "definition")
+        allow(Definition).to receive(:new)
+          .with(:name, 3, root_path: root_path)
+          .and_return(definition)
+
+        connection.replace_view(:name, version: 3, root_path: root_path)
 
         expect(Scenic.database).to have_received(:replace_view)
           .with(:name, definition.to_sql)
