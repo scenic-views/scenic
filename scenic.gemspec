@@ -22,15 +22,15 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "database_cleaner"
   spec.add_development_dependency "rake"
   spec.add_development_dependency "rspec", ">= 3.3"
-  spec.add_development_dependency "pg", "~> 0.19"
-  spec.add_development_dependency "pry"
+  spec.add_development_dependency "pg", "~> 1.1"
   spec.add_development_dependency "ammeter", ">= 1.1.3"
   spec.add_development_dependency "yard"
   spec.add_development_dependency "redcarpet"
   spec.add_development_dependency "standard"
+  spec.add_development_dependency "sprockets", "< 4.0.0"
 
   spec.add_dependency "activerecord", ">= 4.0.0"
   spec.add_dependency "railties", ">= 4.0.0"
 
-  spec.required_ruby_version = ">= 2.3.0"
+  spec.required_ruby_version = ">= 3.0"
 end

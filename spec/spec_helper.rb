@@ -13,8 +13,6 @@ RSpec.configure do |config|
   DatabaseCleaner.strategy = :transaction
 
   config.around(:each, db: true) do |example|
-    ActiveRecord::SchemaMigration.create_table
-
     DatabaseCleaner.start
     example.run
     DatabaseCleaner.clean
