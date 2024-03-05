@@ -67,8 +67,14 @@ module Scenic
       views_hash = TSortableHash.new
 
       ::Scenic.database.execute(DEPENDENT_SQL).each do |relation|
-        source_v = relation["source_table"]
-        dependent = relation["dependent_view"]
+        source_v = [
+          relation["source_schema"],
+          relation["source_table"],
+        ].compact.join(".")
+        dependent = [
+          relation["dependent_schema"],
+          relation["dependent_view"],
+        ].compact.join(".")
         views_hash[dependent] ||= []
         views_hash[source_v] ||= []
         views_hash[dependent] << source_v
