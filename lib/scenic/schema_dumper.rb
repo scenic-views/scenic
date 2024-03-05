@@ -8,8 +8,8 @@ module Scenic
       include TSort
 
       alias_method :tsort_each_node, :each_key
-      def tsort_each_child(node, &block)
-        fetch(node).each(&block)
+      def tsort_each_child(node, &)
+        fetch(node).each(&)
       end
     end
 
@@ -56,7 +56,9 @@ module Scenic
         end
 
         tsorted_views(existing_views.map(&:name)).map do |view_name|
-          existing_views.find { |ev| ev.name == view_name }
+          existing_views.find do |ev|
+            ev.name == view_name || ev.name == view_name.split(".").last
+          end
         end.compact
       end
     end
@@ -69,22 +71,22 @@ module Scenic
       ::Scenic.database.execute(DEPENDENT_SQL).each do |relation|
         source_v = [
           relation["source_schema"],
-          relation["source_table"],
+          relation["source_table"]
         ].compact.join(".")
         dependent = [
           relation["dependent_schema"],
-          relation["dependent_view"],
+          relation["dependent_view"]
         ].compact.join(".")
         views_hash[dependent] ||= []
         views_hash[source_v] ||= []
         views_hash[dependent] << source_v
-        views_names.delete(source_v)
-        views_names.delete(dependent)
+        views_names.delete(relation["source_table"])
+        views_names.delete(relation["dependent_view"])
       end
 
       # after dependencies, there might be some views left
       # that don't have any dependencies
-      views_names.sort.each { |v| views_hash[v] = [] }
+      views_names.sort.each { |v| views_hash[v] ||= [] }
 
       views_hash.tsort
     end
