@@ -30,11 +30,7 @@ describe Scenic::SchemaDumper, :db do
   it "accurately dumps create view statements with a regular expression" do
     view_definition = "SELECT 'needle'::text AS haystack WHERE 'a2z' ~ '\\d+'"
     Search.connection.create_view :searches, sql_definition: view_definition
-    stream = StringIO.new
 
-    ActiveRecord::SchemaDumper.dump(Search.connection, stream)
-
-    output = stream.string
     expect(output).to include "~ '\\\\d+'::text"
 
     Search.connection.drop_view :searches
@@ -57,7 +53,6 @@ describe Scenic::SchemaDumper, :db do
       view_definition = "SELECT 'needle'::text AS haystack"
       Search.connection.execute "CREATE SCHEMA IF NOT EXISTS scenic; SET search_path TO scenic, public"
       Search.connection.create_view :"scenic.searches", sql_definition: view_definition
-      stream = StringIO.new
 
       expect(output).to include 'create_view "scenic.searches",'
     end
@@ -66,11 +61,8 @@ describe Scenic::SchemaDumper, :db do
       Search.connection.execute("CREATE VIEW scenic.apples AS SELECT 1;")
       Search.connection.execute("CREATE VIEW scenic.bananas AS SELECT 2;")
       Search.connection.execute("CREATE OR REPLACE VIEW scenic.apples AS SELECT * FROM scenic.bananas;")
-      stream = StringIO.new
 
-      ActiveRecord::SchemaDumper.dump(Search.connection, stream)
-
-      views = stream.string.lines.grep(/create_view/).map do |view_line|
+      views = output.lines.grep(/create_view/).map do |view_line|
         view_line.match('create_view "(?<name>.*)"')[:name]
       end
       expect(views).to eq(%w[scenic.bananas scenic.apples])
@@ -93,11 +85,6 @@ describe Scenic::SchemaDumper, :db do
     with_affixed_tables(prefix: "a_", suffix: "_z") do
       view_definition = "SELECT 'needle'::text AS haystack"
       Search.connection.create_view :a_searches_z, sql_definition: view_definition
-      stream = StringIO.new
-
-      ActiveRecord::SchemaDumper.dump(Search.connection, stream)
-
-      output = stream.string
 
       expect(output).to include 'create_view "searches"'
     end
