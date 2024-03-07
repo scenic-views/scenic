@@ -46,6 +46,8 @@ module Scenic
           end
         end
 
+        def with_connection(&) = connection_pool.with_connection(&)
+
         private
 
         def undecorated_connection

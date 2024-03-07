@@ -130,7 +130,7 @@ describe Scenic::SchemaDumper, :db do
 
       if output.include? "create_schema"
         # Rails 7.1+ seem to include the schema creation in the schema dump
-        Search.connection.execute 'DROP SCHEMA IF EXISTS scenic CASCADE'
+        Search.connection.execute "DROP SCHEMA IF EXISTS scenic CASCADE"
       else
         Search.connection.execute 'DROP VIEW IF EXISTS scenic."search in a haystack";'
       end
