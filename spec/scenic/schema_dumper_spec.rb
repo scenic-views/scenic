@@ -128,7 +128,13 @@ describe Scenic::SchemaDumper, :db do
       expect(output).to include 'create_view "scenic.\"search in a haystack\"",'
       expect(output).to include view_definition
 
-      Search.connection.execute 'DROP VIEW IF EXISTS scenic."search in a haystack";'
+      if output.include? "create_schema"
+        # Rails 7.1+ seem to include the schema creation in the schema dump
+        Search.connection.execute 'DROP SCHEMA IF EXISTS scenic CASCADE'
+      else
+        Search.connection.execute 'DROP VIEW IF EXISTS scenic."search in a haystack";'
+      end
+      Search.connection.execute "SET search_path TO scenic, public;"
 
       silence_stream($stdout) { eval(output) } # standard:disable Security/Eval
 
