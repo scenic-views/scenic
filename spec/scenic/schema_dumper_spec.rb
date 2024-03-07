@@ -128,7 +128,7 @@ describe Scenic::SchemaDumper, :db do
       expect(output).to include 'create_view "scenic.\"search in a haystack\"",'
       expect(output).to include view_definition
 
-      Search.connection.execute "DROP SCHEMA IF EXISTS scenic CASCADE;"
+      Search.connection.execute 'DROP VIEW IF EXISTS scenic."search in a haystack";'
 
       silence_stream($stdout) { eval(output) } # standard:disable Security/Eval
 
