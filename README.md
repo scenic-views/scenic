@@ -123,6 +123,11 @@ no different than a table.
 class SearchResult < ApplicationRecord
   belongs_to :searchable, polymorphic: true
 
+  # If you want to be able to call +Model.find+, you
+  # must declare the primary key. It can not be
+  # inferred from column information.
+  # self.primary_key = :id
+
   # this isn't strictly necessary, but it will prevent
   # rails from calling save, which would fail anyway.
   def readonly?
