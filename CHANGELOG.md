@@ -5,6 +5,15 @@ changelog, see the [commits] for each version via the version links.
 
 [commits]: https://github.com/scenic-views/scenic/commits/master
 
+## [1.8.0] - March 28, 2024
+
+[1.8.0]: https://github.com/scenic-views/scenic/compare/v1.7.0...v1.8.0
+
+### Added
+
+* Added `#populated?` to check the state of materialized views - *Daisuke
+  Fujimura*, *Dr Nic Williams*
+
 ## [1.7.0] - December 8, 2022
 
 [1.7.0]: https://github.com/scenic-views/scenic/compare/v1.6.0...v1.7.0
