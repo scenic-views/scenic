@@ -24,7 +24,7 @@ Scenic ships with support for PostgreSQL. The adapter is configurable (see
 
 If you're using Postgres, Add `gem "scenic"` to your Gemfile and run `bundle
 install`. If you're using something other than Postgres, check out the available
-[third party adapters](https://github.com/scenic-views/scenic#faqs).
+[third-party adapters](https://github.com/scenic-views/scenic#when-will-you-support-mysql-sqlite-or-other-databases).
 
 ## Great, how do I create a view?
 
@@ -198,7 +198,7 @@ end
 
 ## FAQs
 
-**Why do I get an error when querying a view-backed model with `find`, `last`, or `first`?**
+### Why do I get an error when querying a view-backed model with `find`, `last`, or `first`?
 
 ActiveRecord's `find` method expects to query based on your model's primary key,
 but views do not have primary keys. Additionally, the `first` and `last` methods
@@ -213,7 +213,7 @@ class People < ApplicationRecord
 end
 ```
 
-**Why is my view missing columns from the underlying table?**
+### Why is my view missing columns from the underlying table?
 
 Did you create the view with `SELECT [table_name].*`? Most (possibly all)
 relational databases freeze the view definition at the time of creation. New
@@ -226,7 +226,7 @@ add_column :posts, :title, :string
 update_view :posts_with_aggregate_data, version: 2, revert_to_version: 2
 ```
 
-**When will you support MySQL, SQLite, or other databases?**
+### When will you support MySQL, SQLite, or other databases?
 
 We have no plans to add first-party adapters for other relational databases at
 this time because we (the maintainers) do not currently have a use for them.
@@ -250,17 +250,33 @@ meet your needs:
 Please note that the maintainers of Scenic make no assertions about the
 quality or security of the above adapters.
 
-**Related projects**
-
-- [`fx`](<https://github.com/teoljungberg/fx>) Versioned database functions and
-  triggers for Rails
-
 ## About
+
+### Used By
 
 Scenic is used by some popular open source Rails apps:
 [Mastodon](<https://github.com/mastodon/mastodon/>),
 [Code.org](<https://github.com/code-dot-org/code-dot-org>), and
 [Lobste.rs](<https://github.com/lobsters/lobsters/>).
+
+### Related projects
+
+- [`fx`](<https://github.com/teoljungberg/fx>) Versioned database functions and
+  triggers for Rails
+
+
+### Media
+
+Here are a few posts we've seen discussing Scenic:
+
+- [Announcing Scenic - Versioned Database Views for Rails](<https://thoughtbot.com/blog/announcing-scenic--versioned-database-views-for-rails>) by Derek Prior for thoughtbot
+- [Effectively Using Materialized Views in Ruby on Rails](<https://pganalyze.com/blog/materialized-views-ruby-rails>) by Leigh Halliday for pganalyze
+- [Optimizing String Concatenation in Ruby on Rails](<https://dev.to/pimp_my_ruby/from-slow-to-lightning-fast-optimizing-string-concatenation-in-ruby-on-rails-28nk>)
+- [Materialized Views In Ruby On Rails With Scenic](<https://www.ideamotive.co/blog/materialized-views-ruby-rails-scenic>) by Dawid Karczewski for Ideamotive
+- [Using Scenic and SQL views to aggregate data](<https://dev.to/weareredlight/using-scenic-and-sql-views-to-aggregate-data-226k>) by André Perdigão for Redlight Software
+
+
+### Maintainers
 
 Scenic is maintained by [Derek Prior], [Caleb Hearth], and you, our
 contributors.
