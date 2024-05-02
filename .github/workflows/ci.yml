@@ -33,9 +33,6 @@ jobs:
         ruby: ["3.1", "3.2", "3.3"]
         rails: ["6.1", "7.0", "7.1", "main"]
         continue-on-error: [false]
-        exclude:
-          - ruby: "3.2"
-            rails: "6.1"
 
     runs-on: ubuntu-latest
 
