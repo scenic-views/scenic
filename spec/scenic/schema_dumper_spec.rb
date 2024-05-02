@@ -151,7 +151,13 @@ describe Scenic::SchemaDumper, :db do
       expect(output).to include 'create_view "scenic.\"search in a haystack\"",'
       expect(output).to include view_definition
 
-      Search.connection.execute 'DROP VIEW IF EXISTS scenic."search in a haystack" CASCADE;'
+      # Rails 7.1 will add a create_schema statement automatically, which breaks
+      # the load if the schema already exists.
+      if Rails.gem_version < Gem::Version.new("7.1")
+        Search.connection.execute 'DROP VIEW IF EXISTS scenic."search in a haystack" CASCADE;'
+      else
+        Search.connection.execute 'DROP SCHEMA IF EXISTS scenic CASCADE;'
+      end
 
       silence_stream($stdout) { eval(output) } # standard:disable Security/Eval
 
