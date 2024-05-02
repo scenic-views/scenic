@@ -156,7 +156,7 @@ describe Scenic::SchemaDumper, :db do
       if Rails.gem_version < Gem::Version.new("7.1")
         Search.connection.execute 'DROP VIEW IF EXISTS scenic."search in a haystack" CASCADE;'
       else
-        Search.connection.execute 'DROP SCHEMA IF EXISTS scenic CASCADE;'
+        Search.connection.execute "DROP SCHEMA IF EXISTS scenic CASCADE;"
       end
 
       silence_stream($stdout) { eval(output) } # standard:disable Security/Eval
