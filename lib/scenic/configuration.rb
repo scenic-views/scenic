@@ -4,10 +4,11 @@ module Scenic
     #
     # Defaults to an instance of {Adapters::Postgres}
     # @return Scenic adapter
-    attr_accessor :database
+    attr_accessor :database, :pluralize_view_names
 
     def initialize
       @database = Scenic::Adapters::Postgres.new
+      @pluralize_view_names = true
     end
   end
 
