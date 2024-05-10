@@ -17,6 +17,12 @@ module Scenic
         base_name
       end
 
+      def file_name
+        return plural_file_name if Scenic.configuration.pluralize_view_names
+
+        base_name.camelize
+      end
+
       def create_views_directory
         unless views_directory_path.exist?
           empty_directory(views_directory_path)
@@ -63,9 +69,9 @@ module Scenic
 
         def migration_class_name
           if creating_new_view?
-            "Create#{base_name}"
+            "Create#{file_name}"
           else
-            "Update#{base_name}ToVersion#{version}"
+            "Update#{file_name}ToVersion#{version}"
           end
         end
 
@@ -91,7 +97,7 @@ module Scenic
       end
 
       def version_regex
-        /\A#{base_name}_v(?<version>\d+)\.sql\z/
+        /\A#{file_name}_v(?<version>\d+)\.sql\z/
       end
 
       def creating_new_view?
@@ -99,11 +105,11 @@ module Scenic
       end
 
       def definition
-        Scenic::Definition.new(base_name, version)
+        Scenic::Definition.new(file_name, version)
       end
 
       def previous_definition
-        Scenic::Definition.new(base_name, previous_version)
+        Scenic::Definition.new(file_name, previous_version)
       end
 
       def destroying?
