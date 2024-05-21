@@ -214,7 +214,7 @@ module Scenic
           refresh_dependencies_for(name, concurrently: concurrently)
         end
 
-        if concurrently
+        if concurrently && populated?(name)
           raise_unless_concurrent_refresh_supported
           execute "REFRESH MATERIALIZED VIEW CONCURRENTLY #{quote_table_name(name)};"
         else
