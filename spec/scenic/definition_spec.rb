@@ -51,6 +51,13 @@ module Scenic
 
         expect(definition.full_path).to eq Rails.root.join(definition.path)
       end
+
+      it "joins the path with whatever root you pass in" do
+        new_root = Pathname.new("component/engine/test/dummy")
+        definition = Definition.new("searches", 15, root_path: new_root)
+
+        expect(definition.full_path).to eq new_root.join(definition.path)
+      end
     end
 
     describe "version" do
