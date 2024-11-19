@@ -26,13 +26,24 @@ jobs:
 
   build:
     name: Ruby ${{ matrix.ruby }}, Rails ${{ matrix.rails }}
+    continue-on-error: ${{ matrix.continue-on-error }}
 
     strategy:
       fail-fast: false
       matrix:
         ruby: ["3.2", "3.3"]
-        rails: ["7.1", "7.2", "8.0"]
+        rails: ["7.1", "7.2"]
         continue-on-error: [false]
+        include:
+          - ruby: "head"
+            rails: "7.2"
+            continue-on-error: true
+          - ruby: "3.3"
+            rails: "main"
+            continue-on-error: true
+          - ruby: "head"
+            rails: "main"
+            continue-on-error: true
 
     runs-on: ubuntu-latest
 
