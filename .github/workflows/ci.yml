@@ -13,7 +13,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Run standardrb
         uses: standardrb/standard-ruby-action@f533e61f461ccb766b2d9c235abf59be02aea793
@@ -30,8 +30,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ruby: ["3.1", "3.2"]
-        rails: ["6.1", "7.0"]
+        ruby: ["3.2", "3.3"]
+        rails: ["7.1", "7.2", "8.0"]
         continue-on-error: [false]
 
     runs-on: ubuntu-latest
@@ -57,7 +57,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Ruby ${{ matrix.ruby }}
         uses: ruby/setup-ruby@v1

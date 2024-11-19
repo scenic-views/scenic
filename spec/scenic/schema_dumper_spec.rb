@@ -12,7 +12,7 @@ describe Scenic::SchemaDumper, :db do
     Search.connection.create_view :searches, sql_definition: view_definition
     stream = StringIO.new
 
-    ActiveRecord::SchemaDumper.dump(Search.connection, stream)
+    dump_schema(stream)
 
     output = stream.string
 
@@ -31,7 +31,7 @@ describe Scenic::SchemaDumper, :db do
     Search.connection.create_view :searches, sql_definition: view_definition
     stream = StringIO.new
 
-    ActiveRecord::SchemaDumper.dump(Search.connection, stream)
+    dump_schema(stream)
 
     output = stream.string
     expect(output).to include "~ '\\\\d+'::text"
@@ -47,7 +47,7 @@ describe Scenic::SchemaDumper, :db do
     Search.connection.create_view :searches, materialized: true, sql_definition: view_definition
     stream = StringIO.new
 
-    ActiveRecord::SchemaDumper.dump(Search.connection, stream)
+    dump_schema(stream)
 
     output = stream.string
 
@@ -62,7 +62,7 @@ describe Scenic::SchemaDumper, :db do
       Search.connection.create_view :"scenic.searches", sql_definition: view_definition
       stream = StringIO.new
 
-      ActiveRecord::SchemaDumper.dump(Search.connection, stream)
+      dump_schema(stream)
 
       output = stream.string
       expect(output).to include 'create_view "scenic.searches",'
@@ -77,7 +77,7 @@ describe Scenic::SchemaDumper, :db do
       Search.connection.execute("CREATE OR REPLACE VIEW scenic.apples AS SELECT * FROM scenic.bananas;")
       stream = StringIO.new
 
-      ActiveRecord::SchemaDumper.dump(Search.connection, stream)
+      dump_schema(stream)
       views = stream.string.lines.grep(/create_view/).map do |view_line|
         view_line.match('create_view "(?<name>.*)"')[:name]
       end
@@ -93,7 +93,7 @@ describe Scenic::SchemaDumper, :db do
       Search.connection.create_view :a_searches_z, sql_definition: view_definition
       stream = StringIO.new
 
-      ActiveRecord::SchemaDumper.dump(Search.connection, stream)
+      dump_schema(stream)
 
       output = stream.string
 
@@ -106,7 +106,7 @@ describe Scenic::SchemaDumper, :db do
     Search.connection.create_view :searches, sql_definition: view_definition
     stream = StringIO.new
 
-    ActiveRecord::SchemaDumper.dump(Search.connection, stream)
+    dump_schema(stream)
 
     output = stream.string
 
@@ -121,7 +121,7 @@ describe Scenic::SchemaDumper, :db do
       Search.connection.create_view '"search in a haystack"', sql_definition: view_definition
       stream = StringIO.new
 
-      ActiveRecord::SchemaDumper.dump(Search.connection, stream)
+      dump_schema(stream)
 
       output = stream.string
       expect(output).to include 'create_view "\"search in a haystack\"",'
@@ -145,13 +145,18 @@ describe Scenic::SchemaDumper, :db do
         sql_definition: view_definition
       stream = StringIO.new
 
-      ActiveRecord::SchemaDumper.dump(Search.connection, stream)
+      dump_schema(stream)
 
       output = stream.string
       expect(output).to include 'create_view "scenic.\"search in a haystack\"",'
       expect(output).to include view_definition
 
       Search.connection.drop_view :'scenic."search in a haystack"'
+
+      case ActiveRecord.gem_version
+      when Gem::Requirement.new(">= 7.1")
+        Search.connection.drop_schema "scenic"
+      end
 
       silence_stream($stdout) { eval(output) } # standard:disable Security/Eval
 
