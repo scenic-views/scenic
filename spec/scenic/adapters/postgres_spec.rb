@@ -149,6 +149,15 @@ module Scenic
               adapter.refresh_materialized_view(:tests, concurrently: true)
             }.to raise_error e
           end
+
+          it "falls back to non-concurrent refresh if not populated" do
+            adapter = Postgres.new
+            adapter.create_materialized_view(:testing, "SELECT unnest('{1, 2}'::int[])", no_data: true)
+            e = Scenic::Adapters::Postgres::ConcurrentRefreshesNotSupportedError
+
+            expect { adapter.refresh_materialized_view(:tests, concurrently: true) }
+              .not_to raise_error(e)
+          end
         end
       end
 

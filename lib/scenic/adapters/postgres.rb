@@ -124,7 +124,7 @@ module Scenic
       # @param sql_definition The SQL schema that defines the materialized view.
       # @param no_data [Boolean] Default: false. Set to true to create
       #   materialized view without running the associated query. You will need
-      #   to perform a non-concurrent refresh to populate with data.
+      #   to perform a refresh to populate with data.
       #
       # This is typically called in a migration via {Statements#create_view}.
       #
@@ -154,7 +154,7 @@ module Scenic
       # @param sql_definition The SQL schema for the updated view.
       # @param no_data [Boolean] Default: false. Set to true to create
       #   materialized view without running the associated query. You will need
-      #   to perform a non-concurrent refresh to populate with data.
+      #   to perform a refresh to populate with data.
       #
       # @raise [MaterializedViewsNotSupportedError] if the version of Postgres
       #   in use does not support materialized views.
@@ -193,7 +193,10 @@ module Scenic
       #   refreshed without locking the view for select but requires that the
       #   table have at least one unique index that covers all rows. Attempts to
       #   refresh concurrently without a unique index will raise a descriptive
-      #   error.
+      #   error. This option is ignored if the view is not populated, as it
+      #   would cause an error to be raised by Postgres. Default: false.
+      # @param cascade [Boolean] Whether to refresh dependent materialized
+      #   views. Default: false.
       #
       # @raise [MaterializedViewsNotSupportedError] if the version of Postgres
       #   in use does not support materialized views.
@@ -205,6 +208,8 @@ module Scenic
       #   Scenic.database.refresh_materialized_view(:search_results)
       # @example Concurrent refresh
       #   Scenic.database.refresh_materialized_view(:posts, concurrently: true)
+      # @example Cascade refresh
+      #   Scenic.database.refresh_materialized_view(:posts, cascade: true)
       #
       # @return [void]
       def refresh_materialized_view(name, concurrently: false, cascade: false)
@@ -222,9 +227,7 @@ module Scenic
         end
       end
 
-      # True if supplied relation name is populated. Useful for checking the
-      # state of materialized views which may error if created `WITH NO DATA`
-      # and used before they are refreshed. True for all other relation types.
+      # True if supplied relation name is populated.
       #
       # @param name The name of the relation
       #
