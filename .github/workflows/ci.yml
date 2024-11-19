@@ -82,7 +82,7 @@ jobs:
         run: bundle lock
 
       - name: Cache dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: vendor/bundle
           key: bundle-${{ hashFiles('Gemfile.lock') }}
