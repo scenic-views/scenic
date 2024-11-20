@@ -44,10 +44,10 @@ module Scenic
     # @param object_name [String] The name of the object that has the index
     def with_other_object_name(object_name)
       type = if @definition.start_with? "CREATE UNIQUE"
-               "CREATE UNIQUE INDEX"
-             else
-               "CREATE INDEX"
-             end
+        "CREATE UNIQUE INDEX"
+      else
+        "CREATE INDEX"
+      end
       old_prefix = "#{type} #{@index_name} ON #{@schema_name}.#{@object_name}"
       new_prefix = "#{type} #{@index_name} ON #{@schema_name}.#{object_name}"
       unless @definition.start_with? old_prefix
@@ -59,7 +59,7 @@ module Scenic
         object_name: object_name,
         index_name: @index_name,
         schema_name: @schema_name,
-        definition: tweaked_definition,
+        definition: tweaked_definition
       )
     end
   end

@@ -109,7 +109,7 @@ module Scenic
 
           adapter.create_materialized_view(
             "greetings",
-            "SELECT text 'hi' AS greeting",
+            "SELECT text 'hi' AS greeting"
           )
           adapter.rename_materialized_view("greetings", "hellos")
 

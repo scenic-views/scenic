@@ -177,9 +177,9 @@ module Scenic
           ) do
             create_materialized_view(new_name, sql_definition, no_data: no_data)
           end
-          rename_materialized_view(name, old_name)
+          rename_materialized_view(name, drop_name)
           rename_materialized_view(new_name, name)
-          drop_materialized_view(old_name)
+          drop_materialized_view(drop_name)
         else
           IndexReapplication.new(connection: connection).on(name) do
             drop_materialized_view(name)

@@ -153,7 +153,7 @@ module Scenic
         connection.update_view(
           :name,
           version: 3,
-          materialized: { side_by_side: true },
+          materialized: {side_by_side: true}
         )
 
         expect(Scenic.database).to have_received(:update_materialized_view)

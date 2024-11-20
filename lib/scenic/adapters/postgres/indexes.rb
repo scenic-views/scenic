@@ -46,7 +46,7 @@ module Scenic
             object_name: result["object_name"],
             index_name: result["index_name"],
             definition: result["definition"],
-            schema_name: result["schema_name"],
+            schema_name: result["schema_name"]
           )
         end
       end
