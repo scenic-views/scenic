@@ -238,7 +238,7 @@ module Scenic
       def populated?(name)
         raise_unless_materialized_views_supported
 
-        schemaless_name = name.split(".").last
+        schemaless_name = name.to_s.split(".").last
 
         sql = "SELECT relispopulated FROM pg_class WHERE relname = '#{schemaless_name}'"
         relations = execute(sql)
