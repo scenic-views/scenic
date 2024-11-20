@@ -140,7 +140,9 @@ module Scenic
           end
 
           it "raises an exception if the version of PostgreSQL is too old" do
-            connection = double("Connection", postgresql_version: 90300)
+            connection = double "Connection",
+              postgresql_version: 90300,
+              execute: :will_get_right_on_it
             connectable = double("Connectable", connection: connection)
             adapter = Postgres.new(connectable)
             e = Scenic::Adapters::Postgres::ConcurrentRefreshesNotSupportedError
