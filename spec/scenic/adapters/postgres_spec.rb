@@ -140,7 +140,9 @@ module Scenic
           end
 
           it "raises an exception if the version of PostgreSQL is too old" do
-            connection = double("Connection", postgresql_version: 90300)
+            connection = double "Connection",
+              postgresql_version: 90300,
+              execute: :will_get_right_on_it
             connectable = double("Connectable", connection: connection)
             adapter = Postgres.new(connectable)
             e = Scenic::Adapters::Postgres::ConcurrentRefreshesNotSupportedError
@@ -148,6 +150,15 @@ module Scenic
             expect {
               adapter.refresh_materialized_view(:tests, concurrently: true)
             }.to raise_error e
+          end
+
+          it "falls back to non-concurrent refresh if not populated" do
+            adapter = Postgres.new
+            adapter.create_materialized_view(:testing, "SELECT unnest('{1, 2}'::int[])", no_data: true)
+            e = Scenic::Adapters::Postgres::ConcurrentRefreshesNotSupportedError
+
+            expect { adapter.refresh_materialized_view(:tests, concurrently: true) }
+              .not_to raise_error(e)
           end
         end
       end
