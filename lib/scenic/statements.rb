@@ -9,9 +9,11 @@ module Scenic
     # @param sql_definition [String] The SQL query for the view schema. An error
     #   will be raised if `sql_definition` and `version` are both set,
     #   as they are mutually exclusive.
-    # @param materialized [Boolean, Hash] Set to true to create a materialized
-    #   view. Set to { no_data: true } to create materialized view without
-    #   loading data. Defaults to false.
+    # @param materialized [Boolean, Hash] Set to a truthy value to create a
+    #   materialized view. Hash
+    # @option materialized [Boolean] :no_data (false) Set to true to create
+    #   materialized view without running the associated query. You will need
+    #   to perform a non-concurrent refresh to populate with data.
     # @return The database response from executing the create statement.
     #
     # @example Create from `db/views/searches_v02.sql`
@@ -40,7 +42,7 @@ module Scenic
         Scenic.database.create_materialized_view(
           name,
           sql_definition,
-          no_data: no_data(materialized)
+          no_data: hash_value_or_boolean(materialized, :no_data)
         )
       else
         Scenic.database.create_view(name, sql_definition)
@@ -82,7 +84,16 @@ module Scenic
     #   `rake db rollback`
     # @param materialized [Boolean, Hash] True if updating a materialized view.
     #   Set to { no_data: true } to update materialized view without loading
-    #   data. Defaults to false.
+    #   data. Set to { side_by_side: true} to update materialized view with
+    #   fewer locks but more disk usage. Defaults to false.
+    # @param materialized [Boolean, Hash] Set a truthy value if updating a
+    #   materialized view.
+    # @option materialized [Boolean] :no_data (false) Set to true to create
+    #   materialized view without running the associated query. You will need
+    #   to perform a non-concurrent refresh to populate with data.
+    # @option materialized [Boolean] :side_by_side (false) Set to true to create
+    #   the new version under a different name and atomically swap them,
+    #   limiting downtime at the cost of doubling disk usage.
     # @return The database response from executing the create statement.
     #
     # @example
@@ -109,7 +120,8 @@ module Scenic
         Scenic.database.update_materialized_view(
           name,
           sql_definition,
-          no_data: no_data(materialized)
+          no_data: hash_value_or_boolean(materialized, :no_data),
+          side_by_side: hash_value_or_boolean(materialized, :side_by_side)
         )
       else
         Scenic.database.update_view(name, sql_definition)
@@ -152,9 +164,9 @@ module Scenic
       Scenic::Definition.new(name, version).to_sql
     end
 
-    def no_data(materialized)
-      if materialized.is_a?(Hash)
-        materialized.fetch(:no_data, false)
+    def hash_value_or_boolean(value, key)
+      if value.is_a? Hash
+        value.fetch(key, false)
       else
         false
       end

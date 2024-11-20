@@ -35,6 +35,18 @@ module Scenic
           indexes.each(&method(:try_index_create))
         end
 
+        def on_side_by_side(name, new_table_name, temporary_id)
+          indexes = Indexes.new(connection: connection).on(name)
+          indexes.each_with_index do |index, i|
+            old_name = "predrop_index_#{temporary_id}_#{i}"
+            connection.rename_index(name, index.index_name, old_name)
+          end
+          yield
+          indexes.each do |index|
+            try_index_create(index.with_other_object_name(new_table_name))
+          end
+        end
+
         private
 
         attr_reader :connection, :speaker
