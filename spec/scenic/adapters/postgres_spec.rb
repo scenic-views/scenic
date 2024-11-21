@@ -194,7 +194,7 @@ module Scenic
             ActiveRecord::Base.connection.execute <<-SQL
               CREATE SCHEMA scenic;
               CREATE VIEW scenic.parents AS SELECT text 'Maarten' AS name;
-              SET search_path TO scenic, public;
+              SET search_path TO public, scenic;
             SQL
 
             expect(adapter.views.map(&:name)).to eq [
