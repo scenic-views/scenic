@@ -55,10 +55,13 @@ module Scenic
       #
       # @param name The name of the view to create
       # @param sql_definition The SQL schema for the view.
+      # @param security_barrier If we should enable security_barrier
+      # @param security_invoker If we should enable security_invoker
       #
       # @return [void]
-      def create_view(name, sql_definition)
-        execute "CREATE VIEW #{quote_table_name(name)} AS #{sql_definition};"
+      def create_view(name, sql_definition, security_barrier, security_invoker)
+        with_statement = build_with_statement(security_barrier, security_invoker)
+        execute "CREATE VIEW #{quote_table_name(name)} #{with_statement} AS #{sql_definition};"
       end
 
       # Updates a view in the database.
@@ -75,11 +78,13 @@ module Scenic
       #
       # @param name The name of the view to update
       # @param sql_definition The SQL schema for the updated view.
+      # @param security_barrier If we should enable security_barrier
+      # @param security_invoker If we should enable security_invoker
       #
       # @return [void]
-      def update_view(name, sql_definition)
+      def update_view(name, sql_definition, security_barrier, security_invoker)
         drop_view(name)
-        create_view(name, sql_definition)
+        create_view(name, sql_definition, security_barrier, security_invoker)
       end
 
       # Replaces a view in the database using `CREATE OR REPLACE VIEW`.
@@ -101,10 +106,13 @@ module Scenic
       #
       # @param name The name of the view to update
       # @param sql_definition The SQL schema for the updated view.
+      # @param security_barrier If we should enable security_barrier
+      # @param security_invoker If we should enable security_invoker
       #
       # @return [void]
-      def replace_view(name, sql_definition)
-        execute "CREATE OR REPLACE VIEW #{quote_table_name(name)} AS #{sql_definition};"
+      def replace_view(name, sql_definition, security_barrier, security_invoker)
+        with_statement = build_with_statement(security_barrier, security_invoker)
+        execute "CREATE OR REPLACE VIEW #{quote_table_name(name)} #{with_statement} AS #{sql_definition};"
       end
 
       # Drops the named view from the database
@@ -275,6 +283,18 @@ module Scenic
           connection,
           concurrently: concurrently
         )
+      end
+
+      def build_with_statement(security_barrier, security_invoker)
+        if security_invoker && security_barrier
+          return "WITH (security_barrier, security_invoker = true)"
+        elsif security_invoker
+          return "WITH (security_invoker = true)"
+        elsif security_barrier
+          return "WITH (security_barrier)"
+        end
+
+        return ""
       end
     end
   end
