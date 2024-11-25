@@ -14,7 +14,7 @@ module Scenic
   module Adapters
     # An adapter for managing Postgres views.
     #
-    # These methods are used interally by Scenic and are not intended for direct
+    # These methods are used internally by Scenic and are not intended for direct
     # use. Methods that alter database schema are intended to be called via
     # {Statements}, while {#refresh_materialized_view} is called via
     # {Scenic.database}.
@@ -188,7 +188,7 @@ module Scenic
       # This is typically called from application code via {Scenic.database}.
       #
       # @param name The name of the materialized view to refresh.
-      # @param concurrently [Boolean] Whether the refreshs hould happen
+      # @param concurrently [Boolean] Whether the refresh should happen
       #   concurrently or not. A concurrent refresh allows the view to be
       #   refreshed without locking the view for select but requires that the
       #   table have at least one unique index that covers all rows. Attempts to
