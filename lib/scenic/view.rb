@@ -22,30 +22,38 @@ module Scenic
     # @return [Boolean]
     attr_reader :materialized
 
+    # Options definition for security_invoker and security_barrier
+    # @return Hash[Symbol, Boolean]
+    attr_reader :options
+
     # Returns a new instance of View.
     #
     # @param name [String] The name of the view.
     # @param definition [String] The SQL for the query that defines the view.
     # @param materialized [Boolean] `true` if the view is materialized.
-    def initialize(name:, definition:, materialized:)
+    def initialize(name:, definition:, materialized:, options:)
       @name = name
       @definition = definition
       @materialized = materialized
+      @options = options
     end
 
     # @api private
     def ==(other)
       name == other.name &&
         definition == other.definition &&
-        materialized == other.materialized
+        materialized == other.materialized &&
+        options == other.options
     end
 
     # @api private
     def to_schema
       materialized_option = materialized ? "materialized: true, " : ""
+      security_barrier_option = options[:security_barrier] ? "security_barrier: true, " : ""
+      security_invoker_option = options[:security_invoker] ? "security_invoker: true, " : ""
 
       <<-DEFINITION
-  create_view #{UnaffixedName.for(name).inspect}, #{materialized_option}sql_definition: <<-\SQL
+  create_view #{UnaffixedName.for(name).inspect}, #{security_barrier_option}#{security_invoker_option}#{materialized_option}sql_definition: <<-\SQL
     #{escaped_definition.indent(2)}
   SQL
       DEFINITION
