@@ -28,6 +28,7 @@ module Scenic
               c.relname as viewname,
               pg_get_viewdef(c.oid) AS definition,
               c.relkind AS kind,
+              c.reloptions AS options,
               n.nspname AS namespace
             FROM pg_class c
               LEFT JOIN pg_namespace n ON n.oid = c.relnamespace
@@ -41,7 +42,17 @@ module Scenic
         end
 
         def to_scenic_view(result)
-          namespace, viewname = result.values_at "namespace", "viewname"
+          namespace, viewname, options = result.values_at "namespace", "viewname", "options"
+
+          if options.present?
+           security_invoker = options.include?("security_invoker=true")
+           security_barrier = options.include?("security_barrier=true")
+          end
+
+          options = {
+            security_invoker:,
+            security_barrier:
+          }
 
           namespaced_viewname = if namespace != "public"
             "#{pg_identifier(namespace)}.#{pg_identifier(viewname)}"
@@ -52,7 +63,8 @@ module Scenic
           Scenic::View.new(
             name: namespaced_viewname,
             definition: result["definition"].strip,
-            materialized: result["kind"] == "m"
+            materialized: result["kind"] == "m",
+            options:
           )
         end
 
