@@ -16,15 +16,18 @@ module Scenic
         #
         # @return [Array<Scenic::View>]
         def all
-          sort(views_from_postgres).map(&method(:to_scenic_view))
+          scenic_views = views_from_postgres.map(&method(:to_scenic_view))
+          sort(scenic_views)
         end
 
         private
 
-        def sort(existing_views)
-          tsorted_views(existing_views.map(&:name)).map do |view_name|
-            existing_views.find do |ev|
-              ev.name == view_name || ev.name == view_name.split(".").last
+        def sort(scenic_views)
+          scenic_view_names = scenic_views.map(&:name)
+
+          tsorted_views(scenic_view_names).map do |view_name|
+            scenic_views.find do |sv|
+              sv.name == view_name || sv.name == view_name.split(".").last
             end
           end.compact
         end
@@ -39,13 +42,16 @@ module Scenic
               relation["source_schema"],
               relation["source_table"]
             ].compact.join(".")
+
             dependent = [
               relation["dependent_schema"],
               relation["dependent_view"]
             ].compact.join(".")
+
             views_hash[dependent] ||= []
             views_hash[source_v] ||= []
             views_hash[dependent] << source_v
+
             views_names.delete(relation["source_table"])
             views_names.delete(relation["dependent_view"])
           end
@@ -53,7 +59,6 @@ module Scenic
           # after dependencies, there might be some views left
           # that don't have any dependencies
           views_names.sort.each { |v| views_hash[v] ||= [] }
-
           views_hash.tsort
         end
 
@@ -107,19 +112,21 @@ module Scenic
         end
 
         def to_scenic_view(result)
-          namespace, viewname = result.values_at "namespace", "viewname"
+          Scenic::View.new(
+            name: namespaced_view_name(result),
+            definition: result["definition"].strip,
+            materialized: result["kind"] == "m"
+          )
+        end
 
-          namespaced_viewname = if namespace != "public"
+        def namespaced_view_name(result)
+          namespace, viewname = result.values_at("namespace", "viewname")
+
+          if namespace != "public"
             "#{pg_identifier(namespace)}.#{pg_identifier(viewname)}"
           else
             pg_identifier(viewname)
           end
-
-          Scenic::View.new(
-            name: namespaced_viewname,
-            definition: result["definition"].strip,
-            materialized: result["kind"] == "m"
-          )
         end
 
         def pg_identifier(name)

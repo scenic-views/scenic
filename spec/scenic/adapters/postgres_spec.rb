@@ -176,8 +176,8 @@ module Scenic
           SQL
 
           expect(adapter.views.map(&:name)).to eq [
-            "parents",
             "children",
+            "parents",
             "people",
             "people_with_names"
           ]
@@ -193,13 +193,13 @@ module Scenic
 
             ActiveRecord::Base.connection.execute <<-SQL
               CREATE SCHEMA scenic;
-              CREATE VIEW scenic.parents AS SELECT text 'Maarten' AS name;
+              CREATE VIEW scenic.more_parents AS SELECT text 'Maarten' AS name;
               SET search_path TO scenic, public;
             SQL
 
             expect(adapter.views.map(&:name)).to eq [
               "parents",
-              "scenic.parents"
+              "scenic.more_parents"
             ]
           end
         end
