@@ -176,6 +176,36 @@ module Scenic
           )
         end.to raise_error ArgumentError, /cannot both be set/
       end
+
+      it "raises an error is no_data and side_by_side are both set" do
+        definition = instance_double("Definition", to_sql: "definition")
+        allow(Definition).to receive(:new)
+          .with(:name, 3)
+          .and_return(definition)
+
+        expect do
+          connection.update_view(
+            :name,
+            version: 3,
+            materialized: {no_data: true, side_by_side: true}
+          )
+        end.to raise_error ArgumentError, /cannot be combined/
+      end
+
+      it "raises an error if not in a transaction" do
+        definition = instance_double("Definition", to_sql: "definition")
+        allow(Definition).to receive(:new)
+          .with(:name, 3)
+          .and_return(definition)
+
+        expect do
+          connection(transactions_enabled: false).update_view(
+            :name,
+            version: 3,
+            materialized: {side_by_side: true}
+          )
+        end.to raise_error RuntimeError, /transaction is required/
+      end
     end
 
     describe "replace_view" do
@@ -208,8 +238,20 @@ module Scenic
       end
     end
 
-    def connection
-      Class.new { extend Statements }
+    def connection(transactions_enabled: true)
+      DummyConnection.new(transactions_enabled: transactions_enabled)
+    end
+  end
+
+  class DummyConnection
+    include Statements
+
+    def initialize(transactions_enabled:)
+      @transactions_enabled = transactions_enabled
+    end
+
+    def transaction_open?
+      @transactions_enabled
     end
   end
 end

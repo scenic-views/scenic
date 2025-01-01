@@ -77,6 +77,24 @@ describe Scenic::CommandRecorder do
       expect { recorder.revert { recorder.update_view(*args) } }
         .to raise_error(ActiveRecord::IrreversibleMigration)
     end
+
+    it "reverts materialized views with no_data option appropriately" do
+      args = [:users, {version: 2, revert_to_version: 1, materialized: {no_data: true}}]
+      revert_args = [:users, {version: 1, materialized: {no_data: true}}]
+
+      recorder.revert { recorder.update_view(*args) }
+
+      expect(recorder.commands).to eq [[:update_view, revert_args]]
+    end
+
+    it "reverts materialized views with side_by_side option appropriately" do
+      args = [:users, {version: 2, revert_to_version: 1, materialized: {side_by_side: true}}]
+      revert_args = [:users, {version: 1, materialized: {side_by_side: true}}]
+
+      recorder.revert { recorder.update_view(*args) }
+
+      expect(recorder.commands).to eq [[:update_view, revert_args]]
+    end
   end
 
   describe "#replace_view" do
