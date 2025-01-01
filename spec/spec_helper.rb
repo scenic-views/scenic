@@ -31,6 +31,10 @@ RSpec.configure do |config|
     DatabaseCleaner.clean
   end
 
+  config.before(:each, silence: true) do |example|
+    allow_any_instance_of(ActiveRecord::Migration).to receive(:say)
+  end
+
   if defined? ActiveSupport::Testing::Stream
     config.include ActiveSupport::Testing::Stream
   end
