@@ -258,6 +258,39 @@ module Scenic
           expect { adapter.populated?("greetings") }.to raise_error err
         end
       end
+
+      describe "#update_materialized_view" do
+        it "updates the definition of a materialized view in place" do
+          adapter = Postgres.new
+          create_materialized_view("hi", "SELECT 'hi' AS greeting")
+          new_definition = "SELECT 'hello' AS greeting"
+
+          adapter.update_materialized_view("hi", new_definition)
+          result = adapter.connection.execute("SELECT * FROM hi").first["greeting"]
+
+          expect(result).to eq "hello"
+        end
+
+        it "updates the definition of a materialized view side by side", :silence do
+          adapter = Postgres.new
+          create_materialized_view("hi", "SELECT 'hi' AS greeting")
+          new_definition = "SELECT 'hello' AS greeting"
+
+          adapter.update_materialized_view("hi", new_definition, side_by_side: true)
+          result = adapter.connection.execute("SELECT * FROM hi").first["greeting"]
+
+          expect(result).to eq "hello"
+        end
+
+        it "raises an exception if the version of PostgreSQL is too old" do
+          connection = double("Connection", supports_materialized_views?: false)
+          connectable = double("Connectable", connection: connection)
+          adapter = Postgres.new(connectable)
+
+          expect { adapter.create_materialized_view("greetings", "select 1") }
+            .to raise_error Postgres::MaterializedViewsNotSupportedError
+        end
+      end
     end
   end
 end

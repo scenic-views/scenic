@@ -21,6 +21,16 @@ module Scenic
           super("Concurrent materialized view refreshes require Postgres 9.4 or newer")
         end
       end
+
+      # Raised when attempting an operation that Scenic requires a transaction
+      # to perform.
+      #
+      # Rails will execute all migrations in a transaction unless the migration
+      # calls `disable_ddl_transaction!`. If you get this error, you can either
+      # removed that line from your migration or explicitly wrap the operation
+      # in question in a transaction.
+      class TransactionRequiredError < StandardError
+      end
     end
   end
 end

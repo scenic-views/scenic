@@ -9,9 +9,11 @@ module Scenic
     # @param sql_definition [String] The SQL query for the view schema. An error
     #   will be raised if `sql_definition` and `version` are both set,
     #   as they are mutually exclusive.
-    # @param materialized [Boolean, Hash] Set to true to create a materialized
-    #   view. Set to { no_data: true } to create materialized view without
-    #   loading data. Defaults to false.
+    # @param materialized [Boolean, Hash] Set to a truthy value to create a
+    #   materialized view. Hash
+    # @option materialized [Boolean] :no_data (false) Set to true to create
+    #   materialized view without running the associated query. You will need
+    #   to perform a non-concurrent refresh to populate with data.
     # @return The database response from executing the create statement.
     #
     # @example Create from `db/views/searches_v02.sql`
@@ -37,10 +39,12 @@ module Scenic
       sql_definition ||= definition(name, version)
 
       if materialized
+        options = materialized_options(materialized)
+
         Scenic.database.create_materialized_view(
           name,
           sql_definition,
-          no_data: no_data(materialized)
+          no_data: options[:no_data]
         )
       else
         Scenic.database.create_view(name, sql_definition)
@@ -80,14 +84,23 @@ module Scenic
     #   as they are mutually exclusive.
     # @param revert_to_version [Fixnum] The version number to rollback to on
     #   `rake db rollback`
-    # @param materialized [Boolean, Hash] True if updating a materialized view.
-    #   Set to { no_data: true } to update materialized view without loading
-    #   data. Defaults to false.
+    # @param materialized [Boolean, Hash] True or a Hash if updating a
+    #   materialized view.
+    # @option materialized [Boolean] :no_data (false) Set to true to update
+    #   a materialized view without loading data. You will need to perform a
+    #   refresh to populate with data. Cannot be combined with the :side_by_side
+    #   option.
+    # @option materialized [Boolean] :side_by_side (false) Set to true to update
+    #   update a materialized view using our side-by-side strategy, which will
+    #   limit the time the view is locked at the cost of increasing disk usage.
+    #   The view is initially updated with a temporary name and atomically
+    #   swapped once it is successfully created with data. Cannot be combined
+    #   with the :no_data option.
     # @return The database response from executing the create statement.
     #
     # @example
     #   update_view :engagement_reports, version: 3, revert_to_version: 2
-    #
+    #   update_view :comments, version: 2, revert_to_version: 1, materialized: { side_by_side: true }
     def update_view(name, version: nil, sql_definition: nil, revert_to_version: nil, materialized: false)
       if version.blank? && sql_definition.blank?
         raise(
@@ -106,10 +119,24 @@ module Scenic
       sql_definition ||= definition(name, version)
 
       if materialized
+        options = materialized_options(materialized)
+
+        if options[:no_data] && options[:side_by_side]
+          raise(
+            ArgumentError,
+            "no_data and side_by_side options cannot be combined"
+          )
+        end
+
+        if options[:side_by_side] && !transaction_open?
+          raise "a transaction is required to perform a side-by-side update"
+        end
+
         Scenic.database.update_materialized_view(
           name,
           sql_definition,
-          no_data: no_data(materialized)
+          no_data: options[:no_data],
+          side_by_side: options[:side_by_side]
         )
       else
         Scenic.database.update_view(name, sql_definition)
@@ -152,11 +179,17 @@ module Scenic
       Scenic::Definition.new(name, version).to_sql
     end
 
-    def no_data(materialized)
-      if materialized.is_a?(Hash)
-        materialized.fetch(:no_data, false)
+    def materialized_options(materialized)
+      if materialized.is_a? Hash
+        {
+          no_data: materialized.fetch(:no_data, false),
+          side_by_side: materialized.fetch(:side_by_side, false)
+        }
       else
-        false
+        {
+          no_data: false,
+          side_by_side: false
+        }
       end
     end
   end

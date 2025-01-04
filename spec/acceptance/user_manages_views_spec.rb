@@ -45,6 +45,17 @@ describe "User manages views" do
     verify_result "Child.take.name", "Elliot"
     verify_schema_contains 'add_index "children"'
 
+    successfully "rails generate scenic:view child --materialized --side-by-side"
+    verify_identical_view_definitions "children_v02", "children_v03"
+
+    write_definition "children_v03", "SELECT 'Juniper'::text AS name"
+    successfully "rake db:migrate"
+
+    successfully "rake db:reset"
+    verify_result "Child.take.name", "Juniper"
+    verify_schema_contains 'add_index "children"'
+
+    successfully "rake db:rollback"
     successfully "rake db:rollback"
     successfully "rake db:rollback"
     successfully "rails destroy scenic:model child"
