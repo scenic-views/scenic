@@ -184,7 +184,7 @@ materialized views. For example, say you have materialized view A, which selects
 data from materialized view B. To get the most up to date information in view A
 you would need to refresh view B first, then right after refresh view A. If you
 would like this cascading refresh of materialized views, set `cascade: true`
-when you refresh your materialized view.
+on the refresh method in view B.
 
 ## Can I update the definition of a materialized view without dropping it?
 
