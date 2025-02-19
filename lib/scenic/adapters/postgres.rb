@@ -4,6 +4,10 @@ require_relative "postgres/index_reapplication"
 require_relative "postgres/indexes"
 require_relative "postgres/views"
 require_relative "postgres/refresh_dependencies"
+require_relative "postgres/side_by_side"
+require_relative "postgres/index_creation"
+require_relative "postgres/index_migration"
+require_relative "postgres/temporary_name"
 
 module Scenic
   # Scenic database adapters.
@@ -155,17 +159,26 @@ module Scenic
       # @param no_data [Boolean] Default: false. Set to true to create
       #   materialized view without running the associated query. You will need
       #   to perform a refresh to populate with data.
+      # @param side_by_side [Boolean] Default: false. Set to true to create the
+      #   new version under a different name and atomically swap them, limiting
+      #   the time that a view is inaccessible at the cost of doubling disk usage
       #
       # @raise [MaterializedViewsNotSupportedError] if the version of Postgres
       #   in use does not support materialized views.
       #
       # @return [void]
-      def update_materialized_view(name, sql_definition, no_data: false)
+      def update_materialized_view(name, sql_definition, no_data: false, side_by_side: false)
         raise_unless_materialized_views_supported
 
-        IndexReapplication.new(connection: connection).on(name) do
-          drop_materialized_view(name)
-          create_materialized_view(name, sql_definition, no_data: no_data)
+        if side_by_side
+          SideBySide
+            .new(adapter: self, name: name, definition: sql_definition)
+            .update
+        else
+          IndexReapplication.new(connection: connection).on(name) do
+            drop_materialized_view(name)
+            create_materialized_view(name, sql_definition, no_data: no_data)
+          end
         end
       end
 
@@ -253,14 +266,18 @@ module Scenic
         end
       end
 
+      # A decorated ActiveRecord connection object with some Scenic-specific
+      # methods. Not intended for direct use outside of the Postgres adapter.
+      #
+      # @api private
+      def connection
+        Connection.new(connectable.connection)
+      end
+
       private
 
       attr_reader :connectable
       delegate :execute, :quote_table_name, to: :connection
-
-      def connection
-        Connection.new(connectable.connection)
-      end
 
       def raise_unless_materialized_views_supported
         unless connection.supports_materialized_views?

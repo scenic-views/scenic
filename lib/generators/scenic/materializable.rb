@@ -14,7 +14,14 @@ module Scenic
           type: :boolean,
           required: false,
           desc: "Adds WITH NO DATA when materialized view creates/updates",
-          default: false
+          default: false,
+          aliases: ["--no-data"]
+        class_option :side_by_side,
+          type: :boolean,
+          required: false,
+          desc: "Uses side-by-side strategy to update materialized view",
+          default: false,
+          aliases: ["--side-by-side"]
         class_option :replace,
           type: :boolean,
           required: false,
@@ -34,6 +41,25 @@ module Scenic
 
       def no_data?
         options[:no_data]
+      end
+
+      def side_by_side?
+        options[:side_by_side]
+      end
+
+      def materialized_view_update_options
+        set_options = {no_data: no_data?, side_by_side: side_by_side?}
+          .select { |_, v| v }
+
+        if set_options.empty?
+          "true"
+        else
+          string_options = set_options.reduce("") do |memo, (key, value)|
+            memo + "#{key}: #{value}, "
+          end
+
+          "{ #{string_options.chomp(", ")} }"
+        end
       end
     end
   end
