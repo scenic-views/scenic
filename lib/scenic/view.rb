@@ -1,3 +1,5 @@
+require "niceql"
+
 module Scenic
   # The in-memory representation of a view definition.
   #
@@ -46,9 +48,17 @@ module Scenic
 
       <<-DEFINITION
   create_view #{UnaffixedName.for(name).inspect}, #{materialized_option}sql_definition: <<-\SQL
-    #{escaped_definition.indent(2)}
+  #{formatted_definition.indent(2)}
   SQL
       DEFINITION
+    end
+
+    def formatted_definition
+      colorize = false
+
+      Niceql::Prettifier
+        .prettify_sql(escaped_definition, colorize)
+        .chomp(";")
     end
 
     def escaped_definition

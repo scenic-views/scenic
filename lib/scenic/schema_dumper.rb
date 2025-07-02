@@ -15,7 +15,14 @@ module Scenic
 
       dumpable_views_in_database.each do |view|
         stream.puts(view.to_schema)
-        indexes(view.name, stream)
+
+        index_stream = StringIO.new
+        indexes(view.name, index_stream)
+
+        if index_stream.string.present?
+          stream.puts
+          stream.puts(index_stream.string)
+        end
       end
     end
 
