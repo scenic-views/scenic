@@ -125,7 +125,7 @@ module Scenic
         connection.update_view(:name, version: 3, materialized: true)
 
         expect(Scenic.database).to have_received(:update_materialized_view)
-          .with(:name, definition.to_sql, no_data: false, side_by_side: false)
+          .with(:name, definition.to_sql, cascade: false, no_data: false, side_by_side: false)
       end
 
       it "updates the materialized view in the database with NO DATA" do
@@ -141,7 +141,7 @@ module Scenic
         )
 
         expect(Scenic.database).to have_received(:update_materialized_view)
-          .with(:name, definition.to_sql, no_data: true, side_by_side: false)
+          .with(:name, definition.to_sql, cascade: false, no_data: true, side_by_side: false)
       end
 
       it "updates the materialized view with side-by-side mode" do
@@ -157,7 +157,7 @@ module Scenic
         )
 
         expect(Scenic.database).to have_received(:update_materialized_view)
-          .with(:name, definition.to_sql, no_data: false, side_by_side: true)
+          .with(:name, definition.to_sql, cascade: false, no_data: false, side_by_side: true)
       end
 
       it "raises an error if not supplied a version or sql_defintion" do

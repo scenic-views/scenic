@@ -27,6 +27,11 @@ module Scenic
           required: false,
           desc: "Uses replace_view instead of update_view",
           default: false
+        class_option :cascade,
+          type: :boolean,
+          required: false,
+          desc: "Updates materialized view with cascade to handle dependent views",
+          default: false
       end
 
       private
@@ -47,8 +52,12 @@ module Scenic
         options[:side_by_side]
       end
 
+      def cascade?
+        options[:cascade]
+      end
+
       def materialized_view_update_options
-        set_options = {no_data: no_data?, side_by_side: side_by_side?}
+        set_options = {no_data: no_data?, side_by_side: side_by_side?, cascade: cascade?}
           .select { |_, v| v }
 
         if set_options.empty?

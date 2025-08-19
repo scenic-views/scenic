@@ -8,6 +8,8 @@ require_relative "postgres/side_by_side"
 require_relative "postgres/index_creation"
 require_relative "postgres/index_migration"
 require_relative "postgres/temporary_name"
+require_relative "postgres/dependent_views_finder"
+require_relative "postgres/update_with_cascade"
 
 module Scenic
   # Scenic database adapters.
@@ -166,18 +168,33 @@ module Scenic
       # @raise [MaterializedViewsNotSupportedError] if the version of Postgres
       #   in use does not support materialized views.
       #
+      # @param cascade [Boolean] Whether to automatically handle dependent views.
+      #   When true, any views that depend on this view will be temporarily
+      #   dropped and recreated after the update. Default: false.
+      #
       # @return [void]
-      def update_materialized_view(name, sql_definition, no_data: false, side_by_side: false)
+      def update_materialized_view(name, sql_definition, no_data: false, side_by_side: false, cascade: false)
         raise_unless_materialized_views_supported
 
-        if side_by_side
-          SideBySide
-            .new(adapter: self, name: name, definition: sql_definition)
-            .update
+        if cascade
+          UpdateWithCascade.new(
+            adapter: self,
+            name: name,
+            definition: sql_definition,
+            no_data: no_data,
+            side_by_side: side_by_side
+          ).update
         else
-          IndexReapplication.new(connection: connection).on(name) do
-            drop_materialized_view(name)
-            create_materialized_view(name, sql_definition, no_data: no_data)
+          # Existing implementation unchanged for backward compatibility
+          if side_by_side
+            SideBySide
+              .new(adapter: self, name: name, definition: sql_definition)
+              .update
+          else
+            IndexReapplication.new(connection: connection).on(name) do
+              drop_materialized_view(name)
+              create_materialized_view(name, sql_definition, no_data: no_data)
+            end
           end
         end
       end

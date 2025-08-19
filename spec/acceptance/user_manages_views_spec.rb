@@ -66,6 +66,63 @@ describe "User manages views" do
     successfully "rails destroy scenic:model search_results --materialized"
   end
 
+  it "handles materialized views with cascade updates" do
+    successfully "rails generate scenic:model cascade_report --materialized"
+    write_definition "cascade_reports_v01", "SELECT 'data'::text AS value, 1 AS count"
+
+    successfully "rake db:migrate"
+    verify_result "CascadeReport.take.value", "data"
+
+    successfully %{rails runner "
+      ActiveRecord::Migration.create_view(
+        :cascade_summary, 
+        materialized: true, 
+        sql_definition: <<-SQL
+          SELECT value || '_summary' AS summary, count * 2 AS doubled
+          FROM cascade_reports
+        SQL
+      )
+    "}
+
+    verify_result "ActiveRecord::Base.connection.execute('SELECT summary FROM cascade_summary').first['summary']", "data_summary"
+
+    successfully "rails generate scenic:view cascade_report --materialized --cascade"
+    verify_identical_view_definitions "cascade_reports_v01", "cascade_reports_v02"
+
+    write_definition "cascade_reports_v02", "SELECT 'updated'::text AS value, 3 AS count"
+    successfully "rake db:migrate"
+
+    successfully "rake db:reset"
+    verify_result "CascadeReport.take.value", "updated"
+    verify_result "ActiveRecord::Base.connection.execute('SELECT summary FROM cascade_summary').first['summary']", "updated_summary"
+
+    successfully %{rails runner "
+      ActiveRecord::Base.connection.execute('DROP MATERIALIZED VIEW IF EXISTS cascade_summary CASCADE')
+      ActiveRecord::Base.connection.execute('DROP MATERIALIZED VIEW IF EXISTS cascade_reports CASCADE')
+    "}
+    successfully "rails destroy scenic:model cascade_report"
+  end
+
+  it "handles cascade with no dependencies" do
+    successfully "rails generate scenic:model cascade_solo --materialized"
+    write_definition "cascade_solos_v01", "SELECT 'standalone'::text AS value"
+
+    successfully "rake db:migrate"
+    verify_result "CascadeSolo.take.value", "standalone"
+
+    successfully "rails generate scenic:view cascade_solo --materialized --cascade"
+    verify_identical_view_definitions "cascade_solos_v01", "cascade_solos_v02"
+
+    write_definition "cascade_solos_v02", "SELECT 'updated_standalone'::text AS value"
+    successfully "rake db:migrate"
+
+    successfully "rake db:reset"
+    verify_result "CascadeSolo.take.value", "updated_standalone"
+
+    successfully %{rails runner "ActiveRecord::Base.connection.execute('DROP MATERIALIZED VIEW IF EXISTS cascade_solos CASCADE')"}
+    successfully "rails destroy scenic:model cascade_solo"
+  end
+
   def successfully(command)
     `RAILS_ENV=test #{command}`
     expect($CHILD_STATUS.exitstatus).to eq(0), "'#{command}' was unsuccessful"

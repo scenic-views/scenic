@@ -21,6 +21,18 @@ module Scenic
           super("Concurrent materialized view refreshes require Postgres 9.4 or newer")
         end
       end
+
+      # Raised when a cascade update operation fails during materialized view updates.
+      #
+      # This error wraps the original database error with additional context about
+      # which view failed during the cascade update process. Cascade updates involve
+      # temporarily dropping dependent views, updating the base view, and recreating
+      # the dependent views, any of which can fail.
+      class CascadeUpdateFailedError < StandardError
+        def initialize(view_name, original_error)
+          super("Failed to update materialized view '#{view_name}' with cascade: #{original_error}")
+        end
+      end
     end
   end
 end

@@ -29,6 +29,12 @@ RSpec.configure do |config|
     DatabaseCleaner.start
     example.run
     DatabaseCleaner.clean
+    
+    # Clean up any cascade test views that might persist
+    connection = ActiveRecord::Base.connection
+    %w[cascade_reports cascade_summary cascade_solos cascade_bases cascade_dependent].each do |view|
+      connection.execute("DROP MATERIALIZED VIEW IF EXISTS #{view} CASCADE") rescue nil
+    end
   end
 
   config.before(:each, silence: true) do |example|

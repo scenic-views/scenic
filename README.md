@@ -224,6 +224,54 @@ class UpdateSearchResultsToVersion2 < ActiveRecord::Migration
 end
 ```
 
+## Can I update a materialized view that has dependent views?
+
+Yes! Scenic provides a `cascade` option for `update_view` that can handle materialized views with dependencies.
+
+Normally, when you try to update a materialized view that has dependent views, PostgreSQL will throw an error because the dependent views rely on the original view's structure. The cascade option automatically handles this by:
+
+1. Finding all dependent views recursively
+2. Temporarily dropping the dependent views in the correct order
+3. Updating the base materialized view
+4. Recreating all dependent views with their original definitions and indexes
+
+You can generate a migration that uses the `cascade` option by passing `--cascade` to the `scenic:view` generator:
+
+```sh
+$ rails generate scenic:view search_results --materialized --cascade
+      create  db/views/search_results_v02.sql
+      create  db/migrate/[TIMESTAMP]_update_search_results_to_version_2.rb
+```
+
+The migration will look something like this:
+
+```ruby
+class UpdateSearchResultsToVersion2 < ActiveRecord::Migration
+  def change
+    update_view :search_results,
+      version: 2,
+      revert_to_version: 1,
+      materialized: { cascade: true }
+  end
+end
+```
+
+You can also combine `cascade` with other materialized view options:
+
+```ruby
+update_view :search_results,
+  version: 2,
+  revert_to_version: 1,
+  materialized: { cascade: true, side_by_side: true }
+```
+
+**Important notes about cascade updates:**
+
+- The cascade operation is performed within a transaction and will rollback completely if any step fails
+- All dependent views are recreated with their existing definitions and indexes, but comments and permissions are not preserved
+- Only materialized views support the cascade option; regular views should use `replace_view` instead
+- The cascade option works by querying PostgreSQL system catalogs to build a complete dependency tree
+
 ## I don't need this view anymore. Make it go away.
 
 Scenic gives you `drop_view` too:

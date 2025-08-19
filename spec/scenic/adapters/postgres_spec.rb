@@ -290,6 +290,54 @@ module Scenic
           expect { adapter.create_materialized_view("greetings", "select 1") }
             .to raise_error Postgres::MaterializedViewsNotSupportedError
         end
+
+        context "cascade parameter" do
+          it "accepts cascade parameter with default false" do
+            adapter = Postgres.new
+            create_materialized_view("test", "SELECT 'hi' AS greeting")
+            
+            expect {
+              adapter.update_materialized_view("test", "SELECT 'hello' AS greeting", cascade: false)
+            }.not_to raise_error
+          end
+
+          it "delegates to UpdateWithCascade when cascade is true" do
+            adapter = Postgres.new
+            create_materialized_view("test", "SELECT 'hi' AS greeting")
+            update_cascade = instance_double("Postgres::UpdateWithCascade", update: nil)
+
+            expect(Postgres::UpdateWithCascade).to receive(:new).with(
+              adapter: adapter,
+              name: "test",
+              definition: "SELECT 'hello' AS greeting",
+              no_data: false,
+              side_by_side: false
+            ).and_return(update_cascade)
+
+            adapter.update_materialized_view("test", "SELECT 'hello' AS greeting", cascade: true)
+          end
+
+          it "passes all options to UpdateWithCascade" do
+            adapter = Postgres.new
+            create_materialized_view("test", "SELECT 'hi' AS greeting")
+            update_cascade = instance_double("Postgres::UpdateWithCascade", update: nil)
+
+            expect(Postgres::UpdateWithCascade).to receive(:new).with(
+              adapter: adapter,
+              name: "test", 
+              definition: "SELECT 'hello' AS greeting",
+              no_data: true,
+              side_by_side: false
+            ).and_return(update_cascade)
+
+            adapter.update_materialized_view(
+              "test", 
+              "SELECT 'hello' AS greeting", 
+              cascade: true, 
+              no_data: true
+            )
+          end
+        end
       end
     end
   end

@@ -136,7 +136,8 @@ module Scenic
           name,
           sql_definition,
           no_data: options[:no_data],
-          side_by_side: options[:side_by_side]
+          side_by_side: options[:side_by_side],
+          cascade: options[:cascade]
         )
       else
         Scenic.database.update_view(name, sql_definition)
@@ -183,12 +184,14 @@ module Scenic
       if materialized.is_a? Hash
         {
           no_data: materialized.fetch(:no_data, false),
-          side_by_side: materialized.fetch(:side_by_side, false)
+          side_by_side: materialized.fetch(:side_by_side, false),
+          cascade: materialized.fetch(:cascade, false)
         }
       else
         {
           no_data: false,
-          side_by_side: false
+          side_by_side: false,
+          cascade: false
         }
       end
     end
