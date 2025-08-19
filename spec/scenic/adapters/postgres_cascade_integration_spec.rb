@@ -120,6 +120,68 @@ module Scenic
               )
             }.not_to raise_error
           end
+
+          it "functionally works with side_by_side cascade and preserves dependent view data and indexes" do
+            # Create base materialized view
+            adapter.create_materialized_view("products", "SELECT 1 AS id, 'widget' AS name, 10.00 AS price")
+            
+            # Create dependent materialized view
+            adapter.create_materialized_view("product_summary", 
+              "SELECT name, count(*) AS total, sum(price) AS revenue FROM products GROUP BY name")
+            
+            # Add indexes to both views
+            ar_connection.execute("CREATE INDEX idx_products_name ON products (name)")
+            ar_connection.execute("CREATE INDEX idx_summary_name ON product_summary (name)")
+            
+            # Update base view with side_by_side + cascade
+            new_definition = "SELECT 2 AS id, 'gadget' AS name, 15.00 AS price UNION ALL SELECT 3 AS id, 'gadget' AS name, 20.00 AS price"
+            
+            expect {
+              adapter.update_materialized_view(
+                "products", 
+                new_definition, 
+                cascade: true, 
+                side_by_side: true, 
+                no_data: false
+              )
+            }.not_to raise_error
+            
+            # Verify base view data updated correctly
+            products_result = ar_connection.execute("SELECT * FROM products ORDER BY id")
+            expect(products_result.count).to eq 2
+            expect(products_result.first["name"]).to eq "gadget"
+            expect(products_result.first["price"].to_f).to eq 15.00
+            
+            # Verify dependent view was recreated with correct data
+            summary_result = ar_connection.execute("SELECT * FROM product_summary").first
+            expect(summary_result["name"]).to eq "gadget"
+            expect(summary_result["total"].to_i).to eq 2
+            expect(summary_result["revenue"].to_f).to eq 35.00
+            
+            # Verify indexes were preserved on both views
+            products_indexes = ar_connection.execute(<<-SQL)
+              SELECT indexname FROM pg_indexes 
+              WHERE tablename = 'products' AND indexname != 'products_pkey'
+            SQL
+            expect(products_indexes.map { |row| row["indexname"] }).to include("idx_products_name")
+            
+            summary_indexes = ar_connection.execute(<<-SQL)
+              SELECT indexname FROM pg_indexes 
+              WHERE tablename = 'product_summary' AND indexname != 'product_summary_pkey'
+            SQL
+            expect(summary_indexes.map { |row| row["indexname"] }).to include("idx_summary_name")
+            
+            # Verify both views are materialized
+            products_view = ar_connection.execute(<<-SQL)
+              SELECT relkind FROM pg_class WHERE relname = 'products'
+            SQL
+            expect(products_view.first["relkind"]).to eq "m"
+            
+            summary_view = ar_connection.execute(<<-SQL)
+              SELECT relkind FROM pg_class WHERE relname = 'product_summary'  
+            SQL
+            expect(summary_view.first["relkind"]).to eq "m"
+          end
         end
 
         context "performance and resource management" do
