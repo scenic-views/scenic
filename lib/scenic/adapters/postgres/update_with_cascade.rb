@@ -2,12 +2,13 @@ module Scenic
   module Adapters
     class Postgres
       class UpdateWithCascade
-        def initialize(adapter:, name:, definition:, no_data: false, side_by_side: false)
+        def initialize(adapter:, name:, definition:, no_data: false, side_by_side: false, speaker: ActiveRecord::Migration.new)
           @adapter = adapter
           @name = name
           @definition = definition
           @no_data = no_data
           @side_by_side = side_by_side
+          @speaker = speaker
         end
 
         def update
@@ -23,7 +24,7 @@ module Scenic
 
         private
 
-        attr_reader :adapter, :name, :definition, :no_data, :side_by_side
+        attr_reader :adapter, :name, :definition, :no_data, :side_by_side, :speaker
 
         def validate_options
           if side_by_side && no_data
@@ -76,9 +77,9 @@ module Scenic
 
         def update_base_view
           if side_by_side
-            SideBySide.new(adapter: adapter, name: name, definition: definition).update
+            SideBySide.new(adapter: adapter, name: name, definition: definition, speaker: speaker).update
           else
-            IndexReapplication.new(connection: adapter.connection).on(name) do
+            IndexReapplication.new(connection: adapter.connection, speaker: speaker).on(name) do
               adapter.drop_materialized_view(name)
               adapter.create_materialized_view(name, definition, no_data: no_data)
             end
@@ -89,7 +90,7 @@ module Scenic
           unqualified_name = view_name.split('.').last
           view_type = state[:materialized] ? "materialized view" : "view"
           
-          adapter.connection.say "   -> Recreating dependent #{view_type} '#{view_name}'"
+          speaker.say "   -> Recreating dependent #{view_type} '#{view_name}'"
           
           if state[:materialized]
             adapter.create_materialized_view(unqualified_name, state[:definition])
@@ -97,16 +98,16 @@ module Scenic
             adapter.create_view(unqualified_name, state[:definition])
           end
           
-          IndexCreation.new(connection: adapter.connection)
+          IndexCreation.new(connection: adapter.connection, speaker: speaker)
                       .try_create(state[:indexes])
           
         end
 
         def update_base_only
           if side_by_side
-            SideBySide.new(adapter: adapter, name: name, definition: definition).update
+            SideBySide.new(adapter: adapter, name: name, definition: definition, speaker: speaker).update
           else
-            IndexReapplication.new(connection: adapter.connection).on(name) do
+            IndexReapplication.new(connection: adapter.connection, speaker: speaker).on(name) do
               adapter.drop_materialized_view(name)
               adapter.create_materialized_view(name, definition, no_data: no_data)
             end
