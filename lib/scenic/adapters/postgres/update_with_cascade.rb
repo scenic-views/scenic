@@ -87,6 +87,9 @@ module Scenic
 
         def recreate_dependent_view(view_name, state)
           unqualified_name = view_name.split('.').last
+          view_type = state[:materialized] ? "materialized view" : "view"
+          
+          adapter.connection.say "   -> Recreating dependent #{view_type} '#{view_name}'"
           
           if state[:materialized]
             adapter.create_materialized_view(unqualified_name, state[:definition])
