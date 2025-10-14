@@ -115,14 +115,17 @@ module Scenic
         def to_scenic_view(result)
           namespace, viewname, options = result.values_at("namespace", "viewname", "options")
 
+          security_invoker = false
+          security_barrier = false
+
           if options.present?
-           security_invoker = options.include?("security_invoker=true")
-           security_barrier = options.include?("security_barrier=true")
+            security_invoker = options.include?("security_invoker=true")
+            security_barrier = options.include?("security_barrier=true")
           end
 
           options = {
-            security_invoker:,
-            security_barrier:
+            security_invoker: security_invoker,
+            security_barrier: security_barrier
           }
 
           namespaced_viewname = if namespace != "public"

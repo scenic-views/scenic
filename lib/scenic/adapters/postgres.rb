@@ -63,7 +63,7 @@ module Scenic
       # @param security_invoker If we should enable security_invoker
       #
       # @return [void]
-      def create_view(name, sql_definition, security_barrier, security_invoker)
+      def create_view(name, sql_definition, security_barrier: false, security_invoker: false)
         with_statement = build_with_statement(security_barrier, security_invoker)
         execute "CREATE VIEW #{quote_table_name(name)} #{with_statement} AS #{sql_definition};"
       end
@@ -86,9 +86,9 @@ module Scenic
       # @param security_invoker If we should enable security_invoker
       #
       # @return [void]
-      def update_view(name, sql_definition, security_barrier, security_invoker)
+      def update_view(name, sql_definition, security_barrier: false, security_invoker: false)
         drop_view(name)
-        create_view(name, sql_definition, security_barrier, security_invoker)
+        create_view(name, sql_definition, security_barrier: security_barrier, security_invoker: security_invoker)
       end
 
       # Replaces a view in the database using `CREATE OR REPLACE VIEW`.
@@ -114,7 +114,7 @@ module Scenic
       # @param security_invoker If we should enable security_invoker
       #
       # @return [void]
-      def replace_view(name, sql_definition, security_barrier, security_invoker)
+      def replace_view(name, sql_definition, security_barrier: false, security_invoker: false)
         with_statement = build_with_statement(security_barrier, security_invoker)
         execute "CREATE OR REPLACE VIEW #{quote_table_name(name)} #{with_statement} AS #{sql_definition};"
       end
@@ -317,7 +317,7 @@ module Scenic
           return "WITH (security_barrier)"
         end
 
-        return ""
+        ""
       end
     end
   end

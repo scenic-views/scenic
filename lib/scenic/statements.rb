@@ -52,7 +52,7 @@ module Scenic
           no_data: options[:no_data]
         )
       else
-        Scenic.database.create_view(name, sql_definition, security_barrier, security_invoker)
+        Scenic.database.create_view(name, sql_definition, security_barrier: security_barrier, security_invoker: security_invoker)
       end
     end
 
@@ -153,7 +153,7 @@ module Scenic
           side_by_side: options[:side_by_side]
         )
       else
-        Scenic.database.update_view(name, sql_definition, security_barrier, security_invoker)
+        Scenic.database.update_view(name, sql_definition, security_barrier: security_barrier, security_invoker: security_invoker)
       end
     end
 
@@ -189,7 +189,7 @@ module Scenic
 
       sql_definition = definition(name, version)
 
-      Scenic.database.replace_view(name, sql_definition, security_barrier, security_invoker)
+      Scenic.database.replace_view(name, sql_definition, security_barrier: security_barrier, security_invoker: security_invoker)
     end
 
     private

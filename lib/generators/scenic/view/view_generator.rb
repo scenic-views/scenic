@@ -8,6 +8,7 @@ module Scenic
     class ViewGenerator < Rails::Generators::NamedBase
       include Rails::Generators::Migration
       include Scenic::Generators::Materializable
+
       source_root File.expand_path("templates", __dir__)
 
       def create_views_directory
