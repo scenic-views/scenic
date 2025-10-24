@@ -1,13 +1,39 @@
 module Scenic
   class Configuration
+    # Collection of database adapters for multi-database support.
+    # Access specific databases using database names as keys.
+    #
+    # @example
+    #   Scenic.configure do |config|
+    #     config.databases[:secondary] = Scenic::Adapters::Postgres.new(SecondaryRecord)
+    #   end
+    #
+    # @return [ActiveSupport::OrderedOptions] hash of database adapters
+    attr_reader :databases
+
     # The Scenic database adapter instance to use when executing SQL.
     #
     # Defaults to an instance of {Adapters::Postgres}
     # @return Scenic adapter
-    attr_accessor :database
+    def database
+      @databases[:default]
+    end
+
+    def database=(adapter)
+      @databases[:default] = adapter
+    end
 
     def initialize
-      @database = Scenic::Adapters::Postgres.new
+      @databases = ActiveSupport::OrderedOptions.new
+      @databases[:default] = Scenic::Adapters::Postgres.new
+    end
+
+    # Returns the database adapter for the specified database name.
+    #
+    # @param name [Symbol] the database name (defaults to :default)
+    # @return [Scenic::Adapters::Postgres] the database adapter
+    def database_adapter(name = :default)
+      @databases[name] || @databases[:default]
     end
   end
 

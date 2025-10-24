@@ -1,9 +1,10 @@
 module Scenic
   # @api private
   class Definition
-    def initialize(name, version)
+    def initialize(name, version, database = nil)
       @name = name.to_s
       @version = version.to_i
+      @database = database
     end
 
     def to_sql
@@ -19,7 +20,12 @@ module Scenic
     end
 
     def path
-      File.join("db", "views", filename)
+      views_dir = if @database && @database != :default
+        "views_#{@database}"
+      else
+        "views"
+      end
+      File.join("db", views_dir, filename)
     end
 
     def version

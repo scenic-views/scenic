@@ -23,11 +23,14 @@ module Scenic
     ActiveRecord::SchemaDumper.prepend Scenic::SchemaDumper
   end
 
-  # The current database adapter used by Scenic.
+  # Returns the database adapter for the specified database.
   #
   # This defaults to {Adapters::Postgres} but can be overridden
   # via {Configuration}.
-  def self.database
-    configuration.database
+  #
+  # @param name [Symbol] the database name (defaults to :default)
+  # @return [Scenic::Adapters::Postgres] the database adapter
+  def self.database(name = :default)
+    configuration.database_adapter(name)
   end
 end

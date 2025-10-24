@@ -1,14 +1,25 @@
-development: &default
-  adapter: postgresql
-  database: dummy_development
-  encoding: unicode
-  host: localhost
-  pool: 5
-  <% if ENV.fetch("GITHUB_ACTIONS", false) || ENV.fetch("CODESPACES", false) %>
-  username: <%= ENV.fetch("POSTGRES_USER") %>
-  password: <%= ENV.fetch("POSTGRES_PASSWORD") %>
-  <% end %>
+development:
+  primary: &default
+    adapter: postgresql
+    database: dummy_development
+    encoding: unicode
+    host: localhost
+    pool: 5
+    <% if ENV.fetch("GITHUB_ACTIONS", false) || ENV.fetch("CODESPACES", false) %>
+    username: <%= ENV.fetch("POSTGRES_USER") %>
+    password: <%= ENV.fetch("POSTGRES_PASSWORD") %>
+    <% end %>
+  secondary:
+    <<: *default
+    database: dummy_development2
+    migrations_paths: db/migrate_secondary
+
 
 test:
-  <<: *default
-  database: dummy_test
+  primary:
+    <<: *default
+    database: dummy_test
+  secondary:
+    <<: *default
+    database: dummy_test2
+    migrations_paths: db/migrate_secondary

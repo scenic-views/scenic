@@ -224,6 +224,126 @@ class UpdateSearchResultsToVersion2 < ActiveRecord::Migration
 end
 ```
 
+## Can I use Scenic with multiple databases?
+
+Yes! Scenic supports Rails' multiple database feature introduced in Rails 6.0.
+This allows you to manage views across different databases in your application.
+
+### Requirements
+
+- Rails 6.0 or higher
+- Multiple databases configured in your `database.yml`
+
+### Configuring Database Adapters
+
+If you need to customize the database adapter for a specific database, you can
+configure it in an initializer:
+
+```ruby
+# config/initializers/scenic.rb
+Scenic.configure do |config|
+  # The default database adapter is automatically configured
+  # config.database = Scenic::Adapters::Postgres.new
+
+  # Configure adapters for additional databases
+  config.databases[:secondary] = Scenic::Adapters::Postgres.new(SecondaryRecord)
+end
+```
+
+### Generating Views for Specific Databases
+
+Use the `--database` option to specify which database a view should be created in:
+
+```sh
+$ rails generate scenic:view analytics --database=secondary
+      create  db/views_secondary/analytics_v01.sql
+      create  db/migrate_secondary/[TIMESTAMP]_create_analytics.rb
+```
+
+This will:
+- Create the view definition in `db/views_secondary/` (instead of `db/views/`)
+- Create the migration in your database-specific migrations directory
+
+The migration will include the `database:` parameter:
+
+```ruby
+class CreateAnalytics < ActiveRecord::Migration[7.0]
+  def change
+    create_view :analytics, database: :secondary
+  end
+end
+```
+
+### Working with Multiple Database Views
+
+All Scenic methods (`create_view`, `update_view`, `replace_view`, `drop_view`)
+support the `database:` parameter:
+
+```ruby
+# In a migration
+def change
+  create_view :reports, version: 1, database: :secondary
+  update_view :analytics, version: 2, database: :secondary
+  drop_view :old_stats, database: :secondary
+end
+```
+
+### Running Migrations
+
+Use Rails' standard rake tasks for running migrations on specific databases:
+
+```sh
+$ rake db:migrate:secondary        # Run pending migrations
+$ rake db:rollback:secondary       # Rollback last migration
+```
+
+### Example: Multiple Database Setup
+
+Here's a complete example of using Scenic with multiple databases:
+
+```yaml
+# config/database.yml
+production:
+  primary:
+    <<: *default
+    database: my_app_production
+  analytics:
+    <<: *default
+    database: my_app_analytics
+    migrations_paths: db/migrate_analytics
+```
+
+```ruby
+# app/models/application_record.rb
+class ApplicationRecord < ActiveRecord::Base
+  self.abstract_class = true
+  connects_to database: { writing: :primary, reading: :primary }
+end
+
+# app/models/analytics_record.rb
+class AnalyticsRecord < ActiveRecord::Base
+  self.abstract_class = true
+  connects_to database: { writing: :analytics, reading: :analytics }
+end
+
+# app/models/user_activity_summary.rb
+class UserActivitySummary < AnalyticsRecord
+  # This view is defined in the analytics database
+  def readonly?
+    true
+  end
+end
+```
+
+Generate the view:
+
+```sh
+$ rails generate scenic:model user_activity_summary --database=analytics
+```
+
+The generated migration will automatically include `database: :analytics` and will
+be placed in your database-specific migrations directory.
+
 ## I don't need this view anymore. Make it go away.
 
 Scenic gives you `drop_view` too:
@@ -232,6 +352,7 @@ Scenic gives you `drop_view` too:
 def change
   drop_view :search_results, revert_to_version: 2
   drop_view :materialized_admin_reports, revert_to_version: 3, materialized: true
+  drop_view :analytics_view, revert_to_version: 1, database: :secondary
 end
 ```
 
