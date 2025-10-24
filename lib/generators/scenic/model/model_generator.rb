@@ -8,6 +8,7 @@ module Scenic
     # @api private
     class ModelGenerator < Rails::Generators::NamedBase
       include Scenic::Generators::Materializable
+
       source_root File.expand_path("templates", __dir__)
 
       def invoke_rails_model_generator
