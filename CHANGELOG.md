@@ -5,6 +5,35 @@ changelog, see the [commits] for each version via the version links.
 
 [commits]: https://github.com/scenic-views/scenic/commits/master
 
+## [Unreleased]
+
+### Added
+
+- Added support for PostgreSQL view options via `with:` hash parameter. Supports
+  `security_barrier`, `security_invoker`, and `check_option` with an extensible
+  interface for future PostgreSQL options.
+
+### Changed
+
+- **BREAKING**: Custom adapter interface has changed. Adapters must update their
+  method signatures:
+
+  ```ruby
+  # Before (Scenic 1.x):
+  def create_view(name, sql_definition)
+  def update_view(name, sql_definition)
+  def replace_view(name, sql_definition)
+
+  # After (Scenic 2.x):
+  def create_view(name, sql_definition, with: {})
+  def update_view(name, sql_definition, with: {})
+  def replace_view(name, sql_definition, with: {})
+  ```
+
+  Adapter maintainers can use `**_options` to accept and ignore options if their
+  database does not support view options, or implement specific option handling
+  as needed.
+
 ## [1.9.0] - June 30, 2025
 
 [1.9.0]: https://github.com/scenic-views/scenic/compare/v1.8.0...v1.9.0

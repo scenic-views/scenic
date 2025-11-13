@@ -18,19 +18,19 @@ module Scenic
         connection.create_view :views, version: version
 
         expect(Scenic.database).to have_received(:create_view)
-          .with(:views, definition_stub.to_sql)
+          .with(:views, definition_stub.to_sql, with: {})
       end
 
       it "creates a view from a text definition" do
-        sql_definition = "a defintion"
+        sql_definition = "a definition"
 
         connection.create_view(:views, sql_definition: sql_definition)
 
         expect(Scenic.database).to have_received(:create_view)
-          .with(:views, sql_definition)
+          .with(:views, sql_definition, with: {})
       end
 
-      it "creates version 1 of the view if neither version nor sql_defintion are provided" do
+      it "creates version 1 of the view if neither version nor sql_definition are provided" do
         version = 1
         definition_stub = instance_double("Definition", to_sql: "foo")
         allow(Definition).to receive(:new)
@@ -40,12 +40,39 @@ module Scenic
         connection.create_view :views
 
         expect(Scenic.database).to have_received(:create_view)
-          .with(:views, definition_stub.to_sql)
+          .with(:views, definition_stub.to_sql, with: {})
       end
 
-      it "raises an error if both version and sql_defintion are provided" do
+      it "creates a view with security_barrier" do
+        sql_definition = "a definition"
+
+        connection.create_view(:views, sql_definition: sql_definition, with: {security_barrier: true})
+
+        expect(Scenic.database).to have_received(:create_view)
+          .with(:views, sql_definition, with: {security_barrier: true})
+      end
+
+      it "creates a view with security_invoker" do
+        sql_definition = "a definition"
+
+        connection.create_view(:views, sql_definition: sql_definition, with: {security_invoker: true})
+
+        expect(Scenic.database).to have_received(:create_view)
+          .with(:views, sql_definition, with: {security_invoker: true})
+      end
+
+      it "creates a view with both security options" do
+        sql_definition = "a definition"
+
+        connection.create_view(:views, sql_definition: sql_definition, with: {security_barrier: true, security_invoker: true})
+
+        expect(Scenic.database).to have_received(:create_view)
+          .with(:views, sql_definition, with: {security_barrier: true, security_invoker: true})
+      end
+
+      it "raises an error if both version and sql_definition are provided" do
         expect do
-          connection.create_view :foo, version: 1, sql_definition: "a defintion"
+          connection.create_view :foo, version: 1, sql_definition: "a definition"
         end.to raise_error ArgumentError
       end
     end
@@ -104,16 +131,34 @@ module Scenic
         connection.update_view(:name, version: 3)
 
         expect(Scenic.database).to have_received(:update_view)
-          .with(:name, definition.to_sql)
+          .with(:name, definition.to_sql, with: {})
       end
 
       it "updates a view from a text definition" do
-        sql_definition = "a defintion"
+        sql_definition = "a definition"
 
         connection.update_view(:name, sql_definition: sql_definition)
 
         expect(Scenic.database).to have_received(:update_view)
-          .with(:name, sql_definition)
+          .with(:name, sql_definition, with: {})
+      end
+
+      it "updates a view with security_barrier" do
+        sql_definition = "a definition"
+
+        connection.update_view(:name, sql_definition: sql_definition, with: {security_barrier: true})
+
+        expect(Scenic.database).to have_received(:update_view)
+          .with(:name, sql_definition, with: {security_barrier: true})
+      end
+
+      it "updates a view with security_invoker" do
+        sql_definition = "a definition"
+
+        connection.update_view(:name, sql_definition: sql_definition, with: {security_invoker: true})
+
+        expect(Scenic.database).to have_received(:update_view)
+          .with(:name, sql_definition, with: {security_invoker: true})
       end
 
       it "updates the materialized view in the database" do
@@ -160,19 +205,19 @@ module Scenic
           .with(:name, definition.to_sql, no_data: false, side_by_side: true)
       end
 
-      it "raises an error if not supplied a version or sql_defintion" do
+      it "raises an error if not supplied a version or sql_definition" do
         expect { connection.update_view :views }.to raise_error(
           ArgumentError,
           /sql_definition or version must be specified/
         )
       end
 
-      it "raises an error if both version and sql_defintion are provided" do
+      it "raises an error if both version and sql_definition are provided" do
         expect do
           connection.update_view(
             :views,
             version: 1,
-            sql_definition: "a defintion"
+            sql_definition: "a definition"
           )
         end.to raise_error ArgumentError, /cannot both be set/
       end
@@ -218,7 +263,31 @@ module Scenic
         connection.replace_view(:name, version: 3)
 
         expect(Scenic.database).to have_received(:replace_view)
-          .with(:name, definition.to_sql)
+          .with(:name, definition.to_sql, with: {})
+      end
+
+      it "replaces a view with security_barrier" do
+        definition = instance_double("Definition", to_sql: "definition")
+        allow(Definition).to receive(:new)
+          .with(:name, 3)
+          .and_return(definition)
+
+        connection.replace_view(:name, version: 3, with: {security_barrier: true})
+
+        expect(Scenic.database).to have_received(:replace_view)
+          .with(:name, definition.to_sql, with: {security_barrier: true})
+      end
+
+      it "replaces a view with security_invoker" do
+        definition = instance_double("Definition", to_sql: "definition")
+        allow(Definition).to receive(:new)
+          .with(:name, 3)
+          .and_return(definition)
+
+        connection.replace_view(:name, version: 3, with: {security_invoker: true})
+
+        expect(Scenic.database).to have_received(:replace_view)
+          .with(:name, definition.to_sql, with: {security_invoker: true})
       end
 
       it "fails to replace the materialized view in the database" do

@@ -99,6 +99,7 @@ module Scenic
               c.relname as viewname,
               pg_get_viewdef(c.oid) AS definition,
               c.relkind AS kind,
+              c.reloptions AS options,
               n.nspname AS namespace
             FROM pg_class c
               LEFT JOIN pg_namespace n ON n.oid = c.relnamespace
@@ -112,11 +113,44 @@ module Scenic
         end
 
         def to_scenic_view(result)
+          namespace, viewname, reloptions = result.values_at("namespace", "viewname", "options")
+
+          options = parse_view_options(reloptions)
+
+          namespaced_viewname = if namespace != "public"
+            "#{pg_identifier(namespace)}.#{pg_identifier(viewname)}"
+          else
+            pg_identifier(viewname)
+          end
+
           Scenic::View.new(
-            name: namespaced_view_name(result),
+            name: namespaced_viewname,
             definition: result["definition"].strip,
-            materialized: result["kind"] == "m"
+            materialized: result["kind"] == "m",
+            options: options
           )
+        end
+
+        def parse_view_options(reloptions)
+          return {} if reloptions.blank?
+
+          options = {}
+
+          reloptions.scan(/(\w+)(?:=(\w+))?/).each do |key, value|
+            key_sym = key.to_sym
+
+            options[key_sym] = if value.nil?
+              true
+            elsif value == "true"
+              true
+            elsif value == "false"
+              false
+            else
+              value
+            end
+          end
+
+          options
         end
 
         def namespaced_view_name(result)

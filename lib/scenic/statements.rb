@@ -14,6 +14,10 @@ module Scenic
     # @option materialized [Boolean] :no_data (false) Set to true to create
     #   materialized view without running the associated query. You will need
     #   to perform a non-concurrent refresh to populate with data.
+    # @param with [Hash] View options to pass to the WITH clause
+    # @option with [Boolean] :security_barrier Prevents data leakage through query optimizer
+    # @option with [Boolean] :security_invoker Use invoker's permissions instead of owner's
+    # @option with [Symbol, String] :check_option (:local or :cascaded) for updatable views
     # @return The database response from executing the create statement.
     #
     # @example Create from `db/views/searches_v02.sql`
@@ -24,7 +28,10 @@ module Scenic
     #     SELECT * FROM users WHERE users.active = 't'
     #   SQL
     #
-    def create_view(name, version: nil, sql_definition: nil, materialized: false)
+    # @example Create with view options
+    #   create_view(:secure_users, version: 1, with: { security_invoker: true })
+    #
+    def create_view(name, version: nil, sql_definition: nil, materialized: false, with: {})
       if version.present? && sql_definition.present?
         raise(
           ArgumentError,
@@ -47,7 +54,7 @@ module Scenic
           no_data: options[:no_data]
         )
       else
-        Scenic.database.create_view(name, sql_definition)
+        Scenic.database.create_view(name, sql_definition, with: with)
       end
     end
 
@@ -96,12 +103,17 @@ module Scenic
     #   The view is initially updated with a temporary name and atomically
     #   swapped once it is successfully created with data. Cannot be combined
     #   with the :no_data option.
+    # @param with [Hash] View options to pass to the WITH clause
+    # @option with [Boolean] :security_barrier Prevents data leakage through query optimizer
+    # @option with [Boolean] :security_invoker Use invoker's permissions instead of owner's
+    # @option with [Symbol, String] :check_option (:local or :cascaded) for updatable views
     # @return The database response from executing the create statement.
     #
     # @example
     #   update_view :engagement_reports, version: 3, revert_to_version: 2
     #   update_view :comments, version: 2, revert_to_version: 1, materialized: { side_by_side: true }
-    def update_view(name, version: nil, sql_definition: nil, revert_to_version: nil, materialized: false)
+    #   update_view :secure_users, version: 2, with: { security_invoker: true }
+    def update_view(name, version: nil, sql_definition: nil, revert_to_version: nil, materialized: false, with: {})
       if version.blank? && sql_definition.blank?
         raise(
           ArgumentError,
@@ -139,7 +151,7 @@ module Scenic
           side_by_side: options[:side_by_side]
         )
       else
-        Scenic.database.update_view(name, sql_definition)
+        Scenic.database.update_view(name, sql_definition, with: with)
       end
     end
 
@@ -154,12 +166,17 @@ module Scenic
     # @param version [Fixnum] The version number of the view.
     # @param revert_to_version [Fixnum] The version number to rollback to on
     #   `rake db rollback`
+    # @param with [Hash] View options to pass to the WITH clause
+    # @option with [Boolean] :security_barrier Prevents data leakage through query optimizer
+    # @option with [Boolean] :security_invoker Use invoker's permissions instead of owner's
+    # @option with [Symbol, String] :check_option (:local or :cascaded) for updatable views
     # @return The database response from executing the create statement.
     #
     # @example
     #   replace_view :engagement_reports, version: 3, revert_to_version: 2
+    #   replace_view :secure_users, version: 2, with: { security_invoker: true }
     #
-    def replace_view(name, version: nil, revert_to_version: nil, materialized: false)
+    def replace_view(name, version: nil, revert_to_version: nil, materialized: false, with: {})
       if version.blank?
         raise ArgumentError, "version is required"
       end
@@ -170,7 +187,7 @@ module Scenic
 
       sql_definition = definition(name, version)
 
-      Scenic.database.replace_view(name, sql_definition)
+      Scenic.database.replace_view(name, sql_definition, with: with)
     end
 
     private

@@ -22,30 +22,43 @@ module Scenic
     # @return [Boolean]
     attr_reader :materialized
 
+    # Options hash for view WITH clause options
+    # @return [Hash{Symbol => Object}]
+    attr_reader :options
+
     # Returns a new instance of View.
     #
     # @param name [String] The name of the view.
     # @param definition [String] The SQL for the query that defines the view.
     # @param materialized [Boolean] `true` if the view is materialized.
-    def initialize(name:, definition:, materialized:)
+    def initialize(name:, definition:, materialized:, options:)
       @name = name
       @definition = definition
       @materialized = materialized
+      @options = options
     end
 
     # @api private
     def ==(other)
       name == other.name &&
         definition == other.definition &&
-        materialized == other.materialized
+        materialized == other.materialized &&
+        options == other.options
     end
 
     # @api private
     def to_schema
       materialized_option = materialized ? "materialized: true, " : ""
 
+      with_option = if options.present? && options.any?
+        with_hash = options.map { |k, v| "#{k}: #{v.inspect}" }.join(", ")
+        "with: { #{with_hash} }, "
+      else
+        ""
+      end
+
       <<-DEFINITION
-  create_view #{UnaffixedName.for(name).inspect}, #{materialized_option}sql_definition: <<-\SQL
+  create_view #{UnaffixedName.for(name).inspect}, #{with_option}#{materialized_option}sql_definition: <<-\SQL
     #{escaped_definition.indent(2)}
   SQL
       DEFINITION
