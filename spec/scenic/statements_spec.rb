@@ -18,7 +18,7 @@ module Scenic
         connection.create_view :views, version: version
 
         expect(Scenic.database).to have_received(:create_view)
-          .with(:views, definition_stub.to_sql, security_barrier: false, security_invoker: false)
+          .with(:views, definition_stub.to_sql, with: {})
       end
 
       it "creates a view from a text definition" do
@@ -27,7 +27,7 @@ module Scenic
         connection.create_view(:views, sql_definition: sql_definition)
 
         expect(Scenic.database).to have_received(:create_view)
-          .with(:views, sql_definition, security_barrier: false, security_invoker: false)
+          .with(:views, sql_definition, with: {})
       end
 
       it "creates version 1 of the view if neither version nor sql_definition are provided" do
@@ -40,34 +40,34 @@ module Scenic
         connection.create_view :views
 
         expect(Scenic.database).to have_received(:create_view)
-          .with(:views, definition_stub.to_sql, security_barrier: false, security_invoker: false)
+          .with(:views, definition_stub.to_sql, with: {})
       end
 
       it "creates a view with security_barrier" do
         sql_definition = "a definition"
 
-        connection.create_view(:views, sql_definition: sql_definition, security_barrier: true)
+        connection.create_view(:views, sql_definition: sql_definition, with: {security_barrier: true})
 
         expect(Scenic.database).to have_received(:create_view)
-          .with(:views, sql_definition, hash_including(security_barrier: true))
+          .with(:views, sql_definition, with: {security_barrier: true})
       end
 
       it "creates a view with security_invoker" do
         sql_definition = "a definition"
 
-        connection.create_view(:views, sql_definition: sql_definition, security_invoker: true)
+        connection.create_view(:views, sql_definition: sql_definition, with: {security_invoker: true})
 
         expect(Scenic.database).to have_received(:create_view)
-          .with(:views, sql_definition, hash_including(security_invoker: true))
+          .with(:views, sql_definition, with: {security_invoker: true})
       end
 
       it "creates a view with both security options" do
         sql_definition = "a definition"
 
-        connection.create_view(:views, sql_definition: sql_definition, security_barrier: true, security_invoker: true)
+        connection.create_view(:views, sql_definition: sql_definition, with: {security_barrier: true, security_invoker: true})
 
         expect(Scenic.database).to have_received(:create_view)
-          .with(:views, sql_definition, security_barrier: true, security_invoker: true)
+          .with(:views, sql_definition, with: {security_barrier: true, security_invoker: true})
       end
 
       it "raises an error if both version and sql_definition are provided" do
@@ -131,7 +131,7 @@ module Scenic
         connection.update_view(:name, version: 3)
 
         expect(Scenic.database).to have_received(:update_view)
-          .with(:name, definition.to_sql, security_barrier: false, security_invoker: false)
+          .with(:name, definition.to_sql, with: {})
       end
 
       it "updates a view from a text definition" do
@@ -140,25 +140,25 @@ module Scenic
         connection.update_view(:name, sql_definition: sql_definition)
 
         expect(Scenic.database).to have_received(:update_view)
-          .with(:name, sql_definition, security_barrier: false, security_invoker: false)
+          .with(:name, sql_definition, with: {})
       end
 
       it "updates a view with security_barrier" do
         sql_definition = "a definition"
 
-        connection.update_view(:name, sql_definition: sql_definition, security_barrier: true)
+        connection.update_view(:name, sql_definition: sql_definition, with: {security_barrier: true})
 
         expect(Scenic.database).to have_received(:update_view)
-          .with(:name, sql_definition, hash_including(security_barrier: true))
+          .with(:name, sql_definition, with: {security_barrier: true})
       end
 
       it "updates a view with security_invoker" do
         sql_definition = "a definition"
 
-        connection.update_view(:name, sql_definition: sql_definition, security_invoker: true)
+        connection.update_view(:name, sql_definition: sql_definition, with: {security_invoker: true})
 
         expect(Scenic.database).to have_received(:update_view)
-          .with(:name, sql_definition, hash_including(security_invoker: true))
+          .with(:name, sql_definition, with: {security_invoker: true})
       end
 
       it "updates the materialized view in the database" do
@@ -263,7 +263,7 @@ module Scenic
         connection.replace_view(:name, version: 3)
 
         expect(Scenic.database).to have_received(:replace_view)
-          .with(:name, definition.to_sql, security_barrier: false, security_invoker: false)
+          .with(:name, definition.to_sql, with: {})
       end
 
       it "replaces a view with security_barrier" do
@@ -272,10 +272,10 @@ module Scenic
           .with(:name, 3)
           .and_return(definition)
 
-        connection.replace_view(:name, version: 3, security_barrier: true)
+        connection.replace_view(:name, version: 3, with: {security_barrier: true})
 
         expect(Scenic.database).to have_received(:replace_view)
-          .with(:name, definition.to_sql, hash_including(security_barrier: true))
+          .with(:name, definition.to_sql, with: {security_barrier: true})
       end
 
       it "replaces a view with security_invoker" do
@@ -284,10 +284,10 @@ module Scenic
           .with(:name, 3)
           .and_return(definition)
 
-        connection.replace_view(:name, version: 3, security_invoker: true)
+        connection.replace_view(:name, version: 3, with: {security_invoker: true})
 
         expect(Scenic.database).to have_received(:replace_view)
-          .with(:name, definition.to_sql, hash_including(security_invoker: true))
+          .with(:name, definition.to_sql, with: {security_invoker: true})
       end
 
       it "fails to replace the materialized view in the database" do

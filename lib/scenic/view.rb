@@ -22,8 +22,8 @@ module Scenic
     # @return [Boolean]
     attr_reader :materialized
 
-    # Options definition for security_invoker and security_barrier
-    # @return Hash[Symbol, Boolean]
+    # Options hash for view WITH clause options
+    # @return [Hash{Symbol => Object}]
     attr_reader :options
 
     # Returns a new instance of View.
@@ -49,11 +49,16 @@ module Scenic
     # @api private
     def to_schema
       materialized_option = materialized ? "materialized: true, " : ""
-      security_barrier_option = options[:security_barrier] ? "security_barrier: true, " : ""
-      security_invoker_option = options[:security_invoker] ? "security_invoker: true, " : ""
+
+      with_option = if options.present? && options.any?
+        with_hash = options.map { |k, v| "#{k}: #{v.inspect}" }.join(", ")
+        "with: { #{with_hash} }, "
+      else
+        ""
+      end
 
       <<-DEFINITION
-  create_view #{UnaffixedName.for(name).inspect}, #{security_barrier_option}#{security_invoker_option}#{materialized_option}sql_definition: <<-\SQL
+  create_view #{UnaffixedName.for(name).inspect}, #{with_option}#{materialized_option}sql_definition: <<-\SQL
     #{escaped_definition.indent(2)}
   SQL
       DEFINITION

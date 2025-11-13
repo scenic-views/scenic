@@ -113,20 +113,9 @@ module Scenic
         end
 
         def to_scenic_view(result)
-          namespace, viewname, options = result.values_at("namespace", "viewname", "options")
+          namespace, viewname, reloptions = result.values_at("namespace", "viewname", "options")
 
-          security_invoker = false
-          security_barrier = false
-
-          if options.present?
-            security_invoker = options.include?("security_invoker=true")
-            security_barrier = options.include?("security_barrier=true")
-          end
-
-          options = {
-            security_invoker: security_invoker,
-            security_barrier: security_barrier
-          }
+          options = parse_view_options(reloptions)
 
           namespaced_viewname = if namespace != "public"
             "#{pg_identifier(namespace)}.#{pg_identifier(viewname)}"
@@ -138,8 +127,30 @@ module Scenic
             name: namespaced_viewname,
             definition: result["definition"].strip,
             materialized: result["kind"] == "m",
-            options:
+            options: options
           )
+        end
+
+        def parse_view_options(reloptions)
+          return {} if reloptions.blank?
+
+          options = {}
+
+          reloptions.scan(/(\w+)(?:=(\w+))?/).each do |key, value|
+            key_sym = key.to_sym
+
+            options[key_sym] = if value.nil?
+              true
+            elsif value == "true"
+              true
+            elsif value == "false"
+              false
+            else
+              value
+            end
+          end
+
+          options
         end
 
         def namespaced_view_name(result)

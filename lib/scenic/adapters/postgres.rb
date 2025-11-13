@@ -59,13 +59,15 @@ module Scenic
       #
       # @param name The name of the view to create
       # @param sql_definition The SQL schema for the view.
-      # @param security_barrier If we should enable security_barrier
-      # @param security_invoker If we should enable security_invoker
+      # @param with [Hash] View options to pass to the WITH clause
+      # @option with [Boolean] :security_barrier Prevents data leakage through query optimizer
+      # @option with [Boolean] :security_invoker Use invoker's permissions instead of owner's
+      # @option with [Symbol, String] :check_option (:local or :cascaded) for updatable views
       #
       # @return [void]
-      def create_view(name, sql_definition, security_barrier: false, security_invoker: false)
-        with_statement = build_with_statement(security_barrier, security_invoker)
-        execute "CREATE VIEW #{quote_table_name(name)} #{with_statement} AS #{sql_definition};"
+      def create_view(name, sql_definition, with: {})
+        with_clause = build_with_clause(with)
+        execute "CREATE VIEW #{quote_table_name(name)}#{with_clause} AS #{sql_definition};"
       end
 
       # Updates a view in the database.
@@ -82,13 +84,15 @@ module Scenic
       #
       # @param name The name of the view to update
       # @param sql_definition The SQL schema for the updated view.
-      # @param security_barrier If we should enable security_barrier
-      # @param security_invoker If we should enable security_invoker
+      # @param with [Hash] View options to pass to the WITH clause
+      # @option with [Boolean] :security_barrier Prevents data leakage through query optimizer
+      # @option with [Boolean] :security_invoker Use invoker's permissions instead of owner's
+      # @option with [Symbol, String] :check_option (:local or :cascaded) for updatable views
       #
       # @return [void]
-      def update_view(name, sql_definition, security_barrier: false, security_invoker: false)
+      def update_view(name, sql_definition, with: {})
         drop_view(name)
-        create_view(name, sql_definition, security_barrier: security_barrier, security_invoker: security_invoker)
+        create_view(name, sql_definition, with: with)
       end
 
       # Replaces a view in the database using `CREATE OR REPLACE VIEW`.
@@ -110,13 +114,15 @@ module Scenic
       #
       # @param name The name of the view to update
       # @param sql_definition The SQL schema for the updated view.
-      # @param security_barrier If we should enable security_barrier
-      # @param security_invoker If we should enable security_invoker
+      # @param with [Hash] View options to pass to the WITH clause
+      # @option with [Boolean] :security_barrier Prevents data leakage through query optimizer
+      # @option with [Boolean] :security_invoker Use invoker's permissions instead of owner's
+      # @option with [Symbol, String] :check_option (:local or :cascaded) for updatable views
       #
       # @return [void]
-      def replace_view(name, sql_definition, security_barrier: false, security_invoker: false)
-        with_statement = build_with_statement(security_barrier, security_invoker)
-        execute "CREATE OR REPLACE VIEW #{quote_table_name(name)} #{with_statement} AS #{sql_definition};"
+      def replace_view(name, sql_definition, with: {})
+        with_clause = build_with_clause(with)
+        execute "CREATE OR REPLACE VIEW #{quote_table_name(name)}#{with_clause} AS #{sql_definition};"
       end
 
       # Drops the named view from the database
@@ -308,16 +314,22 @@ module Scenic
         )
       end
 
-      def build_with_statement(security_barrier, security_invoker)
-        if security_invoker && security_barrier
-          return "WITH (security_barrier, security_invoker = true)"
-        elsif security_invoker
-          return "WITH (security_invoker = true)"
-        elsif security_barrier
-          return "WITH (security_barrier)"
+      def build_with_clause(options)
+        return "" if options.empty?
+
+        clauses = options.filter_map do |key, value|
+          next if value == false || value.nil?
+
+          case value
+          when true
+            "#{key} = true"
+          else
+            "#{key} = #{value}"
+          end
         end
 
-        ""
+        return "" if clauses.empty?
+        " WITH (#{clauses.join(", ")})"
       end
     end
   end

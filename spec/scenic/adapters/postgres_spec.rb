@@ -15,7 +15,7 @@ module Scenic
         it "successfully creates a view with security_barrier" do
           adapter = Postgres.new
 
-          adapter.create_view("greetings", "SELECT text 'hi' AS greeting", security_barrier: true)
+          adapter.create_view("greetings", "SELECT text 'hi' AS greeting", with: {security_barrier: true})
 
           view = adapter.views.find { |v| v.name == "greetings" }
           expect(view.options[:security_barrier]).to eq(true)
@@ -24,7 +24,7 @@ module Scenic
         it "successfully creates a view with security_invoker" do
           adapter = Postgres.new
 
-          adapter.create_view("greetings", "SELECT text 'hi' AS greeting", security_invoker: true)
+          adapter.create_view("greetings", "SELECT text 'hi' AS greeting", with: {security_invoker: true})
 
           view = adapter.views.find { |v| v.name == "greetings" }
           expect(view.options[:security_invoker]).to eq(true)
@@ -33,7 +33,7 @@ module Scenic
         it "successfully creates a view with both security_barrier and security_invoker" do
           adapter = Postgres.new
 
-          adapter.create_view("greetings", "SELECT text 'hi' AS greeting", security_barrier: true, security_invoker: true)
+          adapter.create_view("greetings", "SELECT text 'hi' AS greeting", with: {security_barrier: true, security_invoker: true})
 
           view = adapter.views.find { |v| v.name == "greetings" }
           expect(view.options[:security_barrier]).to eq(true)
@@ -100,7 +100,7 @@ module Scenic
 
           adapter.create_view("greetings", "SELECT text 'hi' AS greeting")
 
-          adapter.replace_view("greetings", "SELECT text 'hello' AS greeting", security_barrier: true, security_invoker: true)
+          adapter.replace_view("greetings", "SELECT text 'hello' AS greeting", with: {security_barrier: true, security_invoker: true})
 
           view = adapter.views.find { |v| v.name == "greetings" }
           expect(view.definition).to eql "SELECT 'hello'::text AS greeting;"
