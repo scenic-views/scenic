@@ -14,6 +14,8 @@ module Scenic
     # @option materialized [Boolean] :no_data (false) Set to true to create
     #   materialized view without running the associated query. You will need
     #   to perform a non-concurrent refresh to populate with data.
+    # @param database [Symbol] The database to use (requires Rails 6.0+).
+    #   Defaults to :default.
     # @return The database response from executing the create statement.
     #
     # @example Create from `db/views/searches_v02.sql`
@@ -24,7 +26,10 @@ module Scenic
     #     SELECT * FROM users WHERE users.active = 't'
     #   SQL
     #
-    def create_view(name, version: nil, sql_definition: nil, materialized: false)
+    # @example Create view on secondary database
+    #   create_view(:searches, version: 2, database: :secondary)
+    #
+    def create_view(name, version: nil, sql_definition: nil, materialized: false, database: :default)
       if version.present? && sql_definition.present?
         raise(
           ArgumentError,
@@ -36,18 +41,18 @@ module Scenic
         version = 1
       end
 
-      sql_definition ||= definition(name, version)
+      sql_definition ||= definition(name, version, database)
 
       if materialized
         options = materialized_options(materialized)
 
-        Scenic.database.create_materialized_view(
+        Scenic.database(database).create_materialized_view(
           name,
           sql_definition,
           no_data: options[:no_data]
         )
       else
-        Scenic.database.create_view(name, sql_definition)
+        Scenic.database(database).create_view(name, sql_definition)
       end
     end
 
@@ -59,16 +64,18 @@ module Scenic
     #   `version` argument to {#create_view}.
     # @param materialized [Boolean] Set to true if dropping a meterialized view.
     #   defaults to false.
+    # @param database [Symbol] The database to use (requires Rails 6.0+).
+    #   Defaults to :default.
     # @return The database response from executing the drop statement.
     #
     # @example Drop a view, rolling back to version 3 on rollback
     #   drop_view(:users_who_recently_logged_in, revert_to_version: 3)
     #
-    def drop_view(name, revert_to_version: nil, materialized: false)
+    def drop_view(name, revert_to_version: nil, materialized: false, database: :default)
       if materialized
-        Scenic.database.drop_materialized_view(name)
+        Scenic.database(database).drop_materialized_view(name)
       else
-        Scenic.database.drop_view(name)
+        Scenic.database(database).drop_view(name)
       end
     end
 
@@ -96,12 +103,14 @@ module Scenic
     #   The view is initially updated with a temporary name and atomically
     #   swapped once it is successfully created with data. Cannot be combined
     #   with the :no_data option.
+    # @param database [Symbol] The database to use (requires Rails 6.0+).
+    #   Defaults to :default.
     # @return The database response from executing the create statement.
     #
     # @example
     #   update_view :engagement_reports, version: 3, revert_to_version: 2
     #   update_view :comments, version: 2, revert_to_version: 1, materialized: { side_by_side: true }
-    def update_view(name, version: nil, sql_definition: nil, revert_to_version: nil, materialized: false)
+    def update_view(name, version: nil, sql_definition: nil, revert_to_version: nil, materialized: false, database: :default)
       if version.blank? && sql_definition.blank?
         raise(
           ArgumentError,
@@ -116,7 +125,7 @@ module Scenic
         )
       end
 
-      sql_definition ||= definition(name, version)
+      sql_definition ||= definition(name, version, database)
 
       if materialized
         options = materialized_options(materialized)
@@ -132,14 +141,14 @@ module Scenic
           raise "a transaction is required to perform a side-by-side update"
         end
 
-        Scenic.database.update_materialized_view(
+        Scenic.database(database).update_materialized_view(
           name,
           sql_definition,
           no_data: options[:no_data],
           side_by_side: options[:side_by_side]
         )
       else
-        Scenic.database.update_view(name, sql_definition)
+        Scenic.database(database).update_view(name, sql_definition)
       end
     end
 
@@ -154,12 +163,14 @@ module Scenic
     # @param version [Fixnum] The version number of the view.
     # @param revert_to_version [Fixnum] The version number to rollback to on
     #   `rake db rollback`
+    # @param database [Symbol] The database to use (requires Rails 6.0+).
+    #   Defaults to :default.
     # @return The database response from executing the create statement.
     #
     # @example
     #   replace_view :engagement_reports, version: 3, revert_to_version: 2
     #
-    def replace_view(name, version: nil, revert_to_version: nil, materialized: false)
+    def replace_view(name, version: nil, revert_to_version: nil, materialized: false, database: :default)
       if version.blank?
         raise ArgumentError, "version is required"
       end
@@ -168,15 +179,16 @@ module Scenic
         raise ArgumentError, "Cannot replace materialized views"
       end
 
-      sql_definition = definition(name, version)
+      sql_definition = definition(name, version, database)
 
-      Scenic.database.replace_view(name, sql_definition)
+      Scenic.database(database).replace_view(name, sql_definition)
     end
 
     private
 
-    def definition(name, version)
-      Scenic::Definition.new(name, version).to_sql
+    def definition(name, version, database = nil)
+      db = (database == :default) ? nil : database
+      Scenic::Definition.new(name, version, db).to_sql
     end
 
     def materialized_options(materialized)

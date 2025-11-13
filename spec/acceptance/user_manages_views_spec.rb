@@ -18,8 +18,8 @@ describe "User manages views" do
     successfully "rake db:reset"
     verify_result "SearchResult.take.term", "haystack"
 
-    successfully "rake db:rollback"
-    successfully "rake db:rollback"
+    successfully "rake db:rollback:primary"
+    successfully "rake db:rollback:primary"
     successfully "rails destroy scenic:model search_result"
   end
 
@@ -55,9 +55,9 @@ describe "User manages views" do
     verify_result "Child.take.name", "Juniper"
     verify_schema_contains 'add_index "children"'
 
-    successfully "rake db:rollback"
-    successfully "rake db:rollback"
-    successfully "rake db:rollback"
+    successfully "rake db:rollback:primary"
+    successfully "rake db:rollback:primary"
+    successfully "rake db:rollback:primary"
     successfully "rails destroy scenic:model child"
   end
 
