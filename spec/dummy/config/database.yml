@@ -12,7 +12,7 @@ development:
   secondary:
     <<: *default
     database: dummy_development2
-    migrations_paths: db/migrate_secondary
+    migrations_paths: db/secondary_migrate
 
 
 test:
@@ -22,4 +22,4 @@ test:
   secondary:
     <<: *default
     database: dummy_test2
-    migrations_paths: db/migrate_secondary
+    migrations_paths: db/secondary_migrate

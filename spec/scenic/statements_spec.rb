@@ -238,6 +238,233 @@ module Scenic
       end
     end
 
+    describe "multiple database support" do
+      describe "create_view with database parameter" do
+        it "calls the specified database adapter" do
+          secondary_adapter = instance_double("Scenic::Adapters::Postgres").as_null_object
+          allow(Scenic).to receive(:database).with(:secondary).and_return(secondary_adapter)
+
+          definition = instance_double("Definition", to_sql: "SELECT 1")
+          allow(Definition).to receive(:new)
+            .with(:analytics, 1, :secondary)
+            .and_return(definition)
+
+          connection.create_view(:analytics, version: 1, database: :secondary)
+
+          expect(secondary_adapter).to have_received(:create_view)
+            .with(:analytics, definition.to_sql)
+        end
+
+        it "uses default adapter when database parameter is :default" do
+          default_adapter = instance_double("Scenic::Adapters::Postgres").as_null_object
+          allow(Scenic).to receive(:database).with(:default).and_return(default_adapter)
+
+          definition = instance_double("Definition", to_sql: "SELECT 1")
+          allow(Definition).to receive(:new)
+            .with(:users, 1, nil)
+            .and_return(definition)
+
+          connection.create_view(:users, version: 1, database: :default)
+
+          expect(default_adapter).to have_received(:create_view)
+        end
+      end
+
+      describe "drop_view with database parameter" do
+        it "calls the specified database adapter" do
+          secondary_adapter = instance_double("Scenic::Adapters::Postgres").as_null_object
+          allow(Scenic).to receive(:database).with(:secondary).and_return(secondary_adapter)
+
+          connection.drop_view(:analytics, database: :secondary)
+
+          expect(secondary_adapter).to have_received(:drop_view).with(:analytics)
+        end
+      end
+
+      describe "update_view with database parameter" do
+        it "calls the specified database adapter" do
+          secondary_adapter = instance_double("Scenic::Adapters::Postgres").as_null_object
+          allow(Scenic).to receive(:database).with(:secondary).and_return(secondary_adapter)
+
+          definition = instance_double("Definition", to_sql: "SELECT 2")
+          allow(Definition).to receive(:new)
+            .with(:analytics, 2, :secondary)
+            .and_return(definition)
+
+          connection.update_view(:analytics, version: 2, database: :secondary)
+
+          expect(secondary_adapter).to have_received(:update_view)
+            .with(:analytics, definition.to_sql)
+        end
+      end
+
+      describe "replace_view with database parameter" do
+        it "calls the specified database adapter" do
+          secondary_adapter = instance_double("Scenic::Adapters::Postgres").as_null_object
+          allow(Scenic).to receive(:database).with(:secondary).and_return(secondary_adapter)
+
+          definition = instance_double("Definition", to_sql: "SELECT 2")
+          allow(Definition).to receive(:new)
+            .with(:analytics, 2, :secondary)
+            .and_return(definition)
+
+          connection.replace_view(:analytics, version: 2, database: :secondary)
+
+          expect(secondary_adapter).to have_received(:replace_view)
+            .with(:analytics, definition.to_sql)
+        end
+      end
+
+      describe "materialized views with database parameter" do
+        it "creates materialized view on specified database" do
+          secondary_adapter = instance_double("Scenic::Adapters::Postgres").as_null_object
+          allow(Scenic).to receive(:database).with(:secondary).and_return(secondary_adapter)
+
+          definition = instance_double("Definition", to_sql: "SELECT 1")
+          allow(Definition).to receive(:new)
+            .with(:reports, 1, :secondary)
+            .and_return(definition)
+
+          connection.create_view(
+            :reports,
+            version: 1,
+            database: :secondary,
+            materialized: true
+          )
+
+          expect(secondary_adapter).to have_received(:create_materialized_view)
+            .with(:reports, definition.to_sql, no_data: false)
+        end
+
+        it "updates materialized view on specified database" do
+          secondary_adapter = instance_double("Scenic::Adapters::Postgres").as_null_object
+          allow(Scenic).to receive(:database).with(:secondary).and_return(secondary_adapter)
+
+          definition = instance_double("Definition", to_sql: "SELECT 2")
+          allow(Definition).to receive(:new)
+            .with(:reports, 2, :secondary)
+            .and_return(definition)
+
+          connection.update_view(
+            :reports,
+            version: 2,
+            database: :secondary,
+            materialized: true
+          )
+
+          expect(secondary_adapter).to have_received(:update_materialized_view)
+            .with(:reports, definition.to_sql, no_data: false, side_by_side: false)
+        end
+
+        it "drops materialized view on specified database" do
+          secondary_adapter = instance_double("Scenic::Adapters::Postgres").as_null_object
+          allow(Scenic).to receive(:database).with(:secondary).and_return(secondary_adapter)
+
+          connection.drop_view(:reports, database: :secondary, materialized: true)
+
+          expect(secondary_adapter).to have_received(:drop_materialized_view)
+        end
+      end
+
+      describe "adapter routing with different adapter types" do
+        before do
+          allow(Scenic).to receive(:database).and_call_original
+        end
+
+        after do
+          Scenic.configuration = Configuration.new
+        end
+
+        it "routes view operations to the correct adapter" do
+          postgres_adapter = FakeAdapter.new("Postgres")
+          mysql_adapter = FakeAdapter.new("MySQL")
+
+          Scenic.configure do |config|
+            config.databases[:default] = postgres_adapter
+            config.databases[:secondary] = mysql_adapter
+          end
+
+          allow(Definition).to receive(:new).and_return(
+            instance_double("Definition", to_sql: "SELECT 1")
+          )
+
+          connection.create_view(:users, version: 1, database: :default)
+          connection.create_view(:analytics, version: 1, database: :secondary)
+
+          expect(postgres_adapter.call_count(:create_view)).to eq 1
+          expect(mysql_adapter.call_count(:create_view)).to eq 1
+
+          postgres_call = postgres_adapter.calls.find { |c| c[:method] == :create_view }
+          mysql_call = mysql_adapter.calls.find { |c| c[:method] == :create_view }
+
+          expect(postgres_call[:args][:name]).to eq :users
+          expect(mysql_call[:args][:name]).to eq :analytics
+        end
+
+        it "routes materialized view operations to the correct adapter" do
+          postgres_adapter = FakeAdapter.new("Postgres")
+          mysql_adapter = FakeAdapter.new("MySQL")
+
+          Scenic.configure do |config|
+            config.databases[:default] = postgres_adapter
+            config.databases[:warehouse] = mysql_adapter
+          end
+
+          allow(Definition).to receive(:new).and_return(
+            instance_double("Definition", to_sql: "SELECT 1")
+          )
+
+          connection.create_view(
+            :reports,
+            version: 1,
+            database: :default,
+            materialized: true
+          )
+          connection.create_view(
+            :aggregates,
+            version: 1,
+            database: :warehouse,
+            materialized: true
+          )
+
+          expect(postgres_adapter.called?(:create_materialized_view)).to be true
+          expect(mysql_adapter.called?(:create_materialized_view)).to be true
+
+          postgres_call = postgres_adapter.calls.find { |c| c[:method] == :create_materialized_view }
+          mysql_call = mysql_adapter.calls.find { |c| c[:method] == :create_materialized_view }
+
+          expect(postgres_call[:args][:name]).to eq :reports
+          expect(mysql_call[:args][:name]).to eq :aggregates
+        end
+
+        it "does not cross-contaminate adapter calls" do
+          adapter_a = FakeAdapter.new("AdapterA")
+          adapter_b = FakeAdapter.new("AdapterB")
+
+          Scenic.configure do |config|
+            config.databases[:db_a] = adapter_a
+            config.databases[:db_b] = adapter_b
+          end
+
+          allow(Definition).to receive(:new).and_return(
+            instance_double("Definition", to_sql: "SELECT 1")
+          )
+
+          connection.create_view(:view1, version: 1, database: :db_a)
+          connection.update_view(:view2, version: 2, database: :db_b)
+          connection.drop_view(:view3, database: :db_a)
+
+          expect(adapter_a.call_count(:create_view)).to eq 1
+          expect(adapter_a.call_count(:update_view)).to eq 0
+          expect(adapter_a.call_count(:drop_view)).to eq 1
+
+          expect(adapter_b.call_count(:create_view)).to eq 0
+          expect(adapter_b.call_count(:update_view)).to eq 1
+          expect(adapter_b.call_count(:drop_view)).to eq 0
+        end
+      end
+    end
+
     def connection(transactions_enabled: true)
       DummyConnection.new(transactions_enabled: transactions_enabled)
     end

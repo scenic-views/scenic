@@ -21,7 +21,7 @@ module Scenic
 
     def path
       views_dir = if @database && @database != :default
-        "views_#{@database}"
+        "#{@database}_views"
       else
         "views"
       end
