@@ -224,6 +224,70 @@ class UpdateSearchResultsToVersion2 < ActiveRecord::Migration
 end
 ```
 
+## Can I use Scenic with multiple databases?
+
+You bet! If you're using Rails 6.0 or higher with multiple databases configured,
+Scenic has you covered. Just pass a `--database` option when generating your
+view:
+
+```sh
+$ rails generate scenic:view analytics --database=secondary
+      create  db/secondary_views/analytics_v01.sql
+      create  db/secondary_migrate/[TIMESTAMP]_create_analytics.rb
+```
+
+Scenic will create your view definition in a database-specific directory
+(`db/secondary_views/` instead of `db/views/`) and the generated migration will
+include the `database:` parameter:
+
+```ruby
+class CreateAnalytics < ActiveRecord::Migration[7.0]
+  def change
+    create_view :analytics, database: :secondary
+  end
+end
+```
+
+Run the migration for your secondary database the same way you would for any
+Rails multiple database setup:
+
+```sh
+$ rake db:migrate:secondary
+```
+
+All of Scenic's migration methods accept the `database:` parameter, so you can
+create, update, and drop views on any configured database:
+
+```ruby
+def change
+  create_view :reports, version: 1, database: :secondary
+  update_view :reports, version: 2, database: :secondary
+  drop_view :reports, database: :secondary
+end
+```
+
+If you need custom paths for your views or migrations, you can configure them
+in `database.yml` just like Rails' `migrations_paths`:
+
+```yaml
+# config/database.yml
+secondary:
+  database: my_secondary_db
+  migrations_paths: db/secondary_migrate
+  views_paths: db/secondary_views
+```
+
+If you're using different adapters for different databases (say, Postgres for
+your primary database and MySQL for analytics), you can configure them in an
+initializer:
+
+```ruby
+# config/initializers/scenic.rb
+Scenic.configure do |config|
+  config.databases[:secondary] = Scenic::Adapters::Postgres.new(SecondaryRecord)
+end
+```
+
 ## I don't need this view anymore. Make it go away.
 
 Scenic gives you `drop_view` too:
@@ -232,6 +296,7 @@ Scenic gives you `drop_view` too:
 def change
   drop_view :search_results, revert_to_version: 2
   drop_view :materialized_admin_reports, revert_to_version: 3, materialized: true
+  drop_view :analytics_view, revert_to_version: 1, database: :secondary
 end
 ```
 

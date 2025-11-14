@@ -5,9 +5,9 @@ class <%= migration_class_name %> < <%= activerecord_migration_class %>
     <%= method_name %> <%= formatted_plural_name %>,
       version: <%= version %>,
       revert_to_version: <%= previous_version %>,
-      materialized: <%= materialized_view_update_options %>
+      materialized: <%= materialized_view_update_options %><%= update_view_options %>
   <%- else -%>
-    <%= method_name %> <%= formatted_plural_name %>, version: <%= version %>, revert_to_version: <%= previous_version %>
+    <%= method_name %> <%= formatted_plural_name %>, version: <%= version %>, revert_to_version: <%= previous_version %><%= update_view_options %>
   <%- end -%>
   end
 end

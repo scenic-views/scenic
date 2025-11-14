@@ -11,6 +11,10 @@ module Scenic
 
       source_root File.expand_path("templates", __dir__)
 
+      def validate_multiple_database_support
+        validate_rails_version_for_multiple_databases!
+      end
+
       def create_views_directory
         unless views_directory_path.exist?
           empty_directory(views_directory_path)
@@ -29,12 +33,12 @@ module Scenic
         if creating_new_view? || destroying_initial_view?
           migration_template(
             "db/migrate/create_view.erb",
-            "db/migrate/create_#{plural_file_name}.rb"
+            File.join(migration_directory, "create_#{plural_file_name}.rb")
           )
         else
           migration_template(
             "db/migrate/update_view.erb",
-            "db/migrate/update_#{plural_file_name}_to_version_#{version}.rb"
+            File.join(migration_directory, "update_#{plural_file_name}_to_version_#{version}.rb")
           )
         end
       end
@@ -81,7 +85,51 @@ module Scenic
       end
 
       def views_directory_path
-        @views_directory_path ||= Rails.root.join("db", "views")
+        @views_directory_path ||= begin
+          db_config = ActiveRecord::Base.configurations.configs_for(
+            env_name: Rails.env,
+            name: database_name
+          )
+
+          if db_config&.respond_to?(:views_paths) && (configured_path = Array(db_config.views_paths).first)
+            Rails.root.join(configured_path)
+          else
+            conventional_views_path
+          end
+        end
+      end
+
+      def conventional_views_path
+        if database && database != :default
+          Rails.root.join("db", "#{database}_views")
+        else
+          Rails.root.join("db", "views")
+        end
+      end
+
+      def migration_directory
+        db_config = ActiveRecord::Base.configurations.configs_for(
+          env_name: Rails.env,
+          name: database_name
+        )
+
+        Array(db_config&.migrations_paths).first || conventional_migration_path
+      end
+
+      def database_name
+        (database || :primary).to_s
+      end
+
+      def conventional_migration_path
+        if database && database != :default
+          "db/#{database}_migrate"
+        else
+          "db/migrate"
+        end
+      end
+
+      def different_database_set?
+        database && database != :default
       end
 
       def version_regex
@@ -93,11 +141,11 @@ module Scenic
       end
 
       def definition
-        Scenic::Definition.new(plural_file_name, version)
+        Scenic::Definition.new(plural_file_name, version, database)
       end
 
       def previous_definition
-        Scenic::Definition.new(plural_file_name, previous_version)
+        Scenic::Definition.new(plural_file_name, previous_version, database)
       end
 
       def destroying?
@@ -113,8 +161,21 @@ module Scenic
       end
 
       def create_view_options
+        options = ""
         if materialized?
-          ", materialized: #{no_data? ? "{ no_data: true }" : true}"
+          options << ", materialized: #{no_data? ? "{ no_data: true }" : true}"
+        end
+
+        if different_database_set?
+          options << ", database: :#{database}"
+        end
+
+        options
+      end
+
+      def update_view_options
+        if different_database_set?
+          ", database: :#{database}"
         else
           ""
         end
