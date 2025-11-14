@@ -14,3 +14,8 @@ end
 gem "rails", rails_constraint
 gem "sprockets", "< 4.0.0"
 gem "pg", "~> 1.1"
+
+group :development do
+  gem "steep", "~> 1.8"
+  gem "rbs", "~> 3.0"
+end
