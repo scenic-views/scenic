@@ -1,0 +1,14 @@
+module Scenic
+  # @api private
+  module SchemaDumper
+    @dumpable_views_in_database: Array[View]
+
+    def tables: (untyped stream) -> void
+
+    def views: (untyped stream) -> void
+
+    private
+
+    def dumpable_views_in_database: () -> Array[View]
+  end
+end

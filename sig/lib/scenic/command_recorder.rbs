@@ -1,0 +1,24 @@
+module Scenic
+  # @api private
+  module CommandRecorder
+    def create_view: (*untyped args) -> void
+
+    def drop_view: (*untyped args) -> void
+
+    def update_view: (*untyped args) -> void
+
+    def replace_view: (*untyped args) -> void
+
+    def invert_create_view: (Array[untyped] args) -> [Symbol, Array[untyped]]
+
+    def invert_drop_view: (Array[untyped] args) -> [Symbol, Array[untyped]]
+
+    def invert_update_view: (Array[untyped] args) -> [Symbol, Array[untyped]]
+
+    def invert_replace_view: (Array[untyped] args) -> [Symbol, Array[untyped]]
+
+    private
+
+    def perform_scenic_inversion: (Symbol method, Array[untyped] args) -> [Symbol, Array[untyped]]
+  end
+end
