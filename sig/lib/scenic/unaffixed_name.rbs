@@ -1,0 +1,28 @@
+module Scenic
+  # The name of a view or table according to rails.
+  #
+  # This removes any table name prefix or suffix that is configured via
+  # ActiveRecord. This allows, for example, the SchemaDumper to dump a view with
+  # its unaffixed name, consistent with how rails handles table dumping.
+  class UnaffixedName
+    @name: String
+
+    @config: untyped
+
+    # Gets the unaffixed name for the provided string
+    # @return [String]
+    #
+    # @param name [String] The (potentially) affixed view name
+    def self.for: (String name) -> String
+
+    def initialize: (String name, config: untyped) -> void
+
+    def call: () -> String
+
+    private
+
+    attr_reader name: String
+
+    attr_reader config: untyped
+  end
+end
