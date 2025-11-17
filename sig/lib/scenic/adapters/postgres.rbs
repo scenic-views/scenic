@@ -48,7 +48,7 @@ module Scenic
       # @param sql_definition The SQL schema for the view.
       #
       # @return [void]
-      def create_view: (String name, String sql_definition) -> void
+      def create_view: (String | Symbol name, String sql_definition) -> void
 
       # Updates a view in the database.
       #
@@ -66,7 +66,7 @@ module Scenic
       # @param sql_definition The SQL schema for the updated view.
       #
       # @return [void]
-      def update_view: (String name, String sql_definition) -> void
+      def update_view: (String | Symbol name, String sql_definition) -> void
 
       # Replaces a view in the database using `CREATE OR REPLACE VIEW`.
       #
@@ -89,7 +89,7 @@ module Scenic
       # @param sql_definition The SQL schema for the updated view.
       #
       # @return [void]
-      def replace_view: (String name, String sql_definition) -> void
+      def replace_view: (String | Symbol name, String sql_definition) -> void
 
       # Drops the named view from the database
       #
@@ -98,7 +98,7 @@ module Scenic
       # @param name The name of the view to drop
       #
       # @return [void]
-      def drop_view: (String name) -> void
+      def drop_view: (String | Symbol name) -> void
 
       # Creates a materialized view in the database
       #
@@ -114,7 +114,7 @@ module Scenic
       #   in use does not support materialized views.
       #
       # @return [void]
-      def create_materialized_view: (String name, String sql_definition, ?no_data: bool) -> void
+      def create_materialized_view: (String | Symbol name, String sql_definition, ?no_data: bool) -> void
 
       # Updates a materialized view in the database.
       #
@@ -137,7 +137,7 @@ module Scenic
       #   in use does not support materialized views.
       #
       # @return [void]
-      def update_materialized_view: (String name, String sql_definition, ?no_data: bool, ?side_by_side: bool) -> void
+      def update_materialized_view: (String | Symbol name, String sql_definition, ?no_data: bool, ?side_by_side: bool) -> void
 
       # Drops a materialized view in the database
       #
@@ -148,7 +148,7 @@ module Scenic
       #   in use does not support materialized views.
       #
       # @return [void]
-      def drop_materialized_view: (String name) -> void
+      def drop_materialized_view: (String | Symbol name) -> void
 
       # Refreshes a materialized view from its SQL schema.
       #

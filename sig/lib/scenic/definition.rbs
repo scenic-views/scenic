@@ -5,7 +5,7 @@ module Scenic
 
     @version: Integer
 
-    def initialize: (String | Symbol name, Integer version) -> void
+    def initialize: (String | Symbol name, Integer? version) -> void
 
     def to_sql: () -> String
 
