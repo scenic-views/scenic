@@ -3,6 +3,10 @@ module Scenic
   module SchemaDumper
     @dumpable_views_in_database: Array[View]
 
+    # These methods are provided by the prepended class (ActiveRecord::SchemaDumper)
+    private def indexes: (String table_name, untyped stream) -> void
+    private def ignored?: (String table_name) -> bool
+
     def tables: (untyped stream) -> void
 
     def views: (untyped stream) -> void

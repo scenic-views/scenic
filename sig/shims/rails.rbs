@@ -11,19 +11,72 @@ module ActiveRecord
   end
 
   module ConnectionAdapters
+    # AbstractAdapter gets Scenic::Statements included into it
+    # Scenic methods can call these AbstractAdapter methods:
     class AbstractAdapter
+      # Check if a database transaction is currently open
+      def transaction_open?: () -> bool
     end
   end
 
   module Migration
+    # CommandRecorder gets Scenic::CommandRecorder included into it
+    # Scenic methods can call these CommandRecorder methods:
     class CommandRecorder
+      # Record a migration command for reversibility
+      def record: (Symbol command, Array[untyped] args) -> void
     end
   end
 
+  # SchemaDumper gets Scenic::SchemaDumper prepended to it
+  # Scenic methods can call these SchemaDumper methods:
   class SchemaDumper
+    # Dump table indexes to the schema
+    def indexes: (String table_name, untyped stream) -> void
+
+    # Check if a table should be ignored in schema dump
+    def ignored?: (String table_name) -> bool
+
+    # Dump all tables (overridden by Scenic to also dump views)
+    def tables: (untyped stream) -> void
   end
 end
 
 module ActiveSupport
   def self.on_load: (Symbol hook) { () -> void } -> void
+end
+
+class Object
+  def present?: () -> bool
+  def blank?: () -> bool
+end
+
+class NilClass
+  def present?: () -> false
+  def blank?: () -> true
+end
+
+class Date
+  def present?: () -> true
+  def blank?: () -> false
+end
+
+class Numeric
+  def present?: () -> true
+  def blank?: () -> false
+end
+
+class TrueClass
+  def present?: () -> true
+  def blank?: () -> false
+end
+
+class FalseClass
+  def present?: () -> false
+  def blank?: () -> true
+end
+
+class File
+  # File.read can accept Pathname objects
+  def self.read: (String | Pathname path, ?Integer? length, ?Integer offset, **untyped options) -> String
 end

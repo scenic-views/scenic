@@ -1,6 +1,9 @@
 module Scenic
   # @api private
   module CommandRecorder
+    # These methods are provided by the including class (ActiveRecord::Migration::CommandRecorder)
+    private def record: (Symbol command, Array[untyped] args) -> void
+
     def create_view: (*untyped args) -> void
 
     def drop_view: (*untyped args) -> void

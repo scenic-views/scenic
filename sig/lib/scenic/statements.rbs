@@ -1,6 +1,9 @@
 module Scenic
   # Methods that are made available in migrations for managing Scenic views.
   module Statements
+    # This method is provided by the including class (ActiveRecord::ConnectionAdapters::AbstractAdapter)
+    private def transaction_open?: () -> bool
+
     type materialized_arg = bool | { no_data: bool } | { side_by_side: bool }
     def create_view: ((String | Symbol) name, ?version: Integer?, ?materialized: materialized_arg) -> void
                    | ((String | Symbol) name, ?sql_definition: String?, ?materialized: materialized_arg) -> void
