@@ -1,0 +1,46 @@
+module Scenic
+  # The in-memory representation of a view definition.
+  #
+  # **This object is used internally by adapters and the schema dumper and is
+  # not intended to be used by application code. It is documented here for
+  # use by adapter gems.**
+  #
+  # @api extension
+  class View
+    @name: String
+
+    @definition: String
+
+    @materialized: bool
+
+    # The name of the view
+    # @return [String]
+    attr_reader name: String
+
+    # The SQL schema for the query that defines the view
+    # @return [String]
+    #
+    # @example
+    #   "SELECT name, email FROM users UNION SELECT name, email FROM contacts"
+    attr_reader definition: String
+
+    # True if the view is materialized
+    # @return [Boolean]
+    attr_reader materialized: bool
+
+    # Returns a new instance of View.
+    #
+    # @param name [String] The name of the view.
+    # @param definition [String] The SQL for the query that defines the view.
+    # @param materialized [Boolean] `true` if the view is materialized.
+    def initialize: (name: String, definition: String, materialized: bool) -> void
+
+    # @api private
+    def ==: (untyped other) -> bool
+
+    # @api private
+    def to_schema: () -> String
+
+    def escaped_definition: () -> String
+  end
+end

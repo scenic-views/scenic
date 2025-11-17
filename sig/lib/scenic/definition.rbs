@@ -1,0 +1,24 @@
+module Scenic
+  # @api private
+  class Definition
+    @name: String
+
+    @version: Integer
+
+    def initialize: (String | Symbol name, Integer version) -> void
+
+    def to_sql: () -> String
+
+    def full_path: () -> Pathname
+
+    def path: () -> String
+
+    def version: () -> String
+
+    private
+
+    attr_reader name: String
+
+    def filename: () -> String
+  end
+end

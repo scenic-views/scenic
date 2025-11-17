@@ -1,25 +1,25 @@
 module Scenic
-  self.@configuration: untyped
+  self.@configuration: Configuration
 
   class Configuration
-    @database: untyped
+    @database: Adapters::Postgres
 
     # The Scenic database adapter instance to use when executing SQL.
     #
     # Defaults to an instance of {Adapters::Postgres}
     # @return Scenic adapter
-    attr_accessor database: untyped
+    attr_accessor database: Adapters::Postgres
 
     def initialize: () -> void
   end
 
   # @return [Scenic::Configuration] Scenic's current configuration
-  def self.configuration: () -> untyped
+  def self.configuration: () -> Configuration
 
   # Set Scenic's configuration
   #
   # @param config [Scenic::Configuration]
-  def self.configuration=: (untyped config) -> untyped
+  def self.configuration=: (Configuration config) -> Configuration
 
   # Modify Scenic's current configuration
   #
@@ -29,5 +29,5 @@ module Scenic
   #   config.database = Scenic::Adapters::Postgres.new
   # end
   # ```
-  def self.configure: () { (untyped) -> untyped } -> untyped
+  def self.configure: () { (Configuration) -> void } -> Configuration
 end
