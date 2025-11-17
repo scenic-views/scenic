@@ -1,0 +1,8 @@
+module Scenic
+  # Automatically initializes Scenic in the context of a Rails application when
+  # ActiveRecord is loaded.
+  #
+  # @see Scenic.load
+  class Railtie < Rails::Railtie
+  end
+end
