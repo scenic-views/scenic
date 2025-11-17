@@ -1,0 +1,29 @@
+# Minimal Rails type definitions for Scenic
+module Rails
+  class Railtie
+  end
+
+  def self.root: () -> Pathname
+end
+
+module ActiveRecord
+  class Base
+  end
+
+  module ConnectionAdapters
+    class AbstractAdapter
+    end
+  end
+
+  module Migration
+    class CommandRecorder
+    end
+  end
+
+  class SchemaDumper
+  end
+end
+
+module ActiveSupport
+  def self.on_load: (Symbol hook) { () -> void } -> void
+end
