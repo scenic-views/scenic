@@ -75,12 +75,39 @@ describe Scenic::Generators::ViewGenerator, :generator do
     end
   end
 
+  context "when pluralize_table_names set to 'false'" do
+    around do |example|
+      with_singular_table_names(&example)
+    end
+
+    it "creates a singularized view definition and migration file" do
+      view_definition = file("db/views/search_v01.sql")
+      run_generator ["search"]
+      expect(view_definition).to exist
+      migration = migration_file("db/migrate/create_search.rb")
+      expect(migration).to contain(/class CreateSearch/)
+      expect(migration).to contain(/create_view :search/)
+    end
+
+    it "updates an existing singularized view" do
+      with_view_definition("search", 1, "hello") do
+        migration = file("db/migrate/update_search_to_version_2.rb")
+        view_definition = file("db/views/search_v02.sql")
+        allow(Dir).to receive(:entries).and_return(["search_v01.sql"])
+
+        run_generator ["search"]
+
+        expect(migration).to be_a_migration
+        expect(view_definition).to exist
+      end
+    end
+  end
+
   context "for views created in a schema other than 'public'" do
     it "creates a view definition" do
       view_definition = file("db/views/non_public_searches_v01.sql")
 
       run_generator ["non_public.search"]
-
       expect(view_definition).to exist
     end
 
