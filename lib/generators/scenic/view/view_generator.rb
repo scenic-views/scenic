@@ -12,9 +12,9 @@ module Scenic
       source_root File.expand_path("templates", __dir__)
 
       def create_views_directory
-        unless views_directory_path.exist?
-          empty_directory(views_directory_path)
-        end
+        return if views_directory_path.exist?
+
+        empty_directory(views_directory_path)
       end
 
       def create_view_definition
@@ -29,12 +29,12 @@ module Scenic
         if creating_new_view? || destroying_initial_view?
           migration_template(
             "db/migrate/create_view.erb",
-            "db/migrate/create_#{plural_file_name}.rb"
+            "db/migrate/create_#{canonical_file_name}.rb"
           )
         else
           migration_template(
             "db/migrate/update_view.erb",
-            "db/migrate/update_#{plural_file_name}_to_version_#{version}.rb"
+            "db/migrate/update_#{canonical_file_name}_to_version_#{version}.rb"
           )
         end
       end
@@ -57,9 +57,13 @@ module Scenic
 
         def migration_class_name
           if creating_new_view?
-            "Create#{class_name.tr(".", "").pluralize}"
+            name = class_name.tr(".", "")
+            name = name.pluralize if pluralize_table_names?
+            "Create#{name}"
           else
-            "Update#{class_name.pluralize}ToVersion#{version}"
+            name = class_name
+            name = name.pluralize if pluralize_table_names?
+            "Update#{name}ToVersion#{version}"
           end
         end
 
@@ -80,12 +84,16 @@ module Scenic
         super.tr(".", "_")
       end
 
+      def canonical_file_name
+        pluralize_table_names? ? plural_file_name : file_name
+      end
+
       def views_directory_path
         @views_directory_path ||= Rails.root.join("db", "views")
       end
 
       def version_regex
-        /\A#{plural_file_name}_v(?<version>\d+)\.sql\z/
+        /\A#{canonical_file_name}_v(?<version>\d+)\.sql\z/
       end
 
       def creating_new_view?
@@ -93,22 +101,23 @@ module Scenic
       end
 
       def definition
-        Scenic::Definition.new(plural_file_name, version)
+        Scenic::Definition.new(canonical_file_name, version)
       end
 
       def previous_definition
-        Scenic::Definition.new(plural_file_name, previous_version)
+        Scenic::Definition.new(canonical_file_name, previous_version)
       end
 
       def destroying?
         behavior == :revoke
       end
 
-      def formatted_plural_name
-        if plural_name.include?(".")
-          "\"#{plural_name}\""
+      def formatted_name
+        name = pluralize_table_names? ? plural_name : singular_name
+        if name.include?(".")
+          "\"#{name}\""
         else
-          ":#{plural_name}"
+          ":#{name}"
         end
       end
 
