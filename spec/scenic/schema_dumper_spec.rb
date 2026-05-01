@@ -7,6 +7,41 @@ class SearchInAHaystack < ActiveRecord::Base
 end
 
 describe Scenic::SchemaDumper, :db do
+  describe "adapter resolution from connection" do
+    let(:dumper) do
+      klass = Class.new(ActiveRecord::SchemaDumper) { prepend Scenic::SchemaDumper }
+      klass.allocate
+    end
+
+    def connection_with_db_config_name(name)
+      pool = double(db_config: double(name: name))
+      double(pool: pool)
+    end
+
+    it "resolves :default for the primary connection" do
+      dumper.instance_variable_set(:@connection, connection_with_db_config_name("primary"))
+
+      expect(dumper.send(:scenic_database)).to eq :default
+    end
+
+    it "resolves the database symbol for a secondary connection" do
+      dumper.instance_variable_set(:@connection, connection_with_db_config_name("secondary"))
+
+      expect(dumper.send(:scenic_database)).to eq :secondary
+    end
+
+    it "asks the resolved adapter for views, not the global default" do
+      secondary_adapter = instance_double("Scenic::Adapters::Postgres", views: [])
+      allow(Scenic).to receive(:database).with(:secondary).and_return(secondary_adapter)
+
+      dumper.instance_variable_set(:@connection, connection_with_db_config_name("secondary"))
+      dumper.send(:dumpable_views_in_database)
+
+      expect(secondary_adapter).to have_received(:views)
+    end
+  end
+
+
   it "dumps a create_view for a view in the database" do
     view_definition = "SELECT 'needle'::text AS haystack"
     Search.connection.create_view :searches, sql_definition: view_definition
