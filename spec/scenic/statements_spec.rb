@@ -437,6 +437,66 @@ module Scenic
           expect(mysql_call[:args][:name]).to eq :aggregates
         end
 
+        it "infers the database from the current connection's db_config name" do
+          primary_adapter = FakeAdapter.new("Primary")
+          secondary_adapter = FakeAdapter.new("Secondary")
+
+          Scenic.configure do |config|
+            config.databases[:default] = primary_adapter
+            config.databases[:secondary] = secondary_adapter
+          end
+
+          allow(Definition).to receive(:new).and_return(
+            instance_double("Definition", to_sql: "SELECT 1")
+          )
+
+          conn = connection(pool: fake_pool("secondary"))
+          conn.create_view(:analytics, version: 1)
+
+          expect(secondary_adapter.call_count(:create_view)).to eq 1
+          expect(primary_adapter.call_count(:create_view)).to eq 0
+        end
+
+        it "uses the default adapter when the current connection is primary" do
+          primary_adapter = FakeAdapter.new("Primary")
+          secondary_adapter = FakeAdapter.new("Secondary")
+
+          Scenic.configure do |config|
+            config.databases[:default] = primary_adapter
+            config.databases[:secondary] = secondary_adapter
+          end
+
+          allow(Definition).to receive(:new).and_return(
+            instance_double("Definition", to_sql: "SELECT 1")
+          )
+
+          conn = connection(pool: fake_pool("primary"))
+          conn.create_view(:users, version: 1)
+
+          expect(primary_adapter.call_count(:create_view)).to eq 1
+          expect(secondary_adapter.call_count(:create_view)).to eq 0
+        end
+
+        it "lets explicit database: override the current connection inference" do
+          primary_adapter = FakeAdapter.new("Primary")
+          secondary_adapter = FakeAdapter.new("Secondary")
+
+          Scenic.configure do |config|
+            config.databases[:default] = primary_adapter
+            config.databases[:secondary] = secondary_adapter
+          end
+
+          allow(Definition).to receive(:new).and_return(
+            instance_double("Definition", to_sql: "SELECT 1")
+          )
+
+          conn = connection(pool: fake_pool("secondary"))
+          conn.create_view(:override_view, version: 1, database: :default)
+
+          expect(primary_adapter.call_count(:create_view)).to eq 1
+          expect(secondary_adapter.call_count(:create_view)).to eq 0
+        end
+
         it "does not cross-contaminate adapter calls" do
           adapter_a = FakeAdapter.new("AdapterA")
           adapter_b = FakeAdapter.new("AdapterB")
@@ -465,16 +525,23 @@ module Scenic
       end
     end
 
-    def connection(transactions_enabled: true)
-      DummyConnection.new(transactions_enabled: transactions_enabled)
+    def connection(transactions_enabled: true, pool: nil)
+      DummyConnection.new(transactions_enabled: transactions_enabled, pool: pool)
+    end
+
+    def fake_pool(config_name)
+      Struct.new(:db_config).new(Struct.new(:name).new(config_name))
     end
   end
 
   class DummyConnection
     include Statements
 
-    def initialize(transactions_enabled:)
+    attr_reader :pool
+
+    def initialize(transactions_enabled:, pool: nil)
       @transactions_enabled = transactions_enabled
+      @pool = pool
     end
 
     def transaction_open?

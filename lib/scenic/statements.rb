@@ -14,7 +14,11 @@ module Scenic
     # @option materialized [Boolean] :no_data (false) Set to true to create
     #   materialized view without running the associated query. You will need
     #   to perform a non-concurrent refresh to populate with data.
-    # @param database [Symbol] The database to use. Defaults to :default.
+    # @param database [Symbol] Override the database used for this
+    #   operation. When omitted, Scenic infers the database from the
+    #   active ActiveRecord connection — so a migration running under
+    #   `db:migrate:secondary` automatically targets `:secondary`.
+    #   Pass an explicit symbol to override the connection's default.
     # @return The database response from executing the create statement.
     #
     # @example Create from `db/views/searches_v02.sql`
@@ -28,7 +32,7 @@ module Scenic
     # @example Create view on secondary database
     #   create_view(:searches, version: 2, database: :secondary)
     #
-    def create_view(name, version: nil, sql_definition: nil, materialized: false, database: :default)
+    def create_view(name, version: nil, sql_definition: nil, materialized: false, database: nil)
       if version.present? && sql_definition.present?
         raise(
           ArgumentError,
@@ -40,18 +44,19 @@ module Scenic
         version = 1
       end
 
-      sql_definition ||= definition(name, version, database)
+      effective_database = database_for(database)
+      sql_definition ||= definition(name, version, effective_database)
 
       if materialized
         options = materialized_options(materialized)
 
-        Scenic.database(database).create_materialized_view(
+        Scenic.database(effective_database).create_materialized_view(
           name,
           sql_definition,
           no_data: options[:no_data]
         )
       else
-        Scenic.database(database).create_view(name, sql_definition)
+        Scenic.database(effective_database).create_view(name, sql_definition)
       end
     end
 
@@ -63,17 +68,22 @@ module Scenic
     #   `version` argument to {#create_view}.
     # @param materialized [Boolean] Set to true if dropping a meterialized view.
     #   defaults to false.
-    # @param database [Symbol] The database to use. Defaults to :default.
+    # @param database [Symbol] Override the database used for this
+    #   operation. When omitted, Scenic infers the database from the
+    #   active ActiveRecord connection — so a migration running under
+    #   `db:migrate:secondary` automatically targets `:secondary`.
+    #   Pass an explicit symbol to override the connection's default.
     # @return The database response from executing the drop statement.
     #
     # @example Drop a view, rolling back to version 3 on rollback
     #   drop_view(:users_who_recently_logged_in, revert_to_version: 3)
     #
-    def drop_view(name, revert_to_version: nil, materialized: false, database: :default)
+    def drop_view(name, revert_to_version: nil, materialized: false, database: nil)
+      effective_database = database_for(database)
       if materialized
-        Scenic.database(database).drop_materialized_view(name)
+        Scenic.database(effective_database).drop_materialized_view(name)
       else
-        Scenic.database(database).drop_view(name)
+        Scenic.database(effective_database).drop_view(name)
       end
     end
 
@@ -101,13 +111,17 @@ module Scenic
     #   The view is initially updated with a temporary name and atomically
     #   swapped once it is successfully created with data. Cannot be combined
     #   with the :no_data option.
-    # @param database [Symbol] The database to use. Defaults to :default.
+    # @param database [Symbol] Override the database used for this
+    #   operation. When omitted, Scenic infers the database from the
+    #   active ActiveRecord connection — so a migration running under
+    #   `db:migrate:secondary` automatically targets `:secondary`.
+    #   Pass an explicit symbol to override the connection's default.
     # @return The database response from executing the create statement.
     #
     # @example
     #   update_view :engagement_reports, version: 3, revert_to_version: 2
     #   update_view :comments, version: 2, revert_to_version: 1, materialized: { side_by_side: true }
-    def update_view(name, version: nil, sql_definition: nil, revert_to_version: nil, materialized: false, database: :default)
+    def update_view(name, version: nil, sql_definition: nil, revert_to_version: nil, materialized: false, database: nil)
       if version.blank? && sql_definition.blank?
         raise(
           ArgumentError,
@@ -122,7 +136,8 @@ module Scenic
         )
       end
 
-      sql_definition ||= definition(name, version, database)
+      effective_database = database_for(database)
+      sql_definition ||= definition(name, version, effective_database)
 
       if materialized
         options = materialized_options(materialized)
@@ -138,14 +153,14 @@ module Scenic
           raise "a transaction is required to perform a side-by-side update"
         end
 
-        Scenic.database(database).update_materialized_view(
+        Scenic.database(effective_database).update_materialized_view(
           name,
           sql_definition,
           no_data: options[:no_data],
           side_by_side: options[:side_by_side]
         )
       else
-        Scenic.database(database).update_view(name, sql_definition)
+        Scenic.database(effective_database).update_view(name, sql_definition)
       end
     end
 
@@ -160,13 +175,17 @@ module Scenic
     # @param version [Fixnum] The version number of the view.
     # @param revert_to_version [Fixnum] The version number to rollback to on
     #   `rake db rollback`
-    # @param database [Symbol] The database to use. Defaults to :default.
+    # @param database [Symbol] Override the database used for this
+    #   operation. When omitted, Scenic infers the database from the
+    #   active ActiveRecord connection — so a migration running under
+    #   `db:migrate:secondary` automatically targets `:secondary`.
+    #   Pass an explicit symbol to override the connection's default.
     # @return The database response from executing the create statement.
     #
     # @example
     #   replace_view :engagement_reports, version: 3, revert_to_version: 2
     #
-    def replace_view(name, version: nil, revert_to_version: nil, materialized: false, database: :default)
+    def replace_view(name, version: nil, revert_to_version: nil, materialized: false, database: nil)
       if version.blank?
         raise ArgumentError, "version is required"
       end
@@ -175,12 +194,21 @@ module Scenic
         raise ArgumentError, "Cannot replace materialized views"
       end
 
-      sql_definition = definition(name, version, database)
+      effective_database = database_for(database)
+      sql_definition = definition(name, version, effective_database)
 
-      Scenic.database(database).replace_view(name, sql_definition)
+      Scenic.database(effective_database).replace_view(name, sql_definition)
     end
 
     private
+
+    def database_for(explicit)
+      return explicit if explicit
+      return :default unless respond_to?(:pool)
+      pool_obj = pool
+      return :default unless pool_obj.respond_to?(:db_config)
+      Scenic::DatabasePaths.database_for_config_name(pool_obj.db_config.name)
+    end
 
     def definition(name, version, database = nil)
       db = (database == :default) ? nil : database

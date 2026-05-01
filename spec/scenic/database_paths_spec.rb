@@ -24,6 +24,21 @@ describe Scenic::DatabasePaths do
     end
   end
 
+  describe ".database_for_config_name" do
+    it "maps Rails' \"primary\" to :default" do
+      expect(described_class.database_for_config_name("primary")).to eq :default
+    end
+
+    it "maps nil to :default" do
+      expect(described_class.database_for_config_name(nil)).to eq :default
+    end
+
+    it "passes through other names as symbols" do
+      expect(described_class.database_for_config_name("secondary")).to eq :secondary
+      expect(described_class.database_for_config_name("warehouse")).to eq :warehouse
+    end
+  end
+
   describe ".views_path" do
     it "returns db/views for the default database" do
       expect(described_class.views_path(:default)).to eq Rails.root.join("db/views")

@@ -16,6 +16,11 @@ module Scenic
       database.to_s
     end
 
+    def self.database_for_config_name(config_name)
+      return DEFAULT if config_name.nil? || config_name == "primary"
+      config_name.to_sym
+    end
+
     def self.views_path(database)
       if default?(database)
         Rails.root.join("db/views")
