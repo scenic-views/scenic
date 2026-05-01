@@ -31,11 +31,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ruby: ["3.4", "3.3"]
-        rails: ["8.0", "7.2"]
+        ruby: ["4.0", "3.4", "3.3"]
+        rails: ["8.1", "8.0", "7.2"]
         continue-on-error: [false]
         include:
-          - ruby: "3.4"
+          - ruby: "head"
+            rails: "8.1"
+            continue-on-error: true
+          - ruby: "4.0"
             rails: "main"
             continue-on-error: true
           - ruby: "head"
