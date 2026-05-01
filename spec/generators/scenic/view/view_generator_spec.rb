@@ -75,6 +75,22 @@ describe Scenic::Generators::ViewGenerator, :generator do
     end
   end
 
+  context "when --database is omitted" do
+    it "does not call ActiveRecord::Base.configurations.configs_for" do
+      expect(ActiveRecord::Base.configurations).not_to receive(:configs_for)
+
+      run_generator ["search"]
+    end
+  end
+
+  context "when --database is :default" do
+    it "does not call ActiveRecord::Base.configurations.configs_for" do
+      expect(ActiveRecord::Base.configurations).not_to receive(:configs_for)
+
+      run_generator ["search", "--database=default"]
+    end
+  end
+
   context "when --database is set" do
     let(:secondary_config_hash) do
       {
