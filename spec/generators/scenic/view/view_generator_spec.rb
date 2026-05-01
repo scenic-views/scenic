@@ -91,6 +91,14 @@ describe Scenic::Generators::ViewGenerator, :generator do
     end
   end
 
+  context "when --database points to an unconfigured database" do
+    it "raises naming the typo and the configured databases" do
+      expect {
+        run_generator ["search", "--database=secondry"]
+      }.to raise_error(ArgumentError, /secondry.*primary|primary.*secondry/m)
+    end
+  end
+
   context "when --database is set" do
     let(:secondary_config_hash) do
       {
@@ -108,6 +116,7 @@ describe Scenic::Generators::ViewGenerator, :generator do
     end
 
     def stub_secondary_config(db_config)
+      allow(ActiveRecord::Base.configurations).to receive(:configs_for).and_call_original
       allow(ActiveRecord::Base.configurations).to receive(:configs_for)
         .with(env_name: Rails.env, name: "secondary")
         .and_return(db_config)

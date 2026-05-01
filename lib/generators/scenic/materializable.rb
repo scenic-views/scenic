@@ -53,7 +53,27 @@ module Scenic
       end
 
       def database
-        options[:database]&.to_sym
+        return nil unless options[:database]
+        validated_database
+      end
+
+      def validated_database
+        @validated_database ||= begin
+          name = options[:database].to_sym
+          if name == :default || configured_database_names.include?(name)
+            name
+          else
+            raise ArgumentError,
+              "Unknown database :#{name}. Configured databases: " \
+              "#{configured_database_names.inspect}"
+          end
+        end
+      end
+
+      def configured_database_names
+        @configured_database_names ||= ActiveRecord::Base.configurations
+          .configs_for(env_name: Rails.env)
+          .map { |config| config.name.to_sym }
       end
 
       def materialized_view_update_options
