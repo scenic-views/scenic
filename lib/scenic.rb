@@ -34,4 +34,19 @@ module Scenic
   def self.database(name = :default)
     configuration.database_adapter(name)
   end
+
+  # Returns a Scenic adapter scoped to the given connectable.
+  #
+  # The connectable is anything that responds to `.connection` —
+  # typically an ActiveRecord model class. This is the connection-first
+  # entry point used by generated materialized-view models so that
+  # operations on, say, an `--database=secondary` model run against the
+  # secondary connection without consulting Scenic.configuration.
+  #
+  # @param connectable [#connection] An object that returns the connection
+  #   for Scenic to use.
+  # @return [Scenic::Adapters::Postgres]
+  def self.adapter_for(connectable)
+    Adapters::Postgres.new(connectable)
+  end
 end

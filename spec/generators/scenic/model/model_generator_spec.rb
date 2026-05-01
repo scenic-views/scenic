@@ -40,5 +40,13 @@ module Scenic::Generators
       expect(model_definition).to contain("self.populated?")
       expect(model_definition).to have_correct_syntax
     end
+
+    it "routes materialized helpers through the model's own connection" do
+      run_generator ["active_user", "--materialized"]
+      model_definition = file("app/models/active_user.rb")
+
+      expect(model_definition).to contain("Scenic.adapter_for(self)")
+      expect(model_definition).not_to contain("Scenic.database")
+    end
   end
 end
