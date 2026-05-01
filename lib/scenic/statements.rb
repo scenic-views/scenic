@@ -211,8 +211,7 @@ module Scenic
     end
 
     def definition(name, version, database = nil)
-      db = (database == :default) ? nil : database
-      Scenic::Definition.new(name, version, database: db).to_sql
+      Scenic::Definition.new(name, version, database: database).to_sql
     end
 
     def materialized_options(materialized)

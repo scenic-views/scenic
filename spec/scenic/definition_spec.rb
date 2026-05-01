@@ -67,6 +67,32 @@ module Scenic
 
         expect(definition.path).to eq "db/warehouse_views/reports_v05.sql"
       end
+
+      it "honors an explicit views_path keyword over database conventions" do
+        definition = Definition.new(
+          "analytics",
+          1,
+          database: :secondary,
+          views_path: Rails.root.join("db/custom_views")
+        )
+
+        expect(definition.path).to eq "db/custom_views/analytics_v01.sql"
+      end
+
+      it "uses views_paths configured in database.yml" do
+        secondary_config = ActiveRecord::DatabaseConfigurations::HashConfig.new(
+          Rails.env,
+          "secondary",
+          {adapter: "postgresql", database: "x", views_paths: "db/custom_views"}
+        )
+        allow(ActiveRecord::Base.configurations).to receive(:configs_for)
+          .with(env_name: Rails.env, name: "secondary")
+          .and_return(secondary_config)
+
+        definition = Definition.new("analytics", 1, database: :secondary)
+
+        expect(definition.path).to eq "db/custom_views/analytics_v01.sql"
+      end
     end
 
     describe "full_path" do

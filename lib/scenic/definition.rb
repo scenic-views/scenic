@@ -1,10 +1,11 @@
 module Scenic
   # @api private
   class Definition
-    def initialize(name, version, database: nil)
+    def initialize(name, version, database: nil, views_path: nil)
       @name = name.to_s
       @version = version.to_i
       @database = database
+      @views_path = views_path
     end
 
     def to_sql
@@ -16,16 +17,11 @@ module Scenic
     end
 
     def full_path
-      Rails.root.join(path)
+      views_path.join(filename)
     end
 
     def path
-      views_dir = if @database && @database != :default
-        "#{@database}_views"
-      else
-        "views"
-      end
-      File.join("db", views_dir, filename)
+      full_path.relative_path_from(Rails.root).to_s
     end
 
     def version
@@ -35,6 +31,10 @@ module Scenic
     private
 
     attr_reader :name
+
+    def views_path
+      @views_path ||= Scenic::DatabasePaths.views_path(@database)
+    end
 
     def filename
       "#{UnaffixedName.for(name).tr(".", "_")}_v#{version}.sql"
