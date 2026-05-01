@@ -81,35 +81,11 @@ module Scenic
       end
 
       def views_directory_path
-        @views_directory_path ||=
-          if different_database_set?
-            Rails.root.join(configured_views_path || "db/#{database}_views")
-          else
-            Rails.root.join("db/views")
-          end
+        @views_directory_path ||= Scenic::DatabasePaths.views_path(database)
       end
 
       def migration_directory
-        if different_database_set?
-          configured_migration_path || "db/#{database}_migrate"
-        else
-          "db/migrate"
-        end
-      end
-
-      def configured_views_path
-        Array(db_config&.configuration_hash&.dig(:views_paths)).first
-      end
-
-      def configured_migration_path
-        Array(db_config&.migrations_paths).first
-      end
-
-      def db_config
-        @db_config ||= ActiveRecord::Base.configurations.configs_for(
-          env_name: Rails.env,
-          name: database.to_s
-        )
+        Scenic::DatabasePaths.migrations_path(database)
       end
 
       def different_database_set?
