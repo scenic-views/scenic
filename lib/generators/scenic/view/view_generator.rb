@@ -125,11 +125,11 @@ module Scenic
       end
 
       def definition
-        Scenic::Definition.new(plural_file_name, version, database)
+        Scenic::Definition.new(plural_file_name, version, database: database)
       end
 
       def previous_definition
-        Scenic::Definition.new(plural_file_name, previous_version, database)
+        Scenic::Definition.new(plural_file_name, previous_version, database: database)
       end
 
       def destroying?

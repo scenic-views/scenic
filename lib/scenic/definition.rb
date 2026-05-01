@@ -1,7 +1,7 @@
 module Scenic
   # @api private
   class Definition
-    def initialize(name, version, database = nil)
+    def initialize(name, version, database: nil)
       @name = name.to_s
       @version = version.to_i
       @database = database

@@ -45,25 +45,25 @@ module Scenic
       end
 
       it "returns path in secondary_views for secondary database" do
-        definition = Definition.new("analytics", 1, :secondary)
+        definition = Definition.new("analytics", 1, database: :secondary)
 
         expect(definition.path).to eq "db/secondary_views/analytics_v01.sql"
       end
 
       it "returns path in views for default database" do
-        definition = Definition.new("analytics", 1, :default)
+        definition = Definition.new("analytics", 1, database: :default)
 
         expect(definition.path).to eq "db/views/analytics_v01.sql"
       end
 
       it "returns path in views for nil database" do
-        definition = Definition.new("analytics", 1, nil)
+        definition = Definition.new("analytics", 1, database: nil)
 
         expect(definition.path).to eq "db/views/analytics_v01.sql"
       end
 
       it "handles custom database names in path" do
-        definition = Definition.new("reports", 5, :warehouse)
+        definition = Definition.new("reports", 5, database: :warehouse)
 
         expect(definition.path).to eq "db/warehouse_views/reports_v05.sql"
       end
