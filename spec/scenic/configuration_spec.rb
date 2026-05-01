@@ -40,8 +40,12 @@ module Scenic
       expect(Scenic.database(:secondary)).to eq secondary_adapter
     end
 
-    it "returns default adapter when database not found" do
-      expect(Scenic.database(:nonexistent)).to eq Scenic.database(:default)
+    it "raises UnknownDatabaseError when database not found" do
+      expect { Scenic.database(:nonexistent) }
+        .to raise_error(
+          Scenic::UnknownDatabaseError,
+          /:nonexistent is not a configured Scenic database/
+        )
     end
 
     it "database= sets the default adapter" do
