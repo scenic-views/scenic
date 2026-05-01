@@ -30,7 +30,7 @@ module Scenic
         class_option :database,
           type: :string,
           required: false,
-          desc: "The database to use (requires Rails 6.0+)",
+          desc: "The database to use",
           default: nil
       end
 
@@ -54,16 +54,6 @@ module Scenic
 
       def database
         options[:database]&.to_sym
-      end
-
-      def validate_rails_version_for_multiple_databases!
-        return unless database
-
-        if Rails::VERSION::MAJOR < 6
-          raise ArgumentError,
-            "Multiple database support requires Rails 6.0 or higher. " \
-            "You are using Rails #{Rails::VERSION::STRING}."
-        end
       end
 
       def materialized_view_update_options

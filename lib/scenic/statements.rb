@@ -14,8 +14,7 @@ module Scenic
     # @option materialized [Boolean] :no_data (false) Set to true to create
     #   materialized view without running the associated query. You will need
     #   to perform a non-concurrent refresh to populate with data.
-    # @param database [Symbol] The database to use (requires Rails 6.0+).
-    #   Defaults to :default.
+    # @param database [Symbol] The database to use. Defaults to :default.
     # @return The database response from executing the create statement.
     #
     # @example Create from `db/views/searches_v02.sql`
@@ -64,8 +63,7 @@ module Scenic
     #   `version` argument to {#create_view}.
     # @param materialized [Boolean] Set to true if dropping a meterialized view.
     #   defaults to false.
-    # @param database [Symbol] The database to use (requires Rails 6.0+).
-    #   Defaults to :default.
+    # @param database [Symbol] The database to use. Defaults to :default.
     # @return The database response from executing the drop statement.
     #
     # @example Drop a view, rolling back to version 3 on rollback
@@ -103,8 +101,7 @@ module Scenic
     #   The view is initially updated with a temporary name and atomically
     #   swapped once it is successfully created with data. Cannot be combined
     #   with the :no_data option.
-    # @param database [Symbol] The database to use (requires Rails 6.0+).
-    #   Defaults to :default.
+    # @param database [Symbol] The database to use. Defaults to :default.
     # @return The database response from executing the create statement.
     #
     # @example
@@ -163,8 +160,7 @@ module Scenic
     # @param version [Fixnum] The version number of the view.
     # @param revert_to_version [Fixnum] The version number to rollback to on
     #   `rake db rollback`
-    # @param database [Symbol] The database to use (requires Rails 6.0+).
-    #   Defaults to :default.
+    # @param database [Symbol] The database to use. Defaults to :default.
     # @return The database response from executing the create statement.
     #
     # @example

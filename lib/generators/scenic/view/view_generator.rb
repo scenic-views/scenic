@@ -11,10 +11,6 @@ module Scenic
 
       source_root File.expand_path("templates", __dir__)
 
-      def validate_multiple_database_support
-        validate_rails_version_for_multiple_databases!
-      end
-
       def create_views_directory
         unless views_directory_path.exist?
           empty_directory(views_directory_path)
