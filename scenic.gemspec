@@ -33,9 +33,9 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "redcarpet"
   spec.add_development_dependency "standard"
 
-  spec.add_dependency "activerecord", ">= 4.0.0"
-  spec.add_dependency "activesupport", ">= 4.0.0"
-  spec.add_dependency "railties", ">= 4.0.0"
+  spec.add_dependency "activerecord", ">= 7.2"
+  spec.add_dependency "activesupport", ">= 7.2"
+  spec.add_dependency "railties", ">= 7.2"
 
-  spec.required_ruby_version = ">= 2.3.0"
+  spec.required_ruby_version = ">= 3.3"
 end
