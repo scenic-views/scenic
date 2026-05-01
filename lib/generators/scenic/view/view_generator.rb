@@ -87,7 +87,9 @@ module Scenic
             name: database_name
           )
 
-          if db_config&.respond_to?(:views_paths) && (configured_path = Array(db_config.views_paths).first)
+          configured_path = Array(db_config&.configuration_hash&.dig(:views_paths)).first
+
+          if configured_path
             Rails.root.join(configured_path)
           else
             conventional_views_path

@@ -75,6 +75,53 @@ describe Scenic::Generators::ViewGenerator, :generator do
     end
   end
 
+  context "when --database is set" do
+    let(:secondary_config_hash) do
+      {
+        adapter: "postgresql",
+        database: "dummy_test2"
+      }
+    end
+
+    def hash_config(extra = {})
+      ActiveRecord::DatabaseConfigurations::HashConfig.new(
+        Rails.env,
+        "secondary",
+        secondary_config_hash.merge(extra)
+      )
+    end
+
+    def stub_secondary_config(db_config)
+      allow(ActiveRecord::Base.configurations).to receive(:configs_for)
+        .with(env_name: Rails.env, name: "secondary")
+        .and_return(db_config)
+    end
+
+    it "creates the configured views_paths directory" do
+      stub_secondary_config(hash_config(views_paths: "db/custom_views"))
+
+      run_generator ["search", "--database=secondary"]
+
+      expect(file("db/custom_views")).to exist
+    end
+
+    it "creates db/<database>_views when views_paths is not configured" do
+      stub_secondary_config(hash_config)
+
+      run_generator ["search", "--database=secondary"]
+
+      expect(file("db/secondary_views")).to exist
+    end
+
+    it "creates db/<database>_views when configs_for returns nil" do
+      stub_secondary_config(nil)
+
+      run_generator ["search", "--database=secondary"]
+
+      expect(file("db/secondary_views")).to exist
+    end
+  end
+
   context "for views created in a schema other than 'public'" do
     it "creates a view definition" do
       view_definition = file("db/views/non_public_searches_v01.sql")
