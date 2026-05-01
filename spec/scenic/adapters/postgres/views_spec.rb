@@ -18,6 +18,14 @@ module Scenic
         expect(first.definition).to eq "SELECT 'Elliot'::text AS name;"
       end
 
+      it "queries view dependencies via the injected connection, not Scenic.database" do
+        injected_connection = double("connection", execute: [])
+
+        Postgres::Views.new(injected_connection).send(:tsorted_views, [])
+
+        expect(injected_connection).to have_received(:execute).with(/pg_depend/)
+      end
+
       it "returns scenic view objects for materialized views" do
         connection = ActiveRecord::Base.connection
         connection.execute <<-SQL

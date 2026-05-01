@@ -37,7 +37,7 @@ module Scenic
         def tsorted_views(views_names)
           views_hash = TSortableHash.new
 
-          ::Scenic.database.execute(DEPENDENT_SQL).each do |relation|
+          connection.execute(DEPENDENT_SQL).each do |relation|
             source_v = [
               relation["source_schema"],
               relation["source_table"]
