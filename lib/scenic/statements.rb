@@ -46,17 +46,18 @@ module Scenic
 
       effective_database = database_for(database)
       sql_definition ||= definition(name, version, effective_database)
+      adapter = adapter_for(database, effective_database)
 
       if materialized
         options = materialized_options(materialized)
 
-        Scenic.database(effective_database).create_materialized_view(
+        adapter.create_materialized_view(
           name,
           sql_definition,
           no_data: options[:no_data]
         )
       else
-        Scenic.database(effective_database).create_view(name, sql_definition)
+        adapter.create_view(name, sql_definition)
       end
     end
 
@@ -80,10 +81,11 @@ module Scenic
     #
     def drop_view(name, revert_to_version: nil, materialized: false, database: nil)
       effective_database = database_for(database)
+      adapter = adapter_for(database, effective_database)
       if materialized
-        Scenic.database(effective_database).drop_materialized_view(name)
+        adapter.drop_materialized_view(name)
       else
-        Scenic.database(effective_database).drop_view(name)
+        adapter.drop_view(name)
       end
     end
 
@@ -138,6 +140,7 @@ module Scenic
 
       effective_database = database_for(database)
       sql_definition ||= definition(name, version, effective_database)
+      adapter = adapter_for(database, effective_database)
 
       if materialized
         options = materialized_options(materialized)
@@ -153,14 +156,14 @@ module Scenic
           raise "a transaction is required to perform a side-by-side update"
         end
 
-        Scenic.database(effective_database).update_materialized_view(
+        adapter.update_materialized_view(
           name,
           sql_definition,
           no_data: options[:no_data],
           side_by_side: options[:side_by_side]
         )
       else
-        Scenic.database(effective_database).update_view(name, sql_definition)
+        adapter.update_view(name, sql_definition)
       end
     end
 
@@ -197,7 +200,7 @@ module Scenic
       effective_database = database_for(database)
       sql_definition = definition(name, version, effective_database)
 
-      Scenic.database(effective_database).replace_view(name, sql_definition)
+      adapter_for(database, effective_database).replace_view(name, sql_definition)
     end
 
     private
@@ -208,6 +211,19 @@ module Scenic
       pool_obj = pool
       return :default unless pool_obj.respond_to?(:db_config)
       Scenic::DatabasePaths.database_for_config_name(pool_obj.db_config.name)
+    end
+
+    def adapter_for(explicit_database, effective_database)
+      registered = Scenic.configuration.databases.key?(effective_database)
+      if explicit_database || registered
+        Scenic.database(effective_database)
+      else
+        Scenic.adapter_for(connection_proxy)
+      end
+    end
+
+    def connection_proxy
+      Struct.new(:connection).new(self)
     end
 
     def definition(name, version, database = nil)
