@@ -7,37 +7,32 @@ class SearchInAHaystack < ActiveRecord::Base
 end
 
 describe Scenic::SchemaDumper, :db do
-  describe "adapter resolution from connection" do
+  describe "view lookup honors the dumped connection" do
     let(:dumper) do
       klass = Class.new(ActiveRecord::SchemaDumper) { prepend Scenic::SchemaDumper }
       klass.allocate
     end
 
-    def connection_with_db_config_name(name)
-      pool = double(db_config: double(name: name))
-      double(pool: pool)
-    end
+    it "queries views from the dumper's own connection, not Scenic.configuration" do
+      dumper_connection = double("connection")
+      views_query = instance_double("Scenic::Adapters::Postgres::Views", all: [])
+      allow(Scenic::Adapters::Postgres::Views).to receive(:new)
+        .with(dumper_connection).and_return(views_query)
 
-    it "resolves :default for the primary connection" do
-      dumper.instance_variable_set(:@connection, connection_with_db_config_name("primary"))
-
-      expect(dumper.send(:scenic_database)).to eq :default
-    end
-
-    it "resolves the database symbol for a secondary connection" do
-      dumper.instance_variable_set(:@connection, connection_with_db_config_name("secondary"))
-
-      expect(dumper.send(:scenic_database)).to eq :secondary
-    end
-
-    it "asks the resolved adapter for views, not the global default" do
-      secondary_adapter = instance_double("Scenic::Adapters::Postgres", views: [])
-      allow(Scenic).to receive(:database).with(:secondary).and_return(secondary_adapter)
-
-      dumper.instance_variable_set(:@connection, connection_with_db_config_name("secondary"))
+      dumper.instance_variable_set(:@connection, dumper_connection)
       dumper.send(:dumpable_views_in_database)
 
-      expect(secondary_adapter).to have_received(:views)
+      expect(Scenic::Adapters::Postgres::Views).to have_received(:new).with(dumper_connection)
+    end
+
+    it "does not raise when the connection's database isn't registered with Scenic" do
+      dumper_connection = double("connection")
+      allow(Scenic::Adapters::Postgres::Views).to receive(:new)
+        .with(dumper_connection).and_return(double(all: []))
+
+      dumper.instance_variable_set(:@connection, dumper_connection)
+
+      expect { dumper.send(:dumpable_views_in_database) }.not_to raise_error
     end
   end
 
