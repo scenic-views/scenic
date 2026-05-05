@@ -27,6 +27,14 @@ describe Scenic::CommandRecorder do
         [:drop_view, [:greetings, materialized: true]]
       ]
     end
+
+    it "preserves the database kwarg when reverting to drop_view" do
+      recorder.revert { recorder.create_view :greetings, database: :secondary }
+
+      expect(recorder.commands).to eq [
+        [:drop_view, [:greetings, database: :secondary]]
+      ]
+    end
   end
 
   describe "#drop_view" do
@@ -39,6 +47,15 @@ describe Scenic::CommandRecorder do
     it "reverts to create_view with specified revert_to_version" do
       args = [:users, {revert_to_version: 3}]
       revert_args = [:users, {version: 3}]
+
+      recorder.revert { recorder.drop_view(*args) }
+
+      expect(recorder.commands).to eq [[:create_view, revert_args]]
+    end
+
+    it "preserves the database kwarg through inversion" do
+      args = [:users, {revert_to_version: 3, database: :secondary}]
+      revert_args = [:users, {version: 3, database: :secondary}]
 
       recorder.revert { recorder.drop_view(*args) }
 
@@ -65,6 +82,15 @@ describe Scenic::CommandRecorder do
     it "reverts to update_view with the specified revert_to_version" do
       args = [:users, {version: 2, revert_to_version: 1}]
       revert_args = [:users, {version: 1}]
+
+      recorder.revert { recorder.update_view(*args) }
+
+      expect(recorder.commands).to eq [[:update_view, revert_args]]
+    end
+
+    it "preserves the database kwarg through inversion" do
+      args = [:users, {version: 2, revert_to_version: 1, database: :secondary}]
+      revert_args = [:users, {version: 1, database: :secondary}]
 
       recorder.revert { recorder.update_view(*args) }
 
@@ -109,6 +135,15 @@ describe Scenic::CommandRecorder do
     it "reverts to replace_view with the specified revert_to_version" do
       args = [:users, {version: 2, revert_to_version: 1}]
       revert_args = [:users, {version: 1}]
+
+      recorder.revert { recorder.replace_view(*args) }
+
+      expect(recorder.commands).to eq [[:replace_view, revert_args]]
+    end
+
+    it "preserves the database kwarg through inversion" do
+      args = [:users, {version: 2, revert_to_version: 1, database: :secondary}]
+      revert_args = [:users, {version: 1, database: :secondary}]
 
       recorder.revert { recorder.replace_view(*args) }
 
