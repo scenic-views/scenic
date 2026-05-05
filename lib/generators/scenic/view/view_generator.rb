@@ -121,24 +121,15 @@ module Scenic
       end
 
       def create_view_options
-        options = ""
         if materialized?
-          options << ", materialized: #{no_data? ? "{ no_data: true }" : true}"
-        end
-
-        if different_database_set?
-          options << ", database: :#{database}"
-        end
-
-        options
-      end
-
-      def update_view_options
-        if different_database_set?
-          ", database: :#{database}"
+          ", materialized: #{no_data? ? "{ no_data: true }" : true}"
         else
           ""
         end
+      end
+
+      def update_view_options
+        ""
       end
 
       def destroying_initial_view?
