@@ -61,8 +61,8 @@ module Scenic
 
     describe "adapter routing with different adapter types" do
       it "routes to the correct adapter for each database" do
-        primary_adapter = FakeAdapter.new("FakePostgres")
-        secondary_adapter = FakeAdapter.new("FakeMySQL")
+        primary_adapter = instance_double("Scenic::Adapters::Postgres")
+        secondary_adapter = instance_double("Scenic::Adapters::Postgres")
 
         Scenic.configure do |config|
           config.databases[:default] = primary_adapter
@@ -71,13 +71,11 @@ module Scenic
 
         expect(Scenic.database(:default)).to eq primary_adapter
         expect(Scenic.database(:secondary)).to eq secondary_adapter
-        expect(Scenic.database(:default).name).to eq "FakePostgres"
-        expect(Scenic.database(:secondary).name).to eq "FakeMySQL"
       end
 
       it "maintains adapter independence" do
-        adapter_a = FakeAdapter.new("AdapterA")
-        adapter_b = FakeAdapter.new("AdapterB")
+        adapter_a = instance_double("Scenic::Adapters::Postgres", create_view: nil)
+        adapter_b = instance_double("Scenic::Adapters::Postgres", create_view: nil)
 
         Scenic.configure do |config|
           config.databases[:db_a] = adapter_a
@@ -86,8 +84,8 @@ module Scenic
 
         Scenic.database(:db_a).create_view(:users, "SELECT 1")
 
-        expect(adapter_a.called?(:create_view)).to be true
-        expect(adapter_b.called?(:create_view)).to be false
+        expect(adapter_a).to have_received(:create_view).with(:users, "SELECT 1")
+        expect(adapter_b).not_to have_received(:create_view)
       end
     end
 
