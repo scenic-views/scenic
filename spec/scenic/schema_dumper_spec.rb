@@ -36,7 +36,6 @@ describe Scenic::SchemaDumper, :db do
     end
   end
 
-
   it "dumps a create_view for a view in the database" do
     view_definition = "SELECT 'needle'::text AS haystack"
     Search.connection.create_view :searches, sql_definition: view_definition
