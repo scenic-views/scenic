@@ -226,9 +226,8 @@ end
 
 ## Can I use Scenic with multiple databases?
 
-You bet! If you're using Rails 6.0 or higher with multiple databases configured,
-Scenic has you covered. Just pass a `--database` option when generating your
-view:
+Yes. Pass `--database` when generating a view to land it under the
+secondary database's directories:
 
 ```sh
 $ rails generate scenic:view analytics --database=secondary
@@ -236,27 +235,24 @@ $ rails generate scenic:view analytics --database=secondary
       create  db/secondary_migrate/[TIMESTAMP]_create_analytics.rb
 ```
 
-Scenic will create your view definition in a database-specific directory
-(`db/secondary_views/` instead of `db/views/`) and the generated migration will
-include the `database:` parameter:
+The generated migration body itself stays free of database routing
+information:
 
 ```ruby
-class CreateAnalytics < ActiveRecord::Migration[7.0]
+class CreateAnalytics < ActiveRecord::Migration[7.2]
   def change
-    create_view :analytics, database: :secondary
+    create_view :analytics
   end
 end
 ```
 
-Run the migration for your secondary database the same way you would for any
-Rails multiple database setup:
-
-```sh
-$ rake db:migrate:secondary
-```
-
-All of Scenic's migration methods accept the `database:` parameter, so you can
-create, update, and drop views on any configured database:
+Scenic infers which database to operate on from the active
+ActiveRecord connection, so a migration that runs under
+`db:migrate:secondary` automatically targets `:secondary` without any
+extra annotation. Pass `database:` explicitly only when you need to
+override the inferred connection — for example, a migration that
+lives in shared `db/migrate/` but should still target a non-default
+database:
 
 ```ruby
 def change
@@ -266,8 +262,24 @@ def change
 end
 ```
 
-If you need custom paths for your views or migrations, you can configure them
-in `database.yml` just like Rails' `migrations_paths`:
+Run the migration for your secondary database the same way you would
+for any Rails multiple-database setup:
+
+```sh
+$ rake db:migrate:secondary
+```
+
+> **Note:** Switching `database.yml` to the nested multi-database form
+> renames the unsuffixed rake tasks. After the switch, plain
+> `rake db:rollback` is no longer available — use
+> `rake db:rollback:primary` (or whichever database you mean to act
+> on). This is a Rails behavior, not a Scenic one, but it can surprise
+> teams adopting `--database` for the first time.
+
+### Custom paths
+
+If you need custom paths for your views or migrations, configure them
+in `database.yml` next to Rails' `migrations_paths`:
 
 ```yaml
 # config/database.yml
@@ -277,9 +289,10 @@ secondary:
   views_paths: db/secondary_views
 ```
 
-If you're using different adapters for different databases (say, Postgres for
-your primary database and MySQL for analytics), you can configure them in an
-initializer:
+### Different adapters per database
+
+If you're using different adapters for different databases, register a
+Scenic adapter for the non-default database in an initializer:
 
 ```ruby
 # config/initializers/scenic.rb
@@ -287,6 +300,27 @@ Scenic.configure do |config|
   config.databases[:secondary] = Scenic::Adapters::Postgres.new(SecondaryRecord)
 end
 ```
+
+`SecondaryRecord` is the abstract base class Rails generates for
+`--database=secondary` models — analogous to `ApplicationRecord` for
+the default database. If your app doesn't already have one, create it:
+
+```ruby
+class SecondaryRecord < ApplicationRecord
+  self.abstract_class = true
+
+  connects_to database: { writing: :secondary }
+end
+```
+
+> **Configure before you consume.** `Scenic.database(:foo)` raises
+> `Scenic::UnknownDatabaseError` when called for a database that
+> hasn't been registered with `Scenic.configure`, so make sure your
+> initializer runs before any code that calls `Scenic.database(:foo)`
+> (rake tasks, custom initializers, eager-loaded code paths). When
+> Scenic infers the database from the active connection it will fall
+> back to using that connection directly, so registration only
+> matters when you want a custom adapter.
 
 ## I don't need this view anymore. Make it go away.
 

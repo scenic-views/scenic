@@ -24,12 +24,23 @@ module Scenic
     ActiveRecord::SchemaDumper.prepend Scenic::SchemaDumper
   end
 
-  # Returns the database adapter for the specified database.
+  # Returns the Scenic adapter registered for the given database name.
   #
-  # This defaults to {Adapters::Postgres} but can be overridden
-  # via {Configuration}.
+  # The `:default` adapter is always registered and defaults to an
+  # instance of {Adapters::Postgres}. Other names are registered via
+  # {Scenic.configure}:
+  #
+  #     Scenic.configure do |config|
+  #       config.databases[:secondary] = Scenic::Adapters::Postgres.new(SecondaryRecord)
+  #     end
+  #
+  # Raises {Scenic::UnknownDatabaseError} when `name` is not the
+  # default and no adapter has been registered for it. Configure
+  # before consuming — see the multiple-databases section of the
+  # README for the full contract.
   #
   # @param name [Symbol] the database name (defaults to :default)
+  # @raise [Scenic::UnknownDatabaseError] when `name` is unregistered.
   # @return [Scenic::Adapters::Postgres] the database adapter
   def self.database(name = :default)
     configuration.database_adapter(name)
