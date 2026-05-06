@@ -226,7 +226,7 @@ end
 
 ## Can I use Scenic with multiple databases?
 
-Yes. Pass `--database` when generating a view to land it under the
+You bet! Pass `--database` when generating a view to land it under the
 secondary database's directories:
 
 ```sh
@@ -235,8 +235,8 @@ $ rails generate scenic:view analytics --database=secondary
       create  db/secondary_migrate/[TIMESTAMP]_create_analytics.rb
 ```
 
-The generated migration body itself stays free of database routing
-information:
+The generated migration looks familiar, and the database is inferred based on
+the migration's file path:
 
 ```ruby
 class CreateAnalytics < ActiveRecord::Migration[7.2]
@@ -246,13 +246,12 @@ class CreateAnalytics < ActiveRecord::Migration[7.2]
 end
 ```
 
-Scenic infers which database to operate on from the active
-ActiveRecord connection, so a migration that runs under
-`db:migrate:secondary` automatically targets `:secondary` without any
-extra annotation. Pass `database:` explicitly only when you need to
-override the inferred connection — for example, a migration that
-lives in shared `db/migrate/` but should still target a non-default
-database:
+Scenic infers which database to operate on from the active ActiveRecord
+connection, so a migration that runs under `db:migrate:secondary` automatically
+targets `:secondary`. Pass `database:` to Scenic's migration DSL methods
+explicitly when you need to override the inferred connection. For example, a
+migration that lives in primary `db/migrate/` but should still target a
+non-default database:
 
 ```ruby
 def change
@@ -269,17 +268,16 @@ for any Rails multiple-database setup:
 $ rake db:migrate:secondary
 ```
 
-> **Note:** Switching `database.yml` to the nested multi-database form
-> renames the unsuffixed rake tasks. After the switch, plain
-> `rake db:rollback` is no longer available — use
-> `rake db:rollback:primary` (or whichever database you mean to act
-> on). This is a Rails behavior, not a Scenic one, but it can surprise
-> teams adopting `--database` for the first time.
+> **Note:** Switching `database.yml` to the nested multi-database form renames
+> the un-suffixed rake tasks. After the switch, plain `rake db:rollback` is no
+> longer available. Use `rake db:rollback:primary` (or whichever database you
+> mean to act on). This is a Rails behavior, not a Scenic one, but it can
+> surprise when adopting `--database` for the first time.
 
 ### Custom paths
 
-If you need custom paths for your views or migrations, configure them
-in `database.yml` next to Rails' `migrations_paths`:
+If you need custom paths for your views or migrations, you can configure them in
+`database.yml` just like Rails' `migrations_paths`:
 
 ```yaml
 # config/database.yml
@@ -289,21 +287,21 @@ secondary:
   views_paths: db/secondary_views
 ```
 
-### Different adapters per database
+### But I want to use a different adapter for my secondary database!
 
-If you're using different adapters for different databases, register a
-Scenic adapter for the non-default database in an initializer:
+If you're using different adapters for different databases, register a Scenic
+adapter for the non-default database in an initializer:
 
 ```ruby
 # config/initializers/scenic.rb
 Scenic.configure do |config|
-  config.databases[:secondary] = Scenic::Adapters::Postgres.new(SecondaryRecord)
+  config.databases[:secondary] = Scenic::Adapters::Sqlite.new(SecondaryRecord)
 end
 ```
 
 `SecondaryRecord` is the abstract base class Rails generates for
-`--database=secondary` models — analogous to `ApplicationRecord` for
-the default database. If your app doesn't already have one, create it:
+`--database=secondary` models. It's like `ApplicationRecord` for the default
+database. If your app doesn't already have one, create it:
 
 ```ruby
 class SecondaryRecord < ApplicationRecord
@@ -313,14 +311,13 @@ class SecondaryRecord < ApplicationRecord
 end
 ```
 
-> **Configure before you consume.** `Scenic.database(:foo)` raises
-> `Scenic::UnknownDatabaseError` when called for a database that
-> hasn't been registered with `Scenic.configure`, so make sure your
-> initializer runs before any code that calls `Scenic.database(:foo)`
-> (rake tasks, custom initializers, eager-loaded code paths). When
-> Scenic infers the database from the active connection it will fall
-> back to using that connection directly, so registration only
-> matters when you want a custom adapter.
+Scenic.database(:foo)` raises `Scenic::UnknownDatabaseError` when called for a
+database that hasn't been registered with `Scenic.configure`. Make sure your
+initializer runs before any code that calls `Scenic.database(:foo)`.
+
+When Scenic infers the database from the active connection it will fall back to
+using that connection directly, so registration only matters when you want a
+custom adapter.
 
 ## I don't need this view anymore. Make it go away.
 

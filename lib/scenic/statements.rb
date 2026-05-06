@@ -14,11 +14,9 @@ module Scenic
     # @option materialized [Boolean] :no_data (false) Set to true to create
     #   materialized view without running the associated query. You will need
     #   to perform a non-concurrent refresh to populate with data.
-    # @param database [Symbol] Override the database used for this
-    #   operation. When omitted, Scenic infers the database from the
-    #   active ActiveRecord connection — so a migration running under
-    #   `db:migrate:secondary` automatically targets `:secondary`.
-    #   Pass an explicit symbol to override the connection's default.
+    # @param database [Symbol] Override the database used for this operation.
+    #   Defaults to detecting the database from the current ActiveRecord
+    #   connection.
     # @return The database response from executing the create statement.
     #
     # @example Create from `db/views/searches_v02.sql`
@@ -75,11 +73,9 @@ module Scenic
     #   `version` argument to {#create_view}.
     # @param materialized [Boolean] Set to true if dropping a meterialized view.
     #   defaults to false.
-    # @param database [Symbol] Override the database used for this
-    #   operation. When omitted, Scenic infers the database from the
-    #   active ActiveRecord connection — so a migration running under
-    #   `db:migrate:secondary` automatically targets `:secondary`.
-    #   Pass an explicit symbol to override the connection's default.
+    # @param database [Symbol] Override the database used for this operation.
+    #   Defaults to detecting the database from the current ActiveRecord
+    #   connection. Ignored here but recorded for rollbacks.
     # @return The database response from executing the drop statement.
     #
     # @example Drop a view, rolling back to version 3 on rollback
@@ -87,7 +83,7 @@ module Scenic
     #
     def drop_view(
       name,
-      revert_to_version: nil,
+      revert_to_version: nil, # rubocop:disable Lint/UnusedMethodArgument
       materialized: false,
       database: nil
     )
@@ -124,11 +120,9 @@ module Scenic
     #   The view is initially updated with a temporary name and atomically
     #   swapped once it is successfully created with data. Cannot be combined
     #   with the :no_data option.
-    # @param database [Symbol] Override the database used for this
-    #   operation. When omitted, Scenic infers the database from the
-    #   active ActiveRecord connection — so a migration running under
-    #   `db:migrate:secondary` automatically targets `:secondary`.
-    #   Pass an explicit symbol to override the connection's default.
+    # @param database [Symbol] Override the database used for this operation.
+    #   Defaults to detecting the database from the current ActiveRecord
+    #   connection. Ignored here but recorded for rollbacks.
     # @return The database response from executing the create statement.
     #
     # @example
@@ -138,7 +132,7 @@ module Scenic
       name,
       version: nil,
       sql_definition: nil,
-      revert_to_version: nil,
+      revert_to_version: nil, # rubocop:disable Lint/UnusedMethodArgument
       materialized: false,
       database: nil
     )
@@ -196,11 +190,9 @@ module Scenic
     # @param version [Fixnum] The version number of the view.
     # @param revert_to_version [Fixnum] The version number to rollback to on
     #   `rake db rollback`
-    # @param database [Symbol] Override the database used for this
-    #   operation. When omitted, Scenic infers the database from the
-    #   active ActiveRecord connection — so a migration running under
-    #   `db:migrate:secondary` automatically targets `:secondary`.
-    #   Pass an explicit symbol to override the connection's default.
+    # @param database [Symbol] Override the database used for this operation.
+    #   Defaults to detecting the database from the current ActiveRecord
+    #   connection. Ignored here but recorded for rollbacks.
     # @return The database response from executing the create statement.
     #
     # @example
@@ -209,7 +201,7 @@ module Scenic
     def replace_view(
       name,
       version: nil,
-      revert_to_version: nil,
+      revert_to_version: nil, # rubocop:disable Lint/UnusedMethodArgument
       materialized: false,
       database: nil
     )
@@ -230,11 +222,13 @@ module Scenic
     private
 
     def database_for(explicit)
-      return explicit if explicit
-      return :default unless respond_to?(:pool)
-      pool_obj = pool
-      return :default unless pool_obj.respond_to?(:db_config)
-      Scenic::DatabasePaths.database_for_config_name(pool_obj.db_config.name)
+      if explicit
+        explicit
+      elsif respond_to?(:pool) && pool.respond_to?(:db_config)
+        Scenic::DatabasePaths.database_for_config_name(pool.db_config.name)
+      else
+        :default
+      end
     end
 
     def adapter_for(explicit_database, effective_database)

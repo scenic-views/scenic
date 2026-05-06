@@ -1,10 +1,8 @@
 module Scenic
   # @api private
   #
-  # Resolves filesystem paths and Rails-config names for a given Scenic
-  # database identifier. Single source of truth for "where do view SQL
-  # files and migrations live for this database?" — every consumer
-  # (Definition, view generator, schema dumper) routes through here.
+  # Resolves filesystem paths and Rails config names for a given Scenic database
+  # identifier.
   #
   # Contract: Scenic symbols (:default, :secondary, ...) in, Rails
   # config names ("primary", "secondary", ...) out.
@@ -12,13 +10,11 @@ module Scenic
     DEFAULT = :default
 
     def self.config_name(database)
-      return "primary" if default?(database)
-      database.to_s
+      default?(database) ? "primary" : database.to_s
     end
 
     def self.database_for_config_name(config_name)
-      return DEFAULT if config_name.nil? || config_name == "primary"
-      config_name.to_sym
+      (config_name.nil? || config_name == "primary") ? DEFAULT : config_name.to_sym
     end
 
     def self.views_path(database)

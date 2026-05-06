@@ -26,21 +26,16 @@ module Scenic
 
   # Returns the Scenic adapter registered for the given database name.
   #
-  # The `:default` adapter is always registered and defaults to an
-  # instance of {Adapters::Postgres}. Other names are registered via
-  # {Scenic.configure}:
+  # The `:default` adapter is always registered and defaults to an instance of
+  # {Adapters::Postgres}. Other names are registered via {Scenic.configure}:
   #
   #     Scenic.configure do |config|
   #       config.databases[:secondary] = Scenic::Adapters::Postgres.new(SecondaryRecord)
   #     end
   #
-  # Raises {Scenic::UnknownDatabaseError} when `name` is not the
-  # default and no adapter has been registered for it. Configure
-  # before consuming — see the multiple-databases section of the
-  # README for the full contract.
-  #
   # @param name [Symbol] the database name (defaults to :default)
-  # @raise [Scenic::UnknownDatabaseError] when `name` is unregistered.
+  # @raise [Scenic::UnknownDatabaseError] when `name` is not the default and is
+  #   unregistered.
   # @return [Scenic::Adapters::Postgres] the database adapter
   def self.database(name = :default)
     configuration.database_adapter(name)
@@ -48,14 +43,14 @@ module Scenic
 
   # Returns a Scenic adapter scoped to the given connectable.
   #
-  # The connectable is anything that responds to `.connection` —
-  # typically an ActiveRecord model class. This is the connection-first
-  # entry point used by generated materialized-view models so that
-  # operations on, say, an `--database=secondary` model run against the
-  # secondary connection without consulting Scenic.configuration.
+  # The connectable is anything that responds to `.connection`, but is typically
+  # an ActiveRecord model class. This is the connection-first entry point used
+  # by generated materialized view models so that operations on, say, a
+  # `--database=secondary` model run against the secondary connection without
+  # consulting Scenic.configuration.
   #
-  # @param connectable [#connection] An object that returns the connection
-  #   for Scenic to use.
+  # @param connectable [#connection] An object that returns the connection for
+  #   fScenic to use.
   # @return [Scenic::Adapters::Postgres]
   def self.adapter_for(connectable)
     Adapters::Postgres.new(connectable)

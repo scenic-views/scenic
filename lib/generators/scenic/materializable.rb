@@ -53,8 +53,7 @@ module Scenic
       end
 
       def database
-        return nil unless options[:database]
-        validated_database
+        options[:database] && validated_database
       end
 
       def validated_database

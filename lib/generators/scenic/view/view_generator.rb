@@ -12,7 +12,7 @@ module Scenic
       source_root File.expand_path("templates", __dir__)
 
       def create_views_directory
-        unless views_directory_path.exist?
+        if !views_directory_path.exist?
           empty_directory(views_directory_path)
         end
       end

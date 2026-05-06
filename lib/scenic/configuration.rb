@@ -45,9 +45,9 @@ module Scenic
         raise UnknownDatabaseError,
           ":#{name} is not a configured Scenic database. " \
           "Configured databases: #{@databases.keys.inspect}. " \
-          "If this raised during application boot, an initializer or " \
-          "rake task is calling Scenic.database(:#{name}) before " \
-          "Scenic.configure has registered it."
+          "If this raised during application boot, an initializer or rake " \
+          "task is calling Scenic.database(:#{name}) before Scenic.configure "\
+          "has registered it."
       end
     end
   end
