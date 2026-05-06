@@ -145,6 +145,23 @@ describe Scenic::Generators::ViewGenerator, :generator do
 
       expect(file("db/secondary_views")).to exist
     end
+
+    it "writes the migration to db/migrate when migrations_paths is not configured" do
+      stub_secondary_config(hash_config)
+
+      run_generator ["search", "--database=secondary"]
+
+      expect(Dir[file("db/migrate/*_create_searches.rb").to_s]).not_to be_empty
+      expect(Dir[file("db/secondary_migrate/*_create_searches.rb").to_s]).to be_empty
+    end
+
+    it "writes the migration to the configured migrations_paths when set" do
+      stub_secondary_config(hash_config(migrations_paths: "db/secondary_migrate"))
+
+      run_generator ["search", "--database=secondary"]
+
+      expect(Dir[file("db/secondary_migrate/*_create_searches.rb").to_s]).not_to be_empty
+    end
   end
 
   context "for views created in a schema other than 'public'" do

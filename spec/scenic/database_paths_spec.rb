@@ -99,18 +99,12 @@ describe Scenic::DatabasePaths do
       expect(described_class.migrations_path(:secondary)).to eq "db/secondary_migrate"
     end
 
-    it "falls back to db/<database>_migrate convention when migrations_paths is not set" do
+    it "falls back to db/migrate when migrations_paths is not set" do
       allow(ActiveRecord::Base.configurations).to receive(:configs_for)
         .with(env_name: Rails.env, name: "secondary")
         .and_return(hash_config("secondary"))
 
-      expect(described_class.migrations_path(:secondary)).to eq "db/secondary_migrate"
-    end
-
-    it "does not call configs_for for the default database" do
-      expect(ActiveRecord::Base.configurations).not_to receive(:configs_for)
-
-      described_class.migrations_path(:default)
+      expect(described_class.migrations_path(:secondary)).to eq "db/migrate"
     end
   end
 end

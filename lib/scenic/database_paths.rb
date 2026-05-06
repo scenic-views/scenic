@@ -30,11 +30,8 @@ module Scenic
     end
 
     def self.migrations_path(database)
-      if default?(database)
-        "db/migrate"
-      else
-        configured_migrations_path(database) || "db/#{database}_migrate"
-      end
+      return "db/migrate" if default?(database)
+      configured_migrations_path(database) || "db/migrate"
     end
 
     def self.default?(database)
