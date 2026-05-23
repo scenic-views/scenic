@@ -15,7 +15,7 @@ Gem::Specification.new do |spec|
   spec.homepage = "https://github.com/scenic-views/scenic"
   spec.license = "MIT"
 
-  spec.files = `git ls-files -z`.split("\x0")
+  spec.files = `git ls-files -z lib`.split("\x0") + ['CHANGELOG.md', 'LICENSE.txt', 'README.md']
   spec.require_paths = ["lib"]
 
   spec.metadata = {
