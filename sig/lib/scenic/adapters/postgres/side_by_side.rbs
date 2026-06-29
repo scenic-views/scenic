@@ -1,0 +1,42 @@
+module Scenic
+  module Adapters
+    class Postgres
+      # Updates a view using the `side-by-side` strategy where the new view is
+      # created and populated under a temporary name before the existing view is
+      # dropped and the temporary view is renamed to the original name.
+      class SideBySide
+        @adapter: untyped
+
+        @name: untyped
+
+        @definition: untyped
+
+        @temporary_name: untyped
+
+        @speaker: untyped
+
+        def initialize: (adapter: untyped, name: untyped, definition: untyped, ?speaker: untyped) -> void
+
+        def update: () -> untyped
+
+        private
+
+        attr_reader adapter: untyped
+
+        attr_reader name: untyped
+
+        attr_reader definition: untyped
+
+        attr_reader temporary_name: untyped
+
+        attr_reader speaker: untyped
+
+        def connection: () -> untyped
+
+        def rename_materialized_view: (untyped from, untyped to) -> untyped
+
+        def say: (untyped message) -> untyped
+      end
+    end
+  end
+end
