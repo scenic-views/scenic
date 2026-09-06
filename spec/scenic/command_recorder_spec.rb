@@ -20,6 +20,18 @@ describe Scenic::CommandRecorder do
       expect(recorder.commands).to eq [[:drop_view, [:greetings]]]
     end
 
+    it "passes column defaults through to drop_view so they survive a revert" do
+      column_defaults = {salutation: "'hi'::text"}
+
+      recorder.revert do
+        recorder.create_view :greetings, column_defaults: column_defaults
+      end
+
+      expect(recorder.commands).to eq [
+        [:drop_view, [:greetings, column_defaults: column_defaults]]
+      ]
+    end
+
     it "reverts materialized views appropriately" do
       recorder.revert { recorder.create_view :greetings, materialized: true }
 
@@ -39,6 +51,16 @@ describe Scenic::CommandRecorder do
     it "reverts to create_view with specified revert_to_version" do
       args = [:users, {revert_to_version: 3}]
       revert_args = [:users, {version: 3}]
+
+      recorder.revert { recorder.drop_view(*args) }
+
+      expect(recorder.commands).to eq [[:create_view, revert_args]]
+    end
+
+    it "reverts to create_view with the column defaults it was given" do
+      column_defaults = {status: "'pending'::text"}
+      args = [:users, {revert_to_version: 3, column_defaults: column_defaults}]
+      revert_args = [:users, {column_defaults: column_defaults, version: 3}]
 
       recorder.revert { recorder.drop_view(*args) }
 

@@ -235,6 +235,23 @@ def change
 end
 ```
 
+## Can my updatable views have column defaults?
+
+A view column can carry a `DEFAULT`, which is what lets an updatable view be
+inserted into without naming every column. They aren't included in the view
+definition, but they can be set with ALTER VIEW. Scenic accepts a
+`column_defaults` option mapping column names to SQL expressions:
+
+```ruby
+create_view "clients", column_defaults: {"position" => "1"}, sql_definition: <<-SQL
+  ...
+SQL
+```
+
+Passing nil as a value removes that column's default.
+
+You can also use this option on `replace_view`, `update_view`, and `drop_view`.
+
 ## FAQs
 
 ### Why do I get an error when querying a view-backed model with `find`, `last`, or `first`?

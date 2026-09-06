@@ -14,6 +14,15 @@ module Scenic
     # @option materialized [Boolean] :no_data (false) Set to true to create
     #   materialized view without running the associated query. You will need
     #   to perform a non-concurrent refresh to populate with data.
+    # @param column_defaults [Hash] Default values for the view's columns, as
+    #   column name => SQL expression. A view column can carry a DEFAULT, which
+    #   is what lets an updatable view be inserted into without naming every
+    #   column. `CREATE VIEW` cannot express one, so these are applied
+    #   afterwards. Values are SQL, not Ruby: they are used verbatim, the same
+    #   way `sql_definition` is. A nil value removes the column's default.
+    #   Materialized views cannot have column defaults.
+    # @raise [Adapters::ColumnDefaultsNotSupportedError] if column defaults are
+    #   given and the configured adapter does not support them.
     # @return The database response from executing the create statement.
     #
     # @example Create from `db/views/searches_v02.sql`
@@ -24,7 +33,13 @@ module Scenic
     #     SELECT * FROM users WHERE users.active = 't'
     #   SQL
     #
-    def create_view(name, version: nil, sql_definition: nil, materialized: false)
+    # @example Create an updatable view whose columns have defaults
+    #   create_view(:active_users, version: 1, column_defaults: {
+    #     active: "true",
+    #     status: "'pending'::text"
+    #   })
+    #
+    def create_view(name, version: nil, sql_definition: nil, materialized: false, column_defaults: {})
       if version.present? && sql_definition.present?
         raise(
           ArgumentError,
@@ -39,6 +54,8 @@ module Scenic
       sql_definition ||= definition(name, version)
 
       if materialized
+        raise_if_column_defaults_on_materialized_view(column_defaults)
+
         options = materialized_options(materialized)
 
         Scenic.database.create_materialized_view(
@@ -47,7 +64,7 @@ module Scenic
           no_data: options[:no_data]
         )
       else
-        Scenic.database.create_view(name, sql_definition)
+        Scenic.database.create_view(name, sql_definition, **column_defaults_option(column_defaults))
       end
     end
 
@@ -59,12 +76,21 @@ module Scenic
     #   `version` argument to {#create_view}.
     # @param materialized [Boolean] Set to true if dropping a meterialized view.
     #   defaults to false.
+    # @param column_defaults [Hash] Used, like `revert_to_version`, only to
+    #   reverse the `drop_view` command: the defaults are passed to
+    #   {#create_view} on `rake db:rollback`, so the view comes back with them.
+    #   Ignored when dropping.
     # @return The database response from executing the drop statement.
     #
     # @example Drop a view, rolling back to version 3 on rollback
     #   drop_view(:users_who_recently_logged_in, revert_to_version: 3)
     #
-    def drop_view(name, revert_to_version: nil, materialized: false)
+    # @example Drop an updatable view, restoring its column defaults on rollback
+    #   drop_view(:active_users, revert_to_version: 3, column_defaults: {
+    #     status: "'pending'::text"
+    #   })
+    #
+    def drop_view(name, revert_to_version: nil, materialized: false, column_defaults: {})
       if materialized
         Scenic.database.drop_materialized_view(name)
       else
@@ -96,12 +122,16 @@ module Scenic
     #   The view is initially updated with a temporary name and atomically
     #   swapped once it is successfully created with data. Cannot be combined
     #   with the :no_data option.
+    # @param column_defaults [Hash] Default values for the view's columns, as
+    #   column name => SQL expression. The view is dropped and recreated, which
+    #   discards any defaults it had, so pass them again here to keep them. See
+    #   {#create_view}.
     # @return The database response from executing the create statement.
     #
     # @example
     #   update_view :engagement_reports, version: 3, revert_to_version: 2
     #   update_view :comments, version: 2, revert_to_version: 1, materialized: { side_by_side: true }
-    def update_view(name, version: nil, sql_definition: nil, revert_to_version: nil, materialized: false)
+    def update_view(name, version: nil, sql_definition: nil, revert_to_version: nil, materialized: false, column_defaults: {})
       if version.blank? && sql_definition.blank?
         raise(
           ArgumentError,
@@ -119,6 +149,8 @@ module Scenic
       sql_definition ||= definition(name, version)
 
       if materialized
+        raise_if_column_defaults_on_materialized_view(column_defaults)
+
         options = materialized_options(materialized)
 
         if options[:no_data] && options[:side_by_side]
@@ -139,7 +171,7 @@ module Scenic
           side_by_side: options[:side_by_side]
         )
       else
-        Scenic.database.update_view(name, sql_definition)
+        Scenic.database.update_view(name, sql_definition, **column_defaults_option(column_defaults))
       end
     end
 
@@ -154,12 +186,16 @@ module Scenic
     # @param version [Fixnum] The version number of the view.
     # @param revert_to_version [Fixnum] The version number to rollback to on
     #   `rake db rollback`
+    # @param column_defaults [Hash] Default values for the view's columns, as
+    #   column name => SQL expression. See {#create_view}. `CREATE OR REPLACE
+    #   VIEW` keeps the defaults the view already has; the ones given here are
+    #   applied on top, and a nil value removes one.
     # @return The database response from executing the create statement.
     #
     # @example
     #   replace_view :engagement_reports, version: 3, revert_to_version: 2
     #
-    def replace_view(name, version: nil, revert_to_version: nil, materialized: false)
+    def replace_view(name, version: nil, revert_to_version: nil, materialized: false, column_defaults: {})
       if version.blank?
         raise ArgumentError, "version is required"
       end
@@ -170,13 +206,43 @@ module Scenic
 
       sql_definition = definition(name, version)
 
-      Scenic.database.replace_view(name, sql_definition)
+      Scenic.database.replace_view(name, sql_definition, **column_defaults_option(column_defaults))
     end
 
     private
 
     def definition(name, version)
       Scenic::Definition.new(name, version).to_sql
+    end
+
+    # Passed through only when the caller actually asked for defaults, so that
+    # adapters predating this option keep receiving the arguments they always
+    # did.
+    def column_defaults_option(column_defaults)
+      if column_defaults.present?
+        raise_unless_column_defaults_supported
+        {column_defaults: column_defaults}
+      else
+        {}
+      end
+    end
+
+    # An adapter advertises support by defining supports_column_defaults?. One
+    # written before the option existed does not, and would otherwise fail with
+    # an unhelpful "unknown keyword: :column_defaults".
+    def raise_unless_column_defaults_supported
+      adapter = Scenic.database
+
+      unless adapter.respond_to?(:supports_column_defaults?) &&
+          adapter.supports_column_defaults?
+        raise Adapters::ColumnDefaultsNotSupportedError.new(adapter)
+      end
+    end
+
+    def raise_if_column_defaults_on_materialized_view(column_defaults)
+      if column_defaults.present?
+        raise ArgumentError, "Materialized views cannot have column defaults"
+      end
     end
 
     def materialized_options(materialized)

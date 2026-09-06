@@ -1,4 +1,5 @@
 require_relative "postgres/connection"
+require_relative "errors"
 require_relative "postgres/errors"
 require_relative "postgres/index_reapplication"
 require_relative "postgres/indexes"
@@ -53,16 +54,30 @@ module Scenic
         Views.new(connection).all
       end
 
+      # True if this adapter supports view column defaults.
+      #
+      # Postgres does, via `ALTER VIEW ... ALTER COLUMN ... SET DEFAULT`.
+      #
+      # @return [Boolean]
+      def supports_column_defaults?
+        true
+      end
+
       # Creates a view in the database.
       #
       # This is typically called in a migration via {Statements#create_view}.
       #
       # @param name The name of the view to create
       # @param sql_definition The SQL schema for the view.
+      # @param column_defaults [Hash] Default values for the view's columns, as
+      #   column name => SQL expression. `CREATE VIEW` cannot express these, so
+      #   they are applied afterwards with `ALTER VIEW`. A nil value removes
+      #   the column's default.
       #
       # @return [void]
-      def create_view(name, sql_definition)
+      def create_view(name, sql_definition, column_defaults: {})
         execute "CREATE VIEW #{quote_table_name(name)} AS #{sql_definition};"
+        set_column_defaults(name, column_defaults)
       end
 
       # Updates a view in the database.
@@ -79,11 +94,15 @@ module Scenic
       #
       # @param name The name of the view to update
       # @param sql_definition The SQL schema for the updated view.
+      # @param column_defaults [Hash] Default values for the view's columns, as
+      #   column name => SQL expression. `CREATE VIEW` cannot express these, so
+      #   they are applied afterwards with `ALTER VIEW`. A nil value removes
+      #   the column's default.
       #
       # @return [void]
-      def update_view(name, sql_definition)
+      def update_view(name, sql_definition, column_defaults: {})
         drop_view(name)
-        create_view(name, sql_definition)
+        create_view(name, sql_definition, column_defaults: column_defaults)
       end
 
       # Replaces a view in the database using `CREATE OR REPLACE VIEW`.
@@ -105,10 +124,15 @@ module Scenic
       #
       # @param name The name of the view to update
       # @param sql_definition The SQL schema for the updated view.
+      # @param column_defaults [Hash] Default values for the view's columns, as
+      #   column name => SQL expression. `CREATE VIEW` cannot express these, so
+      #   they are applied afterwards with `ALTER VIEW`. A nil value removes
+      #   the column's default.
       #
       # @return [void]
-      def replace_view(name, sql_definition)
+      def replace_view(name, sql_definition, column_defaults: {})
         execute "CREATE OR REPLACE VIEW #{quote_table_name(name)} AS #{sql_definition};"
+        set_column_defaults(name, column_defaults)
       end
 
       # Drops the named view from the database
@@ -277,7 +301,20 @@ module Scenic
       private
 
       attr_reader :connectable
-      delegate :execute, :quote_table_name, to: :connection
+      delegate :execute, :quote_table_name, :quote_column_name, to: :connection
+
+      # A view column can carry a DEFAULT, which is what lets an updatable view
+      # be inserted into without naming every column. CREATE VIEW cannot set
+      # one, so each is applied as its own ALTER VIEW.
+      #
+      # Only the named columns are touched; defaults on other columns are left
+      # as they are. A nil default removes the column's default.
+      def set_column_defaults(name, column_defaults)
+        column_defaults.each do |column, default|
+          execute "ALTER VIEW #{quote_table_name(name)} " \
+                  "ALTER COLUMN #{quote_column_name(column)} SET DEFAULT #{default || "NULL"};"
+        end
+      end
 
       def raise_unless_materialized_views_supported
         unless connection.supports_materialized_views?

@@ -30,6 +30,84 @@ module Scenic
           .with(:views, sql_definition)
       end
 
+      it "passes column defaults to the adapter" do
+        sql_definition = "a definition"
+        column_defaults = {status: "'pending'::text"}
+
+        connection.create_view(
+          :views,
+          sql_definition: sql_definition,
+          column_defaults: column_defaults
+        )
+
+        expect(Scenic.database).to have_received(:create_view)
+          .with(:views, sql_definition, column_defaults: column_defaults)
+      end
+
+      it "does not pass column defaults to the adapter when none are given" do
+        sql_definition = "a definition"
+
+        connection.create_view(:views, sql_definition: sql_definition)
+
+        expect(Scenic.database).to have_received(:create_view)
+          .with(:views, sql_definition)
+      end
+
+      it "raises when the adapter has no column default support" do
+        legacy_adapter = Class.new {
+          def create_view(name, sql_definition)
+          end
+        }.new
+        allow(Scenic).to receive(:database).and_return(legacy_adapter)
+
+        expect {
+          connection.create_view(
+            :views,
+            sql_definition: "a definition",
+            column_defaults: {status: "'pending'::text"}
+          )
+        }.to raise_error Scenic::Adapters::ColumnDefaultsNotSupportedError
+      end
+
+      it "raises when the adapter reports no column default support" do
+        adapter = instance_double(
+          "Scenic::Adapters::Postgres",
+          supports_column_defaults?: false
+        ).as_null_object
+        allow(Scenic).to receive(:database).and_return(adapter)
+
+        expect {
+          connection.create_view(
+            :views,
+            sql_definition: "a definition",
+            column_defaults: {status: "'pending'::text"}
+          )
+        }.to raise_error Scenic::Adapters::ColumnDefaultsNotSupportedError
+      end
+
+      it "does not consult the adapter when no column defaults are given" do
+        legacy_adapter = Class.new {
+          def create_view(name, sql_definition)
+          end
+        }.new
+        allow(Scenic).to receive(:database).and_return(legacy_adapter)
+
+        expect {
+          connection.create_view(:views, sql_definition: "a definition")
+        }.not_to raise_error
+      end
+
+      it "raises when column defaults are given for a materialized view" do
+        expect {
+          connection.create_view(
+            :views,
+            sql_definition: "a definition",
+            materialized: true,
+            column_defaults: {status: "'pending'::text"}
+          )
+        }.to raise_error ArgumentError, /materialized views cannot have column defaults/i
+      end
+
       it "creates version 1 of the view if neither version nor sql_defintion are provided" do
         version = 1
         definition_stub = instance_double("Definition", to_sql: "foo")
@@ -81,6 +159,14 @@ module Scenic
     describe "drop_view" do
       it "removes a view from the database" do
         connection.drop_view :name
+
+        expect(Scenic.database).to have_received(:drop_view).with(:name)
+      end
+
+      # column_defaults is carried for the sake of reversing the command, the
+      # same way revert_to_version is, and means nothing to the drop itself.
+      it "ignores column defaults when dropping" do
+        connection.drop_view :name, column_defaults: {status: "'pending'::text"}
 
         expect(Scenic.database).to have_received(:drop_view).with(:name)
       end

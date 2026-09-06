@@ -16,7 +16,10 @@ module Scenic
         #
         # @return [Array<Scenic::View>]
         def all
-          scenic_views = views_from_postgres.map(&method(:to_scenic_view))
+          defaults = column_defaults_from_postgres
+          scenic_views = views_from_postgres.map do |result|
+            to_scenic_view(result, defaults)
+          end
           sort(scenic_views)
         end
 
@@ -111,12 +114,42 @@ module Scenic
           SQL
         end
 
-        def to_scenic_view(result)
+        def to_scenic_view(result, defaults)
+          namespace, viewname = result.values_at("namespace", "viewname")
+
           Scenic::View.new(
             name: namespaced_view_name(result),
             definition: result["definition"].strip,
-            materialized: result["kind"] == "m"
+            materialized: result["kind"] == "m",
+            column_defaults: defaults.fetch([namespace, viewname], {})
           )
+        end
+
+        # A view column can carry a DEFAULT, which CREATE VIEW cannot express,
+        # so it is fetched separately and dumped as its own statement. Keyed by
+        # [namespace, viewname] to match views_from_postgres. Materialized views
+        # cannot have column defaults, so only plain views turn up here.
+        def column_defaults_from_postgres
+          connection.execute(<<-SQL).each_with_object({}) do |row, defaults|
+            SELECT
+              n.nspname AS namespace,
+              c.relname AS viewname,
+              a.attname AS column_name,
+              pg_get_expr(d.adbin, d.adrelid) AS default_value
+            FROM pg_attrdef d
+              JOIN pg_class c ON c.oid = d.adrelid
+              JOIN pg_namespace n ON n.oid = c.relnamespace
+              JOIN pg_attribute a ON a.attrelid = c.oid AND a.attnum = d.adnum
+            WHERE
+              c.relkind = 'v'
+              AND NOT a.attisdropped
+              AND n.nspname = ANY (current_schemas(false))
+            ORDER BY a.attnum
+          SQL
+            key = row.values_at("namespace", "viewname")
+            defaults[key] ||= {}
+            defaults[key][row["column_name"]] = row["default_value"]
+          end
         end
 
         def namespaced_view_name(result)

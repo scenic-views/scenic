@@ -18,6 +18,31 @@ module Scenic
         expect(first.definition).to eq "SELECT 'Elliot'::text AS name;"
       end
 
+      it "returns the column defaults defined on a view" do
+        connection = ActiveRecord::Base.connection
+        connection.execute <<-SQL
+          CREATE VIEW children AS SELECT text 'Elliot' AS name, 1 AS age
+        SQL
+        connection.execute <<-SQL
+          ALTER VIEW children ALTER COLUMN age SET DEFAULT 7
+        SQL
+
+        views = Postgres::Views.new(connection).all
+
+        expect(views.first.column_defaults).to eq("age" => "7")
+      end
+
+      it "returns no column defaults for a view that has none" do
+        connection = ActiveRecord::Base.connection
+        connection.execute <<-SQL
+          CREATE VIEW children AS SELECT text 'Elliot' AS name
+        SQL
+
+        views = Postgres::Views.new(connection).all
+
+        expect(views.first.column_defaults).to eq({})
+      end
+
       it "returns scenic view objects for materialized views" do
         connection = ActiveRecord::Base.connection
         connection.execute <<-SQL
