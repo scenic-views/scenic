@@ -26,6 +26,30 @@ describe Scenic::SchemaDumper, :db do
     expect(Search.first.haystack).to eq "needle"
   end
 
+  it "dumps the column defaults defined on a view" do
+    view_definition = "SELECT 'needle'::text AS haystack"
+    Search.connection.create_view :searches, sql_definition: view_definition
+    Search.connection.execute <<-SQL
+      ALTER VIEW searches ALTER COLUMN haystack SET DEFAULT 'default needle'
+    SQL
+    stream = StringIO.new
+
+    dump_schema(stream)
+
+    output = stream.string
+
+    column_defaults = {"haystack" => "'default needle'::text"}
+    expect(output).to include(
+      %(create_view "searches", column_defaults: #{column_defaults.inspect}, sql_definition:)
+    )
+
+    Search.connection.drop_view :searches
+
+    silence_stream($stdout) { eval(output) } # standard:disable Security/Eval
+
+    expect(column_default(:searches, :haystack)).to eq "'default needle'::text"
+  end
+
   it "accurately dumps create view statements with a regular expression" do
     view_definition = "SELECT 'needle'::text AS haystack WHERE 'a2z' ~ '\\d+'"
     Search.connection.create_view :searches, sql_definition: view_definition

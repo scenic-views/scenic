@@ -3,6 +3,12 @@ require "spec_helper"
 module Scenic
   module Adapters
     describe Postgres, :db do
+      describe "#supports_column_defaults?" do
+        it "is true" do
+          expect(Postgres.new.supports_column_defaults?).to be true
+        end
+      end
+
       describe "#create_view" do
         it "successfully creates a view" do
           adapter = Postgres.new
@@ -10,6 +16,37 @@ module Scenic
           adapter.create_view("greetings", "SELECT text 'hi' AS greeting")
 
           expect(adapter.views.map(&:name)).to include("greetings")
+        end
+
+        it "applies column defaults" do
+          adapter = Postgres.new
+
+          adapter.create_view(
+            "greetings",
+            "SELECT text 'hi' AS greeting",
+            column_defaults: {greeting: "'hello'::text"}
+          )
+
+          expect(column_default(:greetings, :greeting)).to eq "'hello'::text"
+        end
+      end
+
+      describe "#replace_view" do
+        it "removes a column default when given nil" do
+          adapter = Postgres.new
+          adapter.create_view(
+            "greetings",
+            "SELECT text 'hi' AS greeting",
+            column_defaults: {greeting: "'hello'::text"}
+          )
+
+          adapter.replace_view(
+            "greetings",
+            "SELECT text 'hi' AS greeting",
+            column_defaults: {greeting: nil}
+          )
+
+          expect(column_default(:greetings, :greeting)).to be_nil
         end
       end
 
