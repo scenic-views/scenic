@@ -50,7 +50,9 @@ module Scenic
       #
       # @return [Array<Scenic::View>]
       def views
-        Views.new(connection).all
+        with_connection do
+          Views.new(connection).all
+        end
       end
 
       # Creates a view in the database.
@@ -62,7 +64,9 @@ module Scenic
       #
       # @return [void]
       def create_view(name, sql_definition)
-        execute "CREATE VIEW #{quote_table_name(name)} AS #{sql_definition};"
+        with_connection do
+          execute "CREATE VIEW #{quote_table_name(name)} AS #{sql_definition};"
+        end
       end
 
       # Updates a view in the database.
@@ -82,8 +86,10 @@ module Scenic
       #
       # @return [void]
       def update_view(name, sql_definition)
-        drop_view(name)
-        create_view(name, sql_definition)
+        with_connection do
+          drop_view(name)
+          create_view(name, sql_definition)
+        end
       end
 
       # Replaces a view in the database using `CREATE OR REPLACE VIEW`.
@@ -108,7 +114,9 @@ module Scenic
       #
       # @return [void]
       def replace_view(name, sql_definition)
-        execute "CREATE OR REPLACE VIEW #{quote_table_name(name)} AS #{sql_definition};"
+        with_connection do
+          execute "CREATE OR REPLACE VIEW #{quote_table_name(name)} AS #{sql_definition};"
+        end
       end
 
       # Drops the named view from the database
@@ -119,7 +127,9 @@ module Scenic
       #
       # @return [void]
       def drop_view(name)
-        execute "DROP VIEW #{quote_table_name(name)};"
+        with_connection do
+          execute "DROP VIEW #{quote_table_name(name)};"
+        end
       end
 
       # Creates a materialized view in the database
@@ -137,13 +147,15 @@ module Scenic
       #
       # @return [void]
       def create_materialized_view(name, sql_definition, no_data: false)
-        raise_unless_materialized_views_supported
+        with_connection do
+          raise_unless_materialized_views_supported
 
-        execute <<-SQL
+          execute <<-SQL
   CREATE MATERIALIZED VIEW #{quote_table_name(name)} AS
   #{sql_definition.rstrip.chomp(";")}
   #{"WITH NO DATA" if no_data};
-        SQL
+          SQL
+        end
       end
 
       # Updates a materialized view in the database.
@@ -168,16 +180,18 @@ module Scenic
       #
       # @return [void]
       def update_materialized_view(name, sql_definition, no_data: false, side_by_side: false)
-        raise_unless_materialized_views_supported
+        with_connection do
+          raise_unless_materialized_views_supported
 
-        if side_by_side
-          SideBySide
-            .new(adapter: self, name: name, definition: sql_definition)
-            .update
-        else
-          IndexReapplication.new(connection: connection).on(name) do
-            drop_materialized_view(name)
-            create_materialized_view(name, sql_definition, no_data: no_data)
+          if side_by_side
+            SideBySide
+              .new(adapter: self, name: name, definition: sql_definition)
+              .update
+          else
+            IndexReapplication.new(connection: connection).on(name) do
+              drop_materialized_view(name)
+              create_materialized_view(name, sql_definition, no_data: no_data)
+            end
           end
         end
       end
@@ -192,8 +206,10 @@ module Scenic
       #
       # @return [void]
       def drop_materialized_view(name)
-        raise_unless_materialized_views_supported
-        execute "DROP MATERIALIZED VIEW #{quote_table_name(name)};"
+        with_connection do
+          raise_unless_materialized_views_supported
+          execute "DROP MATERIALIZED VIEW #{quote_table_name(name)};"
+        end
       end
 
       # Refreshes a materialized view from its SQL schema.
@@ -226,20 +242,22 @@ module Scenic
       #
       # @return [void]
       def refresh_materialized_view(name, concurrently: false, cascade: false)
-        raise_unless_materialized_views_supported
+        with_connection do
+          raise_unless_materialized_views_supported
 
-        if concurrently
-          raise_unless_concurrent_refresh_supported
-        end
+          if concurrently
+            raise_unless_concurrent_refresh_supported
+          end
 
-        if cascade
-          refresh_dependencies_for(name, concurrently: concurrently)
-        end
+          if cascade
+            refresh_dependencies_for(name, concurrently: concurrently)
+          end
 
-        if concurrently && populated?(name)
-          execute "REFRESH MATERIALIZED VIEW CONCURRENTLY #{quote_table_name(name)};"
-        else
-          execute "REFRESH MATERIALIZED VIEW #{quote_table_name(name)};"
+          if concurrently && populated?(name)
+            execute "REFRESH MATERIALIZED VIEW CONCURRENTLY #{quote_table_name(name)};"
+          else
+            execute "REFRESH MATERIALIZED VIEW #{quote_table_name(name)};"
+          end
         end
       end
 
@@ -252,17 +270,19 @@ module Scenic
       #
       # @return [boolean]
       def populated?(name)
-        raise_unless_materialized_views_supported
+        with_connection do
+          raise_unless_materialized_views_supported
 
-        schemaless_name = name.to_s.split(".").last
+          schemaless_name = name.to_s.split(".").last
 
-        sql = "SELECT relispopulated FROM pg_class WHERE relname = '#{schemaless_name}'"
-        relations = execute(sql)
+          sql = "SELECT relispopulated FROM pg_class WHERE relname = '#{schemaless_name}'"
+          relations = execute(sql)
 
-        if relations.count.positive?
-          relations.first["relispopulated"].in?(["t", true])
-        else
-          false
+          if relations.count.positive?
+            relations.first["relispopulated"].in?(["t", true])
+          else
+            false
+          end
         end
       end
 
@@ -278,6 +298,16 @@ module Scenic
 
       attr_reader :connectable
       delegate :execute, :quote_table_name, to: :connection
+
+      # Leases a connection for the duration of the block on Rails 7.2+ rather
+      # than checking one out for the rest of the thread.
+      def with_connection(&block)
+        if connectable.respond_to?(:lease_connection)
+          connectable.with_connection(prevent_permanent_checkout: true, &block)
+        else
+          yield
+        end
+      end
 
       def raise_unless_materialized_views_supported
         unless connection.supports_materialized_views?
