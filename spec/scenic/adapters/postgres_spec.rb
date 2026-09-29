@@ -11,6 +11,19 @@ module Scenic
 
           expect(adapter.views.map(&:name)).to include("greetings")
         end
+
+        it "uses #connection when the connectable cannot lease one" do
+          connectable = Struct.new(:connection) do
+            def with_connection
+              yield connection
+            end
+          end.new(ActiveRecord::Base.connection)
+          adapter = Postgres.new(connectable)
+
+          adapter.create_view("greetings", "SELECT text 'hi' AS greeting")
+
+          expect(adapter.views.map(&:name)).to include("greetings")
+        end
       end
 
       describe "#create_materialized_view" do
@@ -289,6 +302,32 @@ module Scenic
 
           expect { adapter.create_materialized_view("greetings", "select 1") }
             .to raise_error Postgres::MaterializedViewsNotSupportedError
+        end
+      end
+
+      describe "connection checkout",
+        db: false,
+        if: ActiveRecord.respond_to?(:permanent_connection_checkout) do
+        around do |example|
+          original = ActiveRecord.permanent_connection_checkout
+          ActiveRecord.permanent_connection_checkout = :disallowed
+          ActiveRecord::Base.connection_pool.release_connection
+          example.run
+        ensure
+          ActiveRecord.permanent_connection_checkout = original
+          ActiveRecord::Base.with_connection do |connection|
+            connection.execute("DROP MATERIALIZED VIEW IF EXISTS greetings")
+          end
+        end
+
+        it "does not permanently check out a connection" do
+          adapter = Postgres.new
+
+          adapter.create_materialized_view("greetings", "SELECT 'hi' AS greeting")
+          adapter.refresh_materialized_view("greetings")
+
+          expect(ActiveRecord::Base.connection_pool.active_connection?)
+            .to be_falsey
         end
       end
     end
